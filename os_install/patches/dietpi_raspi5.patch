@@ -1,0 +1,96 @@
+--- dietpi.txt	2025-10-21 13:13:51.832755228 +0200
++++ dietpi_raspi5.txt	2025-10-21 13:22:01.095214384 +0200
+@@ -17,10 +17,10 @@
+ AUTO_SETUP_LOCALE=C.UTF-8
+ 
+ # Keyboard layout e.g.: "gb" / "us" / "de" / "fr"
+-AUTO_SETUP_KEYBOARD_LAYOUT=gb
++AUTO_SETUP_KEYBOARD_LAYOUT=de
+ 
+ # Time zone e.g.: "Europe/London" / "America/New_York" | Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+-AUTO_SETUP_TIMEZONE=UTC
++AUTO_SETUP_TIMEZONE=Europe/Berlin
+ 
+ ##### Network options #####
+ # Enable Ethernet or WiFi adapter: 1=enable | 0=disable
+@@ -31,7 +31,7 @@
+ 
+ # WiFi country code: 2 capital letter value (e.g. GB US DE JP): https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+ # - NB: This choice may be overridden if the WiFi access point sends a country code.
+-AUTO_SETUP_NET_WIFI_COUNTRY_CODE=GB
++AUTO_SETUP_NET_WIFI_COUNTRY_CODE=DE
+ 
+ # Enter your static network details below, if applicable.
+ AUTO_SETUP_NET_USESTATIC=0
+@@ -44,7 +44,7 @@
+ AUTO_SETUP_DHCP_TO_STATIC=0
+ 
+ # Hostname
+-AUTO_SETUP_NET_HOSTNAME=DietPi
++AUTO_SETUP_NET_HOSTNAME=raspi5
+ 
+ # Force Ethernet speeds: 0=automatic speed | 10 = 10 Mbit/s | 100 = 100 Mbit/s etc.
+ # - Use this when your Ethernet adapter has an unstable 1 Gbit/s link.
+@@ -55,7 +55,7 @@
+ 
+ ##### Misc options #####
+ # Swap space size to generate: 0 => disable | 1 => auto | 2 and up => size in MiB
+-AUTO_SETUP_SWAPFILE_SIZE=1
++AUTO_SETUP_SWAPFILE_SIZE=0
+ # Swap space location: "zram" => swap space on /dev/zram0 (auto-size = 50% of RAM size) | /path/to/file => swap file at location (auto-size = 2 GiB minus RAM size)
+ AUTO_SETUP_SWAPFILE_LOCATION=/var/swap
+ 
+@@ -67,7 +67,7 @@
+ CONFIG_SERIAL_CONSOLE_ENABLE=1
+ 
+ # Unmask (enable) systemd-logind service (including dbus), which is masked by default on DietPi
+-AUTO_UNMASK_LOGIND=0
++AUTO_UNMASK_LOGIND=1
+ 
+ # Install APT packages automatically after first run setup.
+ # - Add as many APT package names as you wish, separated by space.
+@@ -93,7 +93,7 @@
+ 
+ ##### Software options #####
+ # SSH server choice: 0=none/custom | -1=Dropbear | -2=OpenSSH
+-AUTO_SETUP_SSH_SERVER_INDEX=-1
++AUTO_SETUP_SSH_SERVER_INDEX=-2
+ 
+ # SSH server pubkey
+ # - Public key(s) for "root" and "dietpi" users, which will be added to ~/.ssh/authorized_keys
+@@ -144,7 +144,7 @@
+ #------------------------------------------------------------------------------------------------------
+ # DietPi-Survey: 1=opt in | 0=opt out | -1=ask on first call
+ # - https://dietpi.com/docs/dietpi_tools/system_configuration/#dietpi-survey
+-SURVEY_OPTED_IN=-1
++SURVEY_OPTED_IN=0
+ 
+ #------------------------------------------------------------------------------------------------------
+ ##### DietPi-Config settings #####
+@@ -202,14 +202,14 @@
+ 
+ # Daily check for DietPi updates: 0=disable | 1=enable
+ # - Checks are done by downloading a file of only 7 bytes.
+-CONFIG_CHECK_DIETPI_UPDATES=1
++CONFIG_CHECK_DIETPI_UPDATES=0
+ 
+ # Daily check for APT package updates: 0=disable | 1=check only | 2=check and upgrade automatically
+ # - Upgrade logs can be found at: /var/tmp/dietpi/logs/dietpi-update_apt.log
+-CONFIG_CHECK_APT_UPDATES=1
++CONFIG_CHECK_APT_UPDATES=0
+ 
+ # Network time sync: 0=disabled | 1=boot only | 2=boot + daily | 3=boot + hourly | 4=Daemon + Drift
+-CONFIG_NTP_MODE=2
++CONFIG_NTP_MODE=3
+ 
+ # Sound card
+ CONFIG_SOUNDCARD=none
+@@ -219,7 +219,7 @@
+ CONFIG_LCDPANEL=none
+ 
+ # IPv6
+-CONFIG_ENABLE_IPV6=1
++CONFIG_ENABLE_IPV6=0
+ 
+ # APT mirrors which are applied to /etc/apt/sources.list | Values here will also be applied during 1st run setup
+ # - Raspbian: https://www.raspbian.org/RaspbianMirrors
