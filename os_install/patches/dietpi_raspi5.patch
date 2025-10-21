@@ -1,5 +1,5 @@
 --- dietpi.txt	2025-10-21 13:13:51.832755228 +0200
-+++ dietpi_raspi5.txt	2025-10-21 13:22:01.095214384 +0200
++++ dietpi_raspi5.txt	2025-10-21 14:21:29.773959563 +0200
 @@ -17,10 +17,10 @@
  AUTO_SETUP_LOCALE=C.UTF-8
  
@@ -94,3 +94,12 @@
  
  # APT mirrors which are applied to /etc/apt/sources.list | Values here will also be applied during 1st run setup
  # - Raspbian: https://www.raspbian.org/RaspbianMirrors
+@@ -348,6 +348,8 @@
+ # - NB: Early access builds have a higher chance to contain bugs, and you may need to restore a database backup when reverting from early access to stable builds.
+ SOFTWARE_ROONSERVER_EARLYACCESS=0
+ 
++AUTO_SETUP_AUTOMATED=1
++
+ #------------------------------------------------------------------------------------------------------
+ ##### Dev settings #####
+ #------------------------------------------------------------------------------------------------------
