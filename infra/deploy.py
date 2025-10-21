@@ -11,14 +11,22 @@ apt.update(
 
 apt.packages(
     name="Install base packages",
-    packages=["fish", "vim", "less", "tmux", "iputils-ping", "iptables", "wget", "git", "lm-sensors"],
+    packages=["fish", "vim", "less", "tmux", "iputils-ping", "iptables", "wget", "git", "lm-sensors", "linux-cpupower"],
     no_recommends=True,
     _sudo=True,
 )
 
 apt.packages(
-    name="Install measurement packages",
-    packages=["linux-cpupower"],
+    name="Install network tools",
+    packages=["wireless-tools", "netcat-openbsd"],
     no_recommends=True,
     _sudo=True,
 )
+
+apt.packages(
+    name="Install compression tools",
+    packages=["xz-utils", "lzop", "lz4", "bzip2", "bzip3"],
+    no_recommends=True,
+    _sudo=True,
+)
+
