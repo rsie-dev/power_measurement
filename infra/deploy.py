@@ -18,7 +18,7 @@ apt.packages(
 
 apt.packages(
     name="Install network tools",
-    packages=["wireless-tools", "netcat-openbsd"],
+    packages=["wireless-tools", "netcat-openbsd", "wavemon"],
     no_recommends=True,
     _sudo=True,
 )
