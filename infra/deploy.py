@@ -5,6 +5,13 @@ from pyinfra.operations import apt, files, server
 from pyinfra import host
 from pyinfra.facts.server import Arch
 
+files.file(
+    name="Remove check password trigger file",
+    path="/var/lib/dietpi/.check_user_passwords",
+    present=False,
+    _sudo=True,
+)
+
 apt.update(
         name="Update apt repositories",
         _sudo=True,
