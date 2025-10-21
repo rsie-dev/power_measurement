@@ -1,11 +1,11 @@
 import getpass
 
-PASSWORD = getpass.getpass(prompt="Password: ")
+PASSWORD = getpass.getpass(prompt="Password (dietpi): ")
 
 hosts = ([
-	    ('raspi5', {'ssh_hostname': '192.168.1.10'}),
+	    ('raspi5', {'ssh_hostname': '192.168.1.202'}),
         ],
-        {"ssh_user": getpass.getuser(),
+        {"ssh_user": "dietpi",
          "ssh_password": PASSWORD,
          "_sudo_password": PASSWORD,
          }
