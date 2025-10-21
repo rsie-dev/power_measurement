@@ -31,6 +31,13 @@ apt.packages(
 )
 
 apt.packages(
+    name="Install stressor tools",
+    packages=["stress-ng"],
+    no_recommends=True,
+    _sudo=True,
+)
+
+apt.packages(
     name="Install python",
     packages=["python3", "python3-venv"],
     no_recommends=True,
