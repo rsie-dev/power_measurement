@@ -1,5 +1,7 @@
 # Install OS image
 
+Instrcutions are based on Dietpi v9.18 which is based on debian 13 (trixie).
+
 For the Raspberry PI 5:
 1. Get image for the device from [Dietpi](https://dietpi.com/) and extract it<br>
 '''
