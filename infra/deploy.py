@@ -3,6 +3,7 @@ import io
 
 from pyinfra.operations import apt, files, server
 from pyinfra import host
+from pyinfra.facts.server import Arch
 
 apt.update(
         name="Update apt repositories",
@@ -41,5 +42,24 @@ apt.packages(
     name="Install python",
     packages=["python3", "python3-venv"],
     no_recommends=True,
+    _sudo=True,
+)
+
+def get_telegraf_arch():
+    arch = host.get_fact(Arch, )
+    if arch == "aarch64":
+        return "arm64"
+    return arch
+
+telegraf_version="1.36.3-1"
+telegraf_package="telegraf_%s_%s.deb" % (telegraf_version, get_telegraf_arch())
+files.download(
+    name="Download telgraf package",
+    src="https://dl.influxdata.com/telegraf/releases/%s" % telegraf_package,
+    dest="/var/tmp/%s" % telegraf_package,
+)
+apt.deb(
+    name="Install telegraf",
+    src="/var/tmp/%s" % telegraf_package,
     _sudo=True,
 )
