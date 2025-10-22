@@ -171,6 +171,8 @@ def config_telegraf():
   ## If true, compute and report the sum of all non-idle CPU states
   ## NOTE: The resulting 'time_active' field INCLUDES 'iowait'!
   report_active = false
+  ## If true and the info is available then add core_id and physical_id tags
+  core_tags = false  
 """
     files.put(
         name="Create telegraf input configuration",
