@@ -160,7 +160,7 @@ def config_telegraf():
         _sudo=True,
     )
 
-    input_content = """
+    input_cpu_content = """
 [[inputs.cpu]]
   ## Whether to report per-cpu stats or not
   percpu = true
@@ -174,14 +174,17 @@ def config_telegraf():
 """
     files.put(
         name="Create telegraf input configuration",
-        src=StringIO(input_content),
-        dest="/etc/telegraf/telegraf.d/input.conf",
+        src=StringIO(input_cpu_content),
+        dest="/etc/telegraf/telegraf.d/input_cpu.conf",
         _sudo=True,
     )
 
-    output_content = """
+    output_file_content = """
 [[outputs.file]]
   files = ["stdout", "/tmp/metrics.json"]
+  # use_batch_format = false
+  rotation_max_size = "1MB"
+  # rotation_max_archives = 5
   data_format = "json"
   
   ## The resolution to use for the metric timestamp.  Must be a duration string
@@ -211,9 +214,9 @@ def config_telegraf():
   #json_nested_fields_exclude = []
 """
     files.put(
-        name="Create telegraf output configuration",
-        src=StringIO(output_content),
-        dest="/etc/telegraf/telegraf.d/output.conf",
+        name="Create telegraf output file configuration",
+        src=StringIO(output_file_content),
+        dest="/etc/telegraf/telegraf.d/output_file.conf",
         _sudo=True,
     )    
 
