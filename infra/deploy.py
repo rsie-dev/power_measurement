@@ -100,7 +100,7 @@ def config_telegraf():
     agent_content = """
 [agent]
   ## Default data collection interval for all inputs
-  interval = "3s"
+  interval = "1s"
   ## Rounds collection interval to 'interval'
   ## ie, if interval="10s" then always collect on :00, :10, :20, etc.
   #round_interval = true
@@ -194,7 +194,7 @@ def config_telegraf():
   # Other timestamp layout can be configured using the Go language time
   # layout specification from https://golang.org/pkg/time/#Time.Format
   # e.g.: json_timestamp_format = "2006-01-02T15:04:05Z07:00"
-  #json_timestamp_format = ""
+  json_timestamp_format = "2006-01-02T15:04:05Z07:00"
 
   ## A [JSONata](https://jsonata.org/) transformation of the JSON in
   ## [standard-form](#examples). Please note that only version 1.5.4 of the
