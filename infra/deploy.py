@@ -226,22 +226,22 @@ def config_telegraf():
   #json_nested_fields_exclude = []
 """
 
-    output_file_content = f"""
-[[outputs.file]]
-  files = ["/tmp/metrics.json"]
-  # use_batch_format = false
-  rotation_max_size = "1MB"
-  # rotation_max_archives = 5
-  data_format = "json"
-  
-  {json_format}
-"""
-    files.put(
-        name="Create telegraf output file configuration",
-        src=StringIO(output_file_content),
-        dest="/etc/telegraf/telegraf.d/output_file.conf",
-        _sudo=True,
-    )
+#     output_file_content = f"""
+# [[outputs.file]]
+#   files = ["/tmp/metrics.json"]
+#   # use_batch_format = false
+#   rotation_max_size = "1MB"
+#   # rotation_max_archives = 5
+#   data_format = "json"
+#
+#   {json_format}
+# """
+#     files.put(
+#         name="Create telegraf output file configuration",
+#         src=StringIO(output_file_content),
+#         dest="/etc/telegraf/telegraf.d/output_file.conf",
+#         _sudo=True,
+#     )
 
     output_http_content = f"""
 [[outputs.http]]
