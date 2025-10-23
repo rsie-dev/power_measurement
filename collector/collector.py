@@ -33,18 +33,26 @@ class Collector:
                 del yaml_config['handlers']['file']
             logging.config.dictConfig(yaml_config)
 
+    def _server(self, args):
+        from server import server_main
+        server_main(args)
 
     def main(self):
         parser = argparse.ArgumentParser(prog="collector")
         default = ' (default: %(default)s)'
         parser.add_argument('-v', '--verbose', action='count', default=1, help="set the verbosity level" + default)
         parser.add_argument('-l', '--logFile', help="logfile name")
+        subparsers = parser.add_subparsers(required=True, dest="subcommand", title='subcommands',
+                                           description='valid subcommands', help='sub-command help')
+
+        parser_srv = subparsers.add_parser('server', help="starts REST server")
+        parser_srv.set_defaults(func=self._server)
 
         args = parser.parse_args()
 
         self._start_logging(args)
         try:
-            #args.func(args)
+            args.func(args)
             return 0
         except Exception as e:
             self._logger.exception(f"Error: {e}")

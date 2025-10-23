@@ -181,14 +181,8 @@ def config_telegraf():
         _sudo=True,
     )
 
-    output_file_content = """
-[[outputs.file]]
-  files = ["stdout", "/tmp/metrics.json"]
-  # use_batch_format = false
-  rotation_max_size = "1MB"
-  # rotation_max_archives = 5
-  data_format = "json"
-  
+    json_format = """
+    
   ## The resolution to use for the metric timestamp.  Must be a duration string
   ## such as "1ns", "1us", "1ms", "10ms", "1s".  Durations are truncated to
   ## the power of 10 less than the specified units.
@@ -215,12 +209,45 @@ def config_telegraf():
   #json_nested_fields_include = []
   #json_nested_fields_exclude = []
 """
+
+    output_file_content = f"""
+[[outputs.file]]
+  files = ["/tmp/metrics.json"]
+  # use_batch_format = false
+  rotation_max_size = "1MB"
+  # rotation_max_archives = 5
+  data_format = "json"
+  
+  {json_format}
+"""
     files.put(
         name="Create telegraf output file configuration",
         src=StringIO(output_file_content),
         dest="/etc/telegraf/telegraf.d/output_file.conf",
         _sudo=True,
-    )    
+    )
+
+    output_http_content = f"""
+[[outputs.http]]
+  url = "http://192.168.1.201:10000/measurement/single/"
+
+  use_batch_format = false
+      
+  data_format = "json"
+  
+  {json_format}
+  
+  [outputs.http.headers]
+  #   ## Should be set manually to "application/json" for json data_format
+  #   Content-Type = "text/plain; charset=utf-8"
+  Content-Type = "application/json"  
+"""
+    files.put(
+        name="Create telegraf output socket configuration",
+        src=StringIO(output_http_content),
+        dest="/etc/telegraf/telegraf.d/output_http.conf",
+        _sudo=True,
+    )
 
 
 install_telegraf()

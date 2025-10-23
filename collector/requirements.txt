@@ -1,1 +1,2 @@
 ruamel.yaml==0.18.10
+fastapi[standard-no-fastapi-cloud-cli]==0.119.0
