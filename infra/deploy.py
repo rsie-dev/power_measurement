@@ -1,9 +1,9 @@
-import getpass
 from io import StringIO
 
-from pyinfra.operations import apt, files, server, systemd
+from pyinfra.operations import apt, files, systemd
 from pyinfra import host
 from pyinfra.facts.server import Arch
+from pyinfra.facts.files import FindFiles
 
 files.file(
     name="Remove check password trigger file",
@@ -86,7 +86,24 @@ def install_telegraf():
     )
 
 
+def remove_existing_configs():
+    config_files = host.get_fact(FindFiles,
+                                 path="/etc/telegraf/telegraf.d",
+                                 fname="*.conf",
+                                 maxdepth=1
+                                 )
+    for config_file in config_files:
+        files.file(
+            name=f"Remove telegraf config file: {config_file}",
+            path=config_file,
+            present=False,
+            _sudo=True,
+        )
+
+
 def config_telegraf():
+    remove_existing_configs()
+
     main_content = """
 # Empty, look in telegraf.d for content
 """
@@ -182,7 +199,6 @@ def config_telegraf():
     )
 
     json_format = """
-    
   ## The resolution to use for the metric timestamp.  Must be a duration string
   ## such as "1ns", "1us", "1ms", "10ms", "1s".  Durations are truncated to
   ## the power of 10 less than the specified units.
@@ -252,4 +268,3 @@ def config_telegraf():
 
 install_telegraf()
 config_telegraf()
-
