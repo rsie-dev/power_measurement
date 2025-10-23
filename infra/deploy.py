@@ -229,9 +229,9 @@ def config_telegraf():
 
     output_http_content = f"""
 [[outputs.http]]
-  url = "http://192.168.1.201:10000/measurement/single/"
+  url = "http://192.168.1.201:10000/measurement/batch/"
 
-  use_batch_format = false
+  use_batch_format = true
       
   data_format = "json"
   

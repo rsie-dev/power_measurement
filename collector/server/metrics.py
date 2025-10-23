@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 import datetime
 
 from pydantic import BaseModel
@@ -17,8 +17,12 @@ class CpuField(BaseModel):
     usage_user: float
 
 
-class MeasurementSingle(BaseModel):
+class Measurement(BaseModel):
     name: str
     tags: Dict[str, str]
     timestamp: datetime.datetime
     fields: CpuField
+
+
+class Metrics(BaseModel):
+    metrics: List[Measurement]
