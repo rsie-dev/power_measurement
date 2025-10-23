@@ -243,9 +243,11 @@ def config_telegraf():
 #         _sudo=True,
 #     )
 
+    server_ip = host.data.get("server_ip")
+    server_port = host.data.get("server_port")
     output_http_content = f"""
 [[outputs.http]]
-  url = "http://192.168.1.201:10000/measurement/batch/"
+  url = f"http://{server_ip}:{server_port}/measurement/batch/"
 
   use_batch_format = true
       
