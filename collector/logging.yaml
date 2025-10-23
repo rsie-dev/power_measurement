@@ -5,12 +5,21 @@ formatters:
         format: "%(asctime)s - %(levelname)s - %(message)s"
     console_output:
         format: "%(message)s"
+    console_color:
+        (): "uvicorn.logging.DefaultFormatter"
+        fmt: "%(levelprefix)s %(message)s"
+        use_colors: None
     file:
         format: "%(asctime)s %(filename)s(%(lineno)d) %(levelname)-7s %(name)s: %(message)s"
+
+    #access:
+    #    (): "uvicorn.logging.AccessFormatter"
+    #    fmt: '%(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'  # noqa: E501
+
 handlers:
     console:
         class: logging.StreamHandler
-        formatter: console_output
+        formatter: console_color
         stream: ext://sys.stderr
     file:
         class: logging.FileHandler
@@ -22,3 +31,6 @@ loggers:
     "":
         level: DEBUG
         handlers: [console]
+    uvicorn.access:
+        propagate: False
+        handlers: []

@@ -28,12 +28,14 @@ class Collector:
             yaml_config['handlers']['console']['level'] = log_level
             if log_file_name:
                 yaml_config['handlers']['file']['filename'] = log_file_name
-                yaml_config['loggers']['root']['handlers'].append("file")
+                yaml_config['loggers']['']['handlers'].append("file")
+                yaml_config['loggers']['uvicorn.access']['handlers'].append("file")
             else:
                 del yaml_config['handlers']['file']
             logging.config.dictConfig(yaml_config)
 
     def _server(self, args):
+        self._logger.info("start REST server")
         from server import server_main
         server_main(args)
 
