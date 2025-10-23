@@ -85,6 +85,26 @@ def install_telegraf():
         _sudo=True,
     )
 
+    drop_in_content = """
+[Service]
+#CPUSchedulingPolicy=fifo
+#CPUSchedulingPriority=80
+#IOSchedulingClass=realtime
+IOSchedulingPriority=2
+Nice=-10
+"""
+    add_drop_in = files.put(
+        name="Create telegraf drop-in configuration",
+        src=StringIO(drop_in_content),
+        dest="/etc/systemd/system/telegraf.service.d/override.conf",
+        _sudo=True,
+    )
+    systemd.daemon_reload(
+        name="Reload systemd config",
+        _sudo=True,
+        _if=add_drop_in.did_change
+    )
+
 
 def remove_existing_configs():
     config_files = host.get_fact(FindFiles,
