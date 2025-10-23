@@ -33,4 +33,4 @@ def add_batch(metrics: Metrics) -> Metrics:
 
 
 def server_main(args) -> None:
-    uvicorn.run(app, host="192.168.1.201", port=args.port, log_config=None, log_level=None, reload=False)
+    uvicorn.run(app, host=args.host, port=args.port, log_config=None, log_level=None, reload=False)

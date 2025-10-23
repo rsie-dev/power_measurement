@@ -39,6 +39,9 @@ class Collector:
         from server import server_main
         server_main(args)
 
+    def _get_default_host(self):
+        return "192.168.1.201"
+
     def main(self):
         parser = argparse.ArgumentParser(prog="collector")
         default = ' (default: %(default)s)'
@@ -48,6 +51,7 @@ class Collector:
                                            description='valid subcommands', help='sub-command help')
 
         parser_srv = subparsers.add_parser('server', help="starts REST server")
+        parser_srv.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
         parser_srv.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
         parser_srv.set_defaults(func=self._server)
 
