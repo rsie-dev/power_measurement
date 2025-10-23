@@ -48,6 +48,7 @@ class Collector:
                                            description='valid subcommands', help='sub-command help')
 
         parser_srv = subparsers.add_parser('server', help="starts REST server")
+        parser_srv.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
         parser_srv.set_defaults(func=self._server)
 
         args = parser.parse_args()
