@@ -4,9 +4,9 @@ import logging.config
 import sys
 import argparse
 from pathlib import Path
-import datetime
 
 from ruamel.yaml import YAML
+import ifaddr
 
 
 class Collector:
@@ -40,7 +40,12 @@ class Collector:
         server_main(args)
 
     def _get_default_host(self):
-        return "192.168.1.201"
+        adapters = ifaddr.get_adapters()
+        for adapter in adapters:
+            if adapter.name != "lo":
+                for ip in adapter.ips:
+                    return ip.ip
+        return "127.0.0.1"
 
     def main(self):
         parser = argparse.ArgumentParser(prog="collector")
