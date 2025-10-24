@@ -1,10 +1,8 @@
 import logging
 
 from fastapi import FastAPI
-import uvicorn
 
 from .metrics import Measurement, Metrics
-
 
 app = FastAPI()
 
@@ -31,6 +29,3 @@ def add_batch(metrics: Metrics) -> Metrics:
     logger.info("received batch %d" % (batch_counter, ))
     return metrics
 
-
-def server_main(args) -> None:
-    uvicorn.run(app, host=args.host, port=args.port, log_config=None, log_level=None, reload=False)

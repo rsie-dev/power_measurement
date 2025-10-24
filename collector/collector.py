@@ -8,6 +8,8 @@ from pathlib import Path
 from ruamel.yaml import YAML
 import ifaddr
 
+from signal_handler import SignalHandler
+
 
 class Collector:
     def __init__(self):
@@ -36,8 +38,15 @@ class Collector:
 
     def _server(self, args):
         self._logger.info("start REST server")
-        from server import server_main
-        server_main(args)
+        signal_handler = SignalHandler()
+        from server import MetricsServer
+        metrics_server = MetricsServer()
+        signal_handler.add_shutdown_handler(metrics_server)
+        try:
+            with signal_handler.capture_signals():
+                metrics_server.run(args)
+        except KeyboardInterrupt:
+            pass
 
     def _get_default_host(self):
         adapters = ifaddr.get_adapters()
