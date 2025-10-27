@@ -19,8 +19,8 @@ class CpuField(BaseModel):
 
 class System(BaseModel):
     load1: float
-    load15: float
     load5: float
+    load15: float
 
 
 class Measurement(BaseModel):
