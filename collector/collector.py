@@ -10,7 +10,22 @@ from ruamel.yaml import YAML
 import ifaddr
 
 from signal_handler import SignalHandler
-from csv_measurement_logger import CSVDataLogger
+from server import ShutdownHandler
+from csv_system_logger import CSVSystemLogger
+from usb_meter import devices_by_vid_pid, devices_by_serial_number
+from usb_meter import USBMeter, StopProvider
+from csv_electrical_logger import CSVElectricLogger
+
+
+class SignalStopProvider(StopProvider, ShutdownHandler):
+    def __init__(self):
+        self._should_stop = False
+
+    def shut_down(self, force: bool) -> None:
+        self._should_stop = True
+
+    def should_stop(self) -> bool:
+        return self._should_stop
 
 
 class Collector:
@@ -38,25 +53,68 @@ class Collector:
                 del yaml_config['handlers']['file']
             logging.config.dictConfig(yaml_config)
 
-    def _metrics_server(self, metrics_server, args):
+    def _system_collector(self, metrics_server, args):
         self._logger.debug("REST server start")
         try:
-            with CSVDataLogger(Path(args.metrics)) as dl:
+            with CSVSystemLogger(Path(args.system)) as dl:
                 metrics_server.run(args, dl)
         finally:
             self._logger.debug("REST server shut down")
 
-    def _server(self, args):
+    def _split_id(self, id):
+        tokens = id.split(":")
+        return int(tokens[0], 16), int(tokens[1], 16)
+
+    def _devices_by_id(self, args):
+        if args.id:
+            vid, pid = self._split_id(args.id)
+            return devices_by_vid_pid(vid, pid)
+        if args.serial_number:
+            return devices_by_serial_number(args.serial_number)
+        return None
+
+    def _get_id_description(self, args):
+        if args.id:
+            return "vid:pid = %s" % args.id
+        if args.serial_number:
+            return "serial number = %X" % args.serial_number
+        raise RuntimeError("unknown id kind")
+
+    def _find_device(self, args):
+        devices = self._devices_by_id(args)
+        device = next(devices, None)
+        if not device:
+            raise RuntimeError("No devices found with: %s" % self._get_id_description(args))
+        if next(devices, None):
+            raise RuntimeError("Too many devices found with: %s" % self._get_id_description(args))
+        return device
+
+    def _electric_collector(self, usb_meter, args):
+        self._logger.debug("USB meter start")
+        try:
+            with CSVElectricLogger(Path(args.electrical), args.latest_only) as data_logger:
+                usb_meter.run(data_logger)
+        finally:
+            self._logger.debug("USB meter shut down")
+
+    def _collector(self, args):
         signal_handler = SignalHandler()
         from server import MetricsServer
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)
 
+        device = self._find_device(args)
+        stop_provider = SignalStopProvider()
+        signal_handler.add_shutdown_handler(stop_provider)
+        usb_meter = USBMeter(device=device, stop_provider=stop_provider, crc=True)
+        usb_meter.setup_device()
+        usb_meter.initialize_communication()
         try:
             with signal_handler.capture_signals():
                 with ThreadPoolExecutor() as executor:
-                    ms = executor.submit(self._metrics_server, metrics_server, args)
-                    wait([ms])
+                    sc = executor.submit(self._system_collector, metrics_server, args)
+                    ec = executor.submit(self._electric_collector, usb_meter, args)
+                    wait([sc, ec])
         except KeyboardInterrupt:
             pass
 
@@ -76,11 +134,18 @@ class Collector:
         subparsers = parser.add_subparsers(required=True, dest="subcommand", title='subcommands',
                                            description='valid subcommands', help='sub-command help')
 
-        parser_srv = subparsers.add_parser('server', help="starts REST server")
+        id_parser = argparse.ArgumentParser(add_help=False)
+        id_group = id_parser.add_mutually_exclusive_group(required=True)
+        id_group.add_argument('--id', help="Device vendorid:productid")
+        id_group.add_argument('--serial-number', type=lambda x: int(x, 16), help="Device serial number")
+
+        parser_srv = subparsers.add_parser('collector', parents=[id_parser], help="starts data collection")
         parser_srv.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
         parser_srv.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
-        parser_srv.add_argument('-m', '--metrics', default="metrics.csv", help="metrics file name" + default)
-        parser_srv.set_defaults(func=self._server)
+        parser_srv.add_argument('--system', default="system.csv", help="System data file name" + default)
+        parser_srv.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
+        parser_srv.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
+        parser_srv.set_defaults(func=self._collector)
 
         args = parser.parse_args()
 
