@@ -8,6 +8,7 @@ from uvicorn.server import Server
 
 from .shutdown_handler import ShutdownHandler
 from .main import create_app
+from .measurement_logger import MeasurementLogger
 
 
 class NoSignalServer(Server, ShutdownHandler):
@@ -38,8 +39,8 @@ class MetricsServer(ShutdownHandler):
             return
         self._server.shut_down(force)
 
-    def run(self, args) -> None:
-        app = create_app()
+    def run(self, args, measurement_logger: MeasurementLogger) -> None:
+        app = create_app(measurement_logger)
         config = Config(
             app,
             host=args.host,

@@ -3,11 +3,12 @@ import logging
 from fastapi import FastAPI
 
 from .metrics import Measurement, Metrics
+from .measurement_logger import MeasurementLogger
 
 logger = logging.getLogger('server.main')
 
 
-def create_app():
+def create_app(measurement_logger: MeasurementLogger):
     app = FastAPI()
 
     counter = 0
@@ -17,6 +18,7 @@ def create_app():
         nonlocal counter
         counter = counter + 1
         logger.info("received measurement %d\n%s" % (counter, measurement))
+        measurement_logger.log(measurement)
         return measurement
 
     batch_counter = 0
@@ -26,6 +28,8 @@ def create_app():
         nonlocal batch_counter
         batch_counter = batch_counter + 1
         logger.info("received batch %d" % (batch_counter, ))
+        for measurement in metrics.metrics:
+            measurement_logger.log(measurement)
         return metrics
 
     return app

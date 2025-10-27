@@ -9,7 +9,7 @@ from ruamel.yaml import YAML
 import ifaddr
 
 from signal_handler import SignalHandler
-
+from csv_measurement_logger import CSVDataLogger
 
 class Collector:
     def __init__(self):
@@ -44,7 +44,8 @@ class Collector:
         signal_handler.add_shutdown_handler(metrics_server)
         try:
             with signal_handler.capture_signals():
-                metrics_server.run(args)
+                with CSVDataLogger(Path("metrics.csv")) as dl:
+                    metrics_server.run(args, dl)
         except KeyboardInterrupt:
             pass
 
