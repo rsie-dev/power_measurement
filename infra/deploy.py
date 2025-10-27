@@ -209,12 +209,25 @@ def config_telegraf():
   ## NOTE: The resulting 'time_active' field INCLUDES 'iowait'!
   report_active = false
   ## If true and the info is available then add core_id and physical_id tags
-  core_tags = false  
+  core_tags = false
 """
     files.put(
-        name="Create telegraf input configuration",
+        name="Create telegraf input CPU configuration",
         src=StringIO(input_cpu_content),
         dest="/etc/telegraf/telegraf.d/input_cpu.conf",
+        _sudo=True,
+    )
+
+    input_system_content = """
+# Read metrics about system load & uptime
+[[inputs.system]]
+  # no configuration
+  fieldinclude = ["load1", "load5", "load15"]
+"""
+    files.put(
+        name="Create telegraf input system configuration",
+        src=StringIO(input_system_content),
+        dest="/etc/telegraf/telegraf.d/input_system.conf",
         _sudo=True,
     )
 
