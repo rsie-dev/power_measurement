@@ -25,6 +25,14 @@ apt.packages(
 )
 
 apt.packages(
+    name="Install fix for ssh disconnect",
+    packages=["libpam-systemd", "dbus"],
+    no_recommends=True,
+    _sudo=True,
+)
+
+
+apt.packages(
     name="Install network tools",
     packages=["wireless-tools", "netcat-openbsd", "wavemon"],
     no_recommends=True,
