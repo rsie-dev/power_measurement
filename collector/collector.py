@@ -4,6 +4,7 @@ import logging.config
 import sys
 import argparse
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, wait
 
 from ruamel.yaml import YAML
 import ifaddr
@@ -37,16 +38,25 @@ class Collector:
                 del yaml_config['handlers']['file']
             logging.config.dictConfig(yaml_config)
 
+    def _metrics_server(self, metrics_server, args):
+        self._logger.debug("REST server start")
+        try:
+            with CSVDataLogger(Path(args.metrics)) as dl:
+                metrics_server.run(args, dl)
+        finally:
+            self._logger.debug("REST server shut down")
+
     def _server(self, args):
-        self._logger.info("start REST server")
         signal_handler = SignalHandler()
         from server import MetricsServer
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)
+
         try:
             with signal_handler.capture_signals():
-                with CSVDataLogger(Path(args.metrics)) as dl:
-                    metrics_server.run(args, dl)
+                with ThreadPoolExecutor() as executor:
+                    ms = executor.submit(self._metrics_server, metrics_server, args)
+                    wait([ms])
         except KeyboardInterrupt:
             pass
 
