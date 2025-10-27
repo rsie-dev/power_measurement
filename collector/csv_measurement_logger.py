@@ -6,7 +6,11 @@ from server.metrics import Measurement
 
 
 class CSVDataLogger(MeasurementLogger):
-    FIELD_NAMES = ["timestamp", "rel time", "host", "name"]
+    FIELD_NAMES = ["timestamp", "rel time", "host", "name",
+                   "load1", "load5", "load15",
+                   "usage_idle", "usage_system", "usage_user", "usage_nice", "usage_iowait",
+                   "usage_guest", "usage_guest_nice", "usage_irq", "usage_softirq", "usage_steal",
+                   ]
 
     def __init__(self, path: Path):
         self._stream = path.open(mode="w", encoding="utf-8")
@@ -34,4 +38,25 @@ class CSVDataLogger(MeasurementLogger):
             "host": f"{measurement.tags["host"]}",
             "name": f"{measurement.name}",
         }
+        if measurement.name == "system":
+            entry |= {
+                "load1": f"{measurement.fields.load1:5.2f}",
+                "load5": f"{measurement.fields.load5:5.2f}",
+                "load15": f"{measurement.fields.load15:5.2f}",
+            }
+        elif measurement.name == "cpu":
+            if measurement.tags["cpu"] == "cpu-total":
+                entry |= {
+                    "usage_guest": f"{measurement.fields.usage_guest:7.2f}",
+                    "usage_guest_nice": f"{measurement.fields.usage_guest_nice:7.2f}",
+                    "usage_idle": f"{measurement.fields.usage_idle:7.2f}",
+                    "usage_iowait": f"{measurement.fields.usage_iowait:7.2f}",
+                    "usage_irq": f"{measurement.fields.usage_irq:7.2f}",
+                    "usage_nice": f"{measurement.fields.usage_nice:7.2f}",
+                    "usage_softirq": f"{measurement.fields.usage_softirq:7.2f}",
+                    "usage_steal": f"{measurement.fields.usage_steal:7.2f}",
+                    "usage_system": f"{measurement.fields.usage_system:7.2f}",
+                    "usage_user": f"{measurement.fields.usage_user:7.2f}",
+                }
+
         self._writer.writerow(entry)
