@@ -11,6 +11,7 @@ import ifaddr
 from signal_handler import SignalHandler
 from csv_measurement_logger import CSVDataLogger
 
+
 class Collector:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
