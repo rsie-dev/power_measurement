@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
-from .metrics import Measurement, Metrics
+from .metrics import SystemMeasurement, Metrics
 from .measurement_logger import MeasurementLogger
 
 logger = logging.getLogger('server.main')
@@ -14,7 +14,7 @@ def create_app(measurement_logger: MeasurementLogger):
     counter = 0
 
     @app.post("/measurement/single/")
-    def add_line(measurement: Measurement) -> Measurement:
+    def add_line(measurement: SystemMeasurement) -> SystemMeasurement:
         nonlocal counter
         counter = counter + 1
         logger.info("received measurement %d\n%s" % (counter, measurement))

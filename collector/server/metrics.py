@@ -23,7 +23,7 @@ class System(BaseModel):
     load15: float
 
 
-class Measurement(BaseModel):
+class SystemMeasurement(BaseModel):
     name: str
     tags: Dict[str, str]
     timestamp: datetime.datetime
@@ -31,4 +31,4 @@ class Measurement(BaseModel):
 
 
 class Metrics(BaseModel):
-    metrics: List[Measurement]
+    metrics: List[SystemMeasurement]

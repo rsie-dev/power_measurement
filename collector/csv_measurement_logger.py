@@ -2,7 +2,7 @@ import csv
 from pathlib import Path
 
 from server.measurement_logger import MeasurementLogger
-from server.metrics import Measurement
+from server.metrics import SystemMeasurement
 
 
 class CSVDataLogger(MeasurementLogger):
@@ -27,7 +27,7 @@ class CSVDataLogger(MeasurementLogger):
     def _init(self) -> None:
         self._writer.writeheader()
 
-    def log(self, measurement: Measurement) -> None:
+    def log(self, measurement: SystemMeasurement) -> None:
         if self._start_time is None:
             self._start_time = measurement.timestamp
         rel_time = measurement.timestamp - self._start_time
