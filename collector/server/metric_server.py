@@ -7,7 +7,7 @@ from uvicorn.config import Config
 from uvicorn.server import Server
 
 from .shutdown_handler import ShutdownHandler
-from .main import app
+from .main import create_app
 
 
 class NoSignalServer(Server, ShutdownHandler):
@@ -39,6 +39,7 @@ class MetricsServer(ShutdownHandler):
         self._server.shut_down(force)
 
     def run(self, args) -> None:
+        app = create_app()
         config = Config(
             app,
             host=args.host,
