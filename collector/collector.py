@@ -90,12 +90,12 @@ class Collector:
         return device
 
     def _electric_collector(self, usb_meter, args):
-        self._logger.debug("USB meter start")
+        self._logger.info("USB meter start")
         try:
             with CSVElectricLogger(Path(args.electrical), args.latest_only) as data_logger:
                 usb_meter.run(data_logger)
         finally:
-            self._logger.debug("USB meter shut down")
+            self._logger.info("USB meter shut down")
 
     def _collector(self, args):
         signal_handler = SignalHandler()
