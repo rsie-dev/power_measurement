@@ -44,7 +44,7 @@ class Collector:
         signal_handler.add_shutdown_handler(metrics_server)
         try:
             with signal_handler.capture_signals():
-                with CSVDataLogger(Path("metrics.csv")) as dl:
+                with CSVDataLogger(Path(args.metrics)) as dl:
                     metrics_server.run(args, dl)
         except KeyboardInterrupt:
             pass
@@ -68,6 +68,7 @@ class Collector:
         parser_srv = subparsers.add_parser('server', help="starts REST server")
         parser_srv.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
         parser_srv.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
+        parser_srv.add_argument('-m', '--metrics', default="metrics.csv", help="metrics file name" + default)
         parser_srv.set_defaults(func=self._server)
 
         args = parser.parse_args()
