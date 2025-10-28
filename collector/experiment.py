@@ -88,7 +88,8 @@ class Experiment:
             sn = device.serial_number
             product = device.product_name
             manufacturer = device.manufacturer_name
-            self._logger.info(f"- {device.device_info.vid:x}:{device.device_info.pid:x} {manufacturer} {product} (type: {device.device_info.model.name} SN: {sn})")
+            self._logger.info("- %x:%x %s %s (type: %s SN: %s)", device.device_info.vid, device.device_info.pid,
+                              manufacturer, product, device.device_info.model.name, sn)
 
     def _device_show(self, args):
         device = self._find_device(args)
