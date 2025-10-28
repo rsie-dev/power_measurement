@@ -28,7 +28,7 @@ class SignalStopProvider(StopProvider, ShutdownHandler):
         return self._should_stop
 
 
-class Collector:
+class Experiment:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -183,5 +183,5 @@ class Collector:
 
 
 if __name__ == "__main__":
-    collector = Collector()
-    sys.exit(collector.main())
+    experiment = Experiment()
+    sys.exit(experiment.main())
