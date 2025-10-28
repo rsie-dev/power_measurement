@@ -18,14 +18,11 @@ class CSVSystemLogger(MeasurementLogger):
         self._start_time = None
 
     def __enter__(self):
-        self._init()
+        self._writer.writeheader()
         return self
 
     def __exit__(self, _type, value, traceback):
         self._stream.close()
-
-    def _init(self) -> None:
-        self._writer.writeheader()
 
     def log(self, measurement: SystemMeasurement) -> None:
         if self._start_time is None:
