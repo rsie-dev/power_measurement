@@ -53,8 +53,8 @@ class Experiment:
                 del yaml_config['handlers']['file']
             logging.config.dictConfig(yaml_config)
 
-    def _split_id(self, id):
-        tokens = id.split(":")
+    def _split_id(self, id_str):
+        tokens = id_str.split(":")
         return int(tokens[0], 16), int(tokens[1], 16)
 
     def _devices_by_id(self, args):
