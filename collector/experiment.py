@@ -97,7 +97,7 @@ class Collector:
         finally:
             self._logger.info("USB meter shut down")
 
-    def _collector(self, args):
+    def _experiment(self, args):
         signal_handler = SignalHandler()
         from server import MetricsServer
         metrics_server = MetricsServer()
@@ -139,13 +139,13 @@ class Collector:
         id_group.add_argument('--id', help="Device vendorid:productid")
         id_group.add_argument('--serial-number', type=lambda x: int(x, 16), help="Device serial number")
 
-        parser_collect = subparsers.add_parser('collector', parents=[id_parser], help="starts data collection")
-        parser_collect.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
-        parser_collect.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
-        parser_collect.add_argument('--system', default="system.csv", help="System data file name" + default)
-        parser_collect.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
-        parser_collect.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
-        parser_collect.set_defaults(func=self._collector)
+        parser_experiment = subparsers.add_parser('experiment', parents=[id_parser], help="starts an experiment")
+        parser_experiment.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
+        parser_experiment.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
+        parser_experiment.add_argument('--system', default="system.csv", help="System data file name" + default)
+        parser_experiment.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
+        parser_experiment.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
+        parser_experiment.set_defaults(func=self._experiment)
 
         args = parser.parse_args()
 
