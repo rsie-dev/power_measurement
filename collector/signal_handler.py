@@ -26,7 +26,7 @@ class SignalHandler:
     def add_shutdown_handler(self, handler: ShutdownHandler):
         self._shutdown_handlers.append(handler)
 
-    def _handle_exit(self, sig: int, frame: FrameType | None) -> None:
+    def _handle_exit(self, sig: int, _frame: FrameType | None) -> None:
         self._logger.info(f"caught signal: {signal.Signals(sig).name} ({sig})")
         self._captured_signals.append(sig)
         force_exit = False

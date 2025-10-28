@@ -21,7 +21,7 @@ class SignalStopProvider(StopProvider, ShutdownHandler):
     def __init__(self):
         self._should_stop = False
 
-    def shut_down(self, force: bool) -> None:
+    def shut_down(self, _force: bool) -> None:
         self._should_stop = True
 
     def should_stop(self) -> bool:
@@ -81,7 +81,7 @@ class Experiment:
             raise RuntimeError("Too many devices found with: %s" % self._get_id_description(args))
         return device
 
-    def _device_list(self, args):
+    def _device_list(self, _args):
         devices = all_devices()
         self._logger.info("Available devices:")
         for device in devices:
