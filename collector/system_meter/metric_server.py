@@ -12,9 +12,6 @@ from .measurement_logger import MeasurementLogger
 
 
 class NoSignalServer(Server, ShutdownHandler):
-    def __init__(self, config: Config) -> None:
-        super().__init__(config)
-
     @contextlib.contextmanager
     def capture_signals(self) -> Generator[None, None, None]:
         yield
