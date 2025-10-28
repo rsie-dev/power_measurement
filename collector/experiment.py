@@ -179,7 +179,7 @@ class Experiment:
             args.func(args)
             return 0
         except Exception as e:  # pylint: disable=broad-exception-caught
-            self._logger.exception(f"Error: {e}")
+            self._logger.exception("Error: %s", e)
         return 1
 
 
