@@ -19,7 +19,7 @@ class CSVElectricLogger(DataLogger):
         self._init()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, _type, value, traceback):
         self._stream.close()
 
     def _init(self) -> None:
