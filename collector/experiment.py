@@ -97,7 +97,7 @@ class Collector:
         finally:
             self._logger.info("USB meter shut down")
 
-    def _experiment(self, args):
+    def _run_experiment(self, args):
         signal_handler = SignalHandler()
         from system_meter import MetricsServer
         metrics_server = MetricsServer()
@@ -139,13 +139,13 @@ class Collector:
         id_group.add_argument('--id', help="Device vendorid:productid")
         id_group.add_argument('--serial-number', type=lambda x: int(x, 16), help="Device serial number")
 
-        parser_experiment = subparsers.add_parser('experiment', parents=[id_parser], help="starts an experiment")
-        parser_experiment.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
-        parser_experiment.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
-        parser_experiment.add_argument('--system', default="system.csv", help="System data file name" + default)
-        parser_experiment.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
-        parser_experiment.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
-        parser_experiment.set_defaults(func=self._experiment)
+        parser_run = subparsers.add_parser('run', parents=[id_parser], help="runs an experiment")
+        parser_run.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
+        parser_run.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
+        parser_run.add_argument('--system', default="system.csv", help="System data file name" + default)
+        parser_run.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
+        parser_run.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
+        parser_run.set_defaults(func=self._run_experiment)
 
         args = parser.parse_args()
 
