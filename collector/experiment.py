@@ -92,10 +92,10 @@ class Experiment:
 
     def _device_show(self, args):
         device = self._find_device(args)
-        self._logger.info(f"Vendor ID:     {device.device_info.vid:x}")
-        self._logger.info(f"Product ID:    {device.device_info.pid:x}")
-        self._logger.info(f"Type:          {device.device_info.model.name}")
-        self._logger.info(f"Serial number: {device.serial_number}")
+        self._logger.info("Vendor ID:     %x", device.device_info.vid)
+        self._logger.info("Product ID:    %x", device.device_info.pid)
+        self._logger.info("Type:          %s", device.device_info.model.name)
+        self._logger.info("Serial number: %s", device.serial_number)
 
     def _system_collector(self, metrics_server, args):
         self._logger.debug("REST system_meter start")
