@@ -115,7 +115,7 @@ class Experiment:
 
     def _run_experiment(self, args):
         signal_handler = SignalHandler()
-        from system_meter import MetricsServer
+        from system_meter import MetricsServer  # pylint: disable=import-outside-toplevel
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)
 
@@ -168,7 +168,8 @@ class Experiment:
         parser_run.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
         parser_run.add_argument('--system', default="system.csv", help="System data file name" + default)
         parser_run.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
-        parser_run.add_argument("--latest-only", action="store_true", help="Only log the latest electrical measurement per batch")
+        parser_run.add_argument("--latest-only", action="store_true",
+                                help="Only log the latest electrical measurement per batch")
         parser_run.set_defaults(func=self._run_experiment)
 
         args = parser.parse_args()
@@ -177,7 +178,7 @@ class Experiment:
         try:
             args.func(args)
             return 0
-        except Exception as e: # pylint: disable=broad-exception-caught
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception(f"Error: {e}")
         return 1
 
