@@ -10,7 +10,7 @@ from ruamel.yaml import YAML
 import ifaddr
 
 from signal_handler import SignalHandler
-from server import ShutdownHandler
+from system_meter import ShutdownHandler
 from csv_system_logger import CSVSystemLogger
 from usb_meter import devices_by_vid_pid, devices_by_serial_number
 from usb_meter import USBMeter, StopProvider
@@ -54,12 +54,12 @@ class Collector:
             logging.config.dictConfig(yaml_config)
 
     def _system_collector(self, metrics_server, args):
-        self._logger.debug("REST server start")
+        self._logger.debug("REST system_meter start")
         try:
             with CSVSystemLogger(Path(args.system)) as dl:
                 metrics_server.run(args, dl)
         finally:
-            self._logger.debug("REST server shut down")
+            self._logger.debug("REST system_meter shut down")
 
     def _split_id(self, id):
         tokens = id.split(":")
@@ -99,7 +99,7 @@ class Collector:
 
     def _experiment(self, args):
         signal_handler = SignalHandler()
-        from server import MetricsServer
+        from system_meter import MetricsServer
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)
 

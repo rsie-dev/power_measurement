@@ -1,8 +1,8 @@
 import csv
 from pathlib import Path
 
-from server.measurement_logger import MeasurementLogger
-from server.metrics import SystemMeasurement
+from system_meter.measurement_logger import MeasurementLogger
+from system_meter.metrics import SystemMeasurement
 
 
 class CSVSystemLogger(MeasurementLogger):

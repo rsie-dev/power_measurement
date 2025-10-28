@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from .metrics import SystemMeasurement, Metrics
 from .measurement_logger import MeasurementLogger
 
-logger = logging.getLogger('server.main')
+logger = logging.getLogger('system_meter.main')
 
 
 def create_app(measurement_logger: MeasurementLogger):
