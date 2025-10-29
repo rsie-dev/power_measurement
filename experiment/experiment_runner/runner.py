@@ -6,8 +6,6 @@ from system_meter import MetricsServer
 from usb_meter import USBMeter
 from usb_meter.device import Device
 
-from experiment_api import E
-
 from .csv_system_logger import CSVSystemLogger
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_handler import SignalHandler
@@ -56,5 +54,5 @@ class Runner:
 
     def run_experiment(self, _device: Device, args):
         experiment_loader = ExperimentLoader()
-        experiment_loader.load_steps_from_path(Path(args.experiment[0]))
-        E.run()
+        experiment = experiment_loader.load_steps_from_path(Path(args.experiment[0]))
+        experiment.run()

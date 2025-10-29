@@ -1,45 +1,21 @@
 import logging
-from typing import Callable, List, Optional
-import inspect
+from typing import List
 
 
 class Step:
-    def __init__(self, func: Callable, name: str):
-        self.func = func
+    def __init__(self, name: str):
         self.name = name
-        self.signature = inspect.signature(func)
 
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+    def execute(self):
+        pass
 
 
 class Experiment:
-    def __init__(self):
+    def __init__(self, steps: List[Step]):
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._steps: List[Step] = []
-        self._installed_names = set()
-
-    def step(self, name: Optional[str] = None):
-        """
-        Decorator factory to register a step.
-        Usage:
-          @Experiment.step()
-          def read(): ...
-        """
-        def decorator(fn: Callable):
-            step_name = name or fn.__name__
-            if step_name in self._installed_names:
-                raise RuntimeError(f"step already registered: {step_name}")
-
-            step = Step(fn, name=step_name)
-            self._steps.append(step)
-            self._installed_names.add(step_name)
-            return fn
-        return decorator
+        self._steps = steps
 
     def _get_steps(self):
-        # return steps sorted by explicit order then by registration order
-        #return sorted(self._steps, key=lambda s: (s.order if s.order is not None else 0, self._steps.index(s)))
         return self._steps[:]
 
     def run(self):
@@ -48,8 +24,54 @@ class Experiment:
         """
         for step in self._get_steps():
             self._logger.debug("execute step: %s", step.name)
-            fn = step.func
-            fn()
+            step.execute()
 
 
-E = Experiment()
+class Builder:
+    def build(self):
+        pass
+
+    def add_steps(self, steps: List[Step]):
+        pass
+
+
+class HostStep(Step):
+    def __init__(self, host: str, commands):
+        super().__init__("host")
+        self._host = host
+        self._commands = commands
+
+    def execute(self):
+        print("on host: %s execute: %s" % (self._host, ",".join(self._commands)))
+
+
+class HostBuilder(Builder):
+    def __init__(self, parent: Builder, host):
+        self._parent = parent
+        self._host = host
+        self._commands = []
+
+    def execute(self, command) -> Builder:
+        self._commands.append(command)
+        return self
+
+    def build(self) -> Builder:
+        step = HostStep(self._host, self._commands)
+        self._parent.add_steps([step])
+        return self._parent
+
+
+class ExperimentBuilder(Builder):
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._steps: List[Step] = []
+
+    def add_steps(self, steps: List[Step]):
+        self._steps.extend(steps)
+
+    def on_host(self, host: str) -> HostBuilder:
+        return HostBuilder(self, host)
+
+    def build(self) -> Experiment:
+        experiment = Experiment(self._steps)
+        return experiment

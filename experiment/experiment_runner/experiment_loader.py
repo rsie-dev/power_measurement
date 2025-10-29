@@ -3,15 +3,16 @@ import importlib.util
 import importlib
 import sys
 from pathlib import Path
-from types import ModuleType
 from typing import Optional
+
+from experiment_api import Experiment
 
 
 class ExperimentLoader:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def load_steps_from_path(self, path: Path, package_name: Optional[str] = None) -> ModuleType:
+    def load_steps_from_path(self, path: Path, package_name: Optional[str] = None) -> Experiment:
         """
         Import a .py file at `path` as a module and return the module object.
         - Uses a unique module name so you can load multiple different files or reload the same path.
@@ -37,4 +38,6 @@ class ExperimentLoader:
 
         # Place it in sys.modules so debugging and traceback show a module name
         sys.modules[unique_name] = module
-        return module
+
+        experiment = getattr(module, "experiment")
+        return experiment
