@@ -10,7 +10,8 @@ from .csv_system_logger import CSVSystemLogger
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_handler import SignalHandler
 from .signal_stop_provider import SignalStopProvider
-
+from .experiment_loader import ExperimentLoader
+from experiment_api import E
 
 class Runner:
     def __init__(self):
@@ -32,7 +33,7 @@ class Runner:
         finally:
             self._logger.info("USB meter shut down")
 
-    def run_experiment(self, device: Device, args):
+    def _run_experiment(self, device: Device, args):
         signal_handler = SignalHandler()
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)
@@ -50,3 +51,8 @@ class Runner:
                     wait([sc, ec])
         except KeyboardInterrupt:
             pass
+
+    def run_experiment(self, device: Device, args):
+        experiment_loader = ExperimentLoader()
+        experiment_loader.load_steps_from_path(Path("e_steps.py"))
+        E.run()
