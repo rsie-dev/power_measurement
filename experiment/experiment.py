@@ -4,28 +4,11 @@ import logging.config
 import sys
 import argparse
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait
 
 from ruamel.yaml import YAML
 import ifaddr
 
-from signal_handler import SignalHandler
-from system_meter import ShutdownHandler
-from csv_system_logger import CSVSystemLogger
 from usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
-from usb_meter import USBMeter, StopProvider
-from csv_electrical_logger import CSVElectricLogger
-
-
-class SignalStopProvider(StopProvider, ShutdownHandler):
-    def __init__(self):
-        self._should_stop = False
-
-    def shut_down(self, _force: bool) -> None:
-        self._should_stop = True
-
-    def should_stop(self) -> bool:
-        return self._should_stop
 
 
 class Experiment:
@@ -98,42 +81,11 @@ class Experiment:
         self._logger.info("Type:          %s", device.device_info.model.name)
         self._logger.info("Serial number: %s", device.serial_number)
 
-    def _system_collector(self, metrics_server, args):
-        self._logger.debug("REST system_meter start")
-        try:
-            with CSVSystemLogger(Path(args.system)) as dl:
-                metrics_server.run(args, dl)
-        finally:
-            self._logger.debug("REST system_meter shut down")
-
-    def _electric_collector(self, usb_meter, args):
-        self._logger.info("USB meter start")
-        try:
-            with CSVElectricLogger(Path(args.electrical), args.latest_only) as data_logger:
-                usb_meter.run(data_logger)
-        finally:
-            self._logger.info("USB meter shut down")
-
     def _run_experiment(self, args):
-        signal_handler = SignalHandler()
-        from system_meter import MetricsServer  # pylint: disable=import-outside-toplevel
-        metrics_server = MetricsServer()
-        signal_handler.add_shutdown_handler(metrics_server)
-
         device = self._find_device(args)
-        stop_provider = SignalStopProvider()
-        signal_handler.add_shutdown_handler(stop_provider)
-        usb_meter = USBMeter(device=device, stop_provider=stop_provider, crc=True)
-        usb_meter.setup_device()
-        usb_meter.initialize_communication()
-        try:
-            with signal_handler.capture_signals():
-                with ThreadPoolExecutor() as executor:
-                    sc = executor.submit(self._system_collector, metrics_server, args)
-                    ec = executor.submit(self._electric_collector, usb_meter, args)
-                    wait([sc, ec])
-        except KeyboardInterrupt:
-            pass
+        from experiment_runner import Runner  # pylint: disable=import-outside-toplevel
+        runner = Runner()
+        runner.run_experiment(device, args)
 
     def _get_default_host(self):
         adapters = ifaddr.get_adapters()
