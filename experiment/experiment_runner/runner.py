@@ -6,12 +6,14 @@ from system_meter import MetricsServer
 from usb_meter import USBMeter
 from usb_meter.device import Device
 
+from experiment_api import E
+
 from .csv_system_logger import CSVSystemLogger
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_handler import SignalHandler
 from .signal_stop_provider import SignalStopProvider
 from .experiment_loader import ExperimentLoader
-from experiment_api import E
+
 
 class Runner:
     def __init__(self):
@@ -52,7 +54,7 @@ class Runner:
         except KeyboardInterrupt:
             pass
 
-    def run_experiment(self, device: Device, args):
+    def run_experiment(self, _device: Device, _args):
         experiment_loader = ExperimentLoader()
         experiment_loader.load_steps_from_path(Path("e_steps.py"))
         E.run()
