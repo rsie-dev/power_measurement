@@ -67,10 +67,12 @@ def install_telegraf():
         arch = host.get_fact(Arch, )
         if arch == "aarch64":
             return "arm64"
+        elif arch == "x86_64":
+            return "amd64"
         return arch
 
-    telegraf_version="1.36.3-1"
-    telegraf_package="telegraf_%s_%s.deb" % (telegraf_version, get_telegraf_arch())
+    telegraf_version = "1.36.3-1"
+    telegraf_package = "telegraf_%s_%s.deb" % (telegraf_version, get_telegraf_arch())
     files.download(
         name="Download telgraf package",
         src="https://dl.influxdata.com/telegraf/releases/%s" % telegraf_package,
