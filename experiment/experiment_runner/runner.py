@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, wait
 
 from system_meter import MetricsServer
 from usb_meter import USBMeter
+from usb_meter.device import Device
 
 from .csv_system_logger import CSVSystemLogger
 from .csv_electrical_logger import CSVElectricLogger
@@ -31,7 +32,7 @@ class Runner:
         finally:
             self._logger.info("USB meter shut down")
 
-    def run_experiment(self, device, args):
+    def run_experiment(self, device: Device, args):
         signal_handler = SignalHandler()
         metrics_server = MetricsServer()
         signal_handler.add_shutdown_handler(metrics_server)

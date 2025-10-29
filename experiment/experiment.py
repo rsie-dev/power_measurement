@@ -9,7 +9,7 @@ from ruamel.yaml import YAML
 import ifaddr
 
 from usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
-
+from usb_meter.device import Device
 
 class Experiment:
     def __init__(self):
@@ -55,7 +55,7 @@ class Experiment:
             return "serial number = %X" % args.serial_number
         raise RuntimeError("unknown id kind")
 
-    def _find_device(self, args):
+    def _find_device(self, args) -> Device:
         devices = self._devices_by_id(args)
         device = next(devices, None)
         if not device:
