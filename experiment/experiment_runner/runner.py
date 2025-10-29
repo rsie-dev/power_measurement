@@ -54,7 +54,7 @@ class Runner:
         except KeyboardInterrupt:
             pass
 
-    def run_experiment(self, _device: Device, _args):
+    def run_experiment(self, _device: Device, args):
         experiment_loader = ExperimentLoader()
-        experiment_loader.load_steps_from_path(Path("e_steps.py"))
+        experiment_loader.load_steps_from_path(Path(args.experiment[0]))
         E.run()

@@ -123,6 +123,7 @@ class Experiment:
         parser_run.add_argument('--electrical', default="electrical.csv", help="Electrical data file name" + default)
         parser_run.add_argument("--latest-only", action="store_true",
                                 help="Only log the latest electrical measurement per batch")
+        parser_run.add_argument('experiment', nargs=1, help="Experiment to execute")
         parser_run.set_defaults(func=self._run_experiment)
 
         args = parser.parse_args()
