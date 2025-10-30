@@ -11,6 +11,7 @@ import ifaddr
 from usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from usb_meter.device import Device
 
+
 class ExperimentMain:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -83,7 +84,7 @@ class ExperimentMain:
 
     def _run_experiment(self, args):
         device = self._find_device(args)
-        from experiment_runner import Runner  # pylint: disable=import-outside-toplevel
+        from experiment import Runner  # pylint: disable=import-outside-toplevel
         runner = Runner()
         runner.run_experiment(device, args)
 
