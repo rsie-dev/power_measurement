@@ -16,13 +16,22 @@ class ExperimentMain:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
 
+    def _get_app_folder(self):
+        script = Path(__file__).resolve()
+        folder = script.parent
+        return folder
+
+    def _get_resources_folder(self):
+        folder = self._get_app_folder()
+        folder = folder.parent
+        return folder / "resources"
+
     def _start_logging(self, args):
         log_file_name = args.logFile
         num_log_level = 50 - min(4, 2 + args.verbose) * 10
         log_level = logging.getLevelName(num_log_level)
 
-        script = Path(__file__).resolve()
-        folder = script.parent
+        folder = self._get_app_folder()
         config = folder / 'logging.yaml'
 
         with open(config, "rt", encoding="UTF_8") as f:
@@ -85,7 +94,8 @@ class ExperimentMain:
     def _run_experiment(self, args):
         device = self._find_device(args)
         from app.run import Runner  # pylint: disable=import-outside-toplevel
-        runner = Runner()
+        resources = self._get_resources_folder()
+        runner = Runner(resources)
         runner.run_experiment(device, args)
 
     def _get_default_host(self):

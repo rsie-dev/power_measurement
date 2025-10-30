@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from pathlib import Path
 
 from .steps import Step
 
@@ -12,7 +13,7 @@ class Experiment:
     def _get_steps(self):
         return self._steps[:]
 
-    def run(self):
+    def run(self, resources: Path):
         """
         Execute the experiment: calls each step.
         """

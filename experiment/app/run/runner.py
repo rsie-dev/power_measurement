@@ -14,8 +14,9 @@ from .experiment_loader import ExperimentLoader
 
 
 class Runner:
-    def __init__(self):
+    def __init__(self, resources: Path):
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._resources = resources
 
     def _system_collector(self, metrics_server, args):
         self._logger.debug("REST system_meter start")
@@ -54,5 +55,9 @@ class Runner:
 
     def run_experiment(self, _device: Device, args):
         experiment_loader = ExperimentLoader()
-        experiment = experiment_loader.load_steps_from_path(Path(args.experiment[0]))
-        experiment.run()
+        experiment_module = Path(args.experiment[0])
+        experiment = experiment_loader.load_steps_from_path(experiment_module)
+        resources = self._resources / experiment_module.stem
+        self._logger.info("experiment resources: %s", resources)
+        resources.mkdir(parents=True, exist_ok=True)
+        experiment.run(resources)
