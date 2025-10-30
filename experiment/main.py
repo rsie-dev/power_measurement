@@ -11,7 +11,7 @@ import ifaddr
 from usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from usb_meter.device import Device
 
-class Experiment:
+class ExperimentMain:
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -138,5 +138,5 @@ class Experiment:
 
 
 if __name__ == "__main__":
-    experiment = Experiment()
+    experiment = ExperimentMain()
     sys.exit(experiment.main())
