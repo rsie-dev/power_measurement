@@ -11,7 +11,7 @@ formatters:
         datefmt: "%H:%M:%S"
         use_colors: None
     file:
-        format: "%(asctime)s %(filename)s(%(lineno)d) %(levelname)-7s %(name)s %(pathname)s: %(message)s"
+        format: "%(asctime)s %(filename)s(%(lineno)d) %(levelname)-7s %(name)s: %(message)s"
 
     #access:
     #    (): "uvicorn.logging.AccessFormatter"
