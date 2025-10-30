@@ -43,7 +43,7 @@ class HostBuilder(Builder):
         self._serial_number = serial_number
         return self
 
-    def with_commands(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
+    def execute_commands_on(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
         ssh_user = ssh_user or "dietpi"
         return HostCommandBuilder(self, host_name, ssh_user)
 
