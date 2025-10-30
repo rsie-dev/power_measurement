@@ -1,1 +1,2 @@
-from .experiment_api import ExperimentBuilder
+from .api import ExperimentBuilder
+from .experiment import Experiment
