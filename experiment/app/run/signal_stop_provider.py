@@ -1,5 +1,5 @@
-from system_meter import ShutdownHandler
-from usb_meter import StopProvider
+from app.system_meter import ShutdownHandler
+from app.usb_meter import StopProvider
 
 
 class SignalStopProvider(StopProvider, ShutdownHandler):

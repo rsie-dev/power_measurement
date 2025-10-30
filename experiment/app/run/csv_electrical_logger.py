@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import List
 import csv
 
-from usb_meter.data_logger import DataLogger
-from usb_meter.measurement import ElectricalMeasurement
+from app.usb_meter.data_logger import DataLogger
+from app.usb_meter.measurement import ElectricalMeasurement
 
 
 class CSVElectricLogger(DataLogger):

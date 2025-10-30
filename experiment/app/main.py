@@ -8,8 +8,8 @@ from pathlib import Path
 from ruamel.yaml import YAML
 import ifaddr
 
-from usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
-from usb_meter.device import Device
+from .usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
+from .usb_meter.device import Device
 
 
 class ExperimentMain:
@@ -84,7 +84,7 @@ class ExperimentMain:
 
     def _run_experiment(self, args):
         device = self._find_device(args)
-        from experiment.run import Runner  # pylint: disable=import-outside-toplevel
+        from app.run import Runner  # pylint: disable=import-outside-toplevel
         runner = Runner()
         runner.run_experiment(device, args)
 
