@@ -53,11 +53,16 @@ class Runner:
         except KeyboardInterrupt:
             pass
 
-    def run_experiment(self, _device: Device, args):
+    def run_experiment(self, args):
         experiment_loader = ExperimentLoader()
         experiment_module = Path(args.experiment[0])
         experiment = experiment_loader.load_steps_from_path(experiment_module)
         resources = self._resources / experiment_module.stem
         self._logger.info("experiment resources: %s", resources)
         resources.mkdir(parents=True, exist_ok=True)
-        experiment.run(resources)
+        signal_handler = SignalHandler()
+        try:
+            with signal_handler.capture_signals():
+                experiment.run(resources, signal_handler)
+        except KeyboardInterrupt:
+            pass

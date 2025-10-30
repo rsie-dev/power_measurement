@@ -1,0 +1,11 @@
+from pathlib import Path
+
+from app.system_meter import ShutdownHandler
+
+
+class ExperimentEnvironment:
+    def get_resources_path(self) -> Path:
+        return None
+
+    def add_shutdown_handler(self, handler: ShutdownHandler):
+        pass
