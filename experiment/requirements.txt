@@ -2,5 +2,6 @@ ruamel.yaml==0.18.10
 fastapi[standard-no-fastapi-cloud-cli]==0.119.0
 ifaddr==0.2.0
 pylint==4.0.2
+fabric==3.2.2
 
 -r JT-UM120-usb-power-data-logger/requirements.txt

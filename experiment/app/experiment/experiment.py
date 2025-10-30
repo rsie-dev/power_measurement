@@ -1,13 +1,7 @@
 import logging
 from typing import List
 
-
-class Step:
-    def __init__(self, name: str):
-        self.name = name
-
-    def execute(self):
-        pass
+from .steps import Step
 
 
 class Experiment:

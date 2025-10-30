@@ -1,7 +1,8 @@
 import logging
-from typing import List
+from typing import List, Optional
 
-from .experiment import Experiment, Step
+from .steps import Step, HostStep
+from .experiment import Experiment
 
 
 class Builder:
@@ -12,28 +13,20 @@ class Builder:
         pass
 
 
-class HostStep(Step):
-    def __init__(self, host: str, commands):
-        super().__init__("host")
-        self._host = host
-        self._commands = commands
-
-    def execute(self):
-        print("on host: %s execute: %s" % (self._host, ",".join(self._commands)))
-
-
 class HostBuilder(Builder):
-    def __init__(self, parent: Builder, host):
+    def __init__(self, parent: Builder, host: str, host_name: str, ssh_user: str):
         self._parent = parent
         self._host = host
+        self._host_name = host_name
+        self._ssh_user = ssh_user
         self._commands = []
 
     def execute(self, command) -> Builder:
         self._commands.append(command)
         return self
 
-    def build(self) -> Builder:
-        step = HostStep(self._host, self._commands)
+    def done(self) -> Builder:
+        step = HostStep(self._host, self._host_name, self._ssh_user, self._commands)
         self._parent.add_steps([step])
         return self._parent
 
@@ -46,8 +39,10 @@ class ExperimentBuilder(Builder):
     def add_steps(self, steps: List[Step]):
         self._steps.extend(steps)
 
-    def on_host(self, host: str) -> HostBuilder:
-        return HostBuilder(self, host)
+    def on_host(self, host: str, host_name: Optional[str] = None, ssh_user: Optional[str] = None) -> HostBuilder:
+        node_name = host_name or host
+        ssh_user = ssh_user or "dietpi"
+        return HostBuilder(self, host, node_name, ssh_user)
 
     def build(self) -> Experiment:
         experiment = Experiment(self._steps)
