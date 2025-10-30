@@ -1,5 +1,7 @@
+from __future__ import annotations
 import logging
 from typing import List, Optional
+from typing import Self
 
 from .steps import Step, HostStep
 from .experiment import Experiment
@@ -14,18 +16,18 @@ class Builder:
 
 
 class HostBuilder(Builder):
-    def __init__(self, parent: Builder, host: str, host_name: str, ssh_user: str):
+    def __init__(self, parent: ExperimentBuilder, host: str, host_name: str, ssh_user: str):
         self._parent = parent
         self._host = host
         self._host_name = host_name
         self._ssh_user = ssh_user
         self._commands = []
 
-    def execute(self, command) -> Builder:
+    def execute(self, command) -> Self:
         self._commands.append(command)
         return self
 
-    def done(self) -> Builder:
+    def done(self) -> ExperimentBuilder:
         step = HostStep(self._host, self._host_name, self._ssh_user, self._commands)
         self._parent.add_steps([step])
         return self._parent
