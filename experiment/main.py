@@ -84,7 +84,7 @@ class ExperimentMain:
 
     def _run_experiment(self, args):
         device = self._find_device(args)
-        from experiment import Runner  # pylint: disable=import-outside-toplevel
+        from experiment.run import Runner  # pylint: disable=import-outside-toplevel
         runner = Runner()
         runner.run_experiment(device, args)
 
