@@ -25,6 +25,30 @@ class Experiment:
         step = SystemMetricsStep(metric_file_entries)
         return step
 
+    def _execute_steps(self, steps):
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for step in steps:
+                self._logger.debug("start step: %s", step.name)
+                future = step.start(executor)
+                if future:
+                    futures.append(future)
+
+            for step in steps:
+                self._logger.debug("execute step: %s", step.name)
+                step.execute()
+
+            for step in steps:
+                self._logger.debug("stop step: %s", step.name)
+                step.stop()
+
+            self._logger.debug("wait for threads")
+            wait(futures, return_when=FIRST_EXCEPTION)
+            for future in futures:
+                if future.done():
+                    future.result()
+        self._logger.debug("executor shut down")
+
     def run(self, resources: Path, signal_handler: SignalHandler):
         system_meter_hosts: List[str] = []
 
@@ -50,25 +74,4 @@ class Experiment:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
-        with ThreadPoolExecutor() as executor:
-            futures = []
-            for step in steps:
-                self._logger.debug("start step: %s", step.name)
-                future = step.start(executor)
-                if future:
-                    futures.append(future)
-
-            for step in steps:
-                self._logger.debug("execute step: %s", step.name)
-                step.execute()
-
-            for step in steps:
-                self._logger.debug("stop step: %s", step.name)
-                step.stop()
-
-            self._logger.debug("wait for threads")
-            wait(futures, return_when=FIRST_EXCEPTION)
-            for future in futures:
-                if future.done():
-                    future.result()
-        self._logger.debug("executor shut down")
+        self._execute_steps(steps)
