@@ -1,6 +1,7 @@
 import logging
 from getpass import getpass
 from concurrent.futures import Executor
+import threading
 
 from fabric import Connection
 
@@ -56,8 +57,9 @@ class SystemMetricsStep(Step):
     def init(self, environment: ExperimentEnvironment):
         environment.add_shutdown_handler(self._metrics_server)
 
-    def _system_collector(self, metrics_server, server_host: str, server_port: int, metric_file_entries):
+    def _system_collector(self, metrics_server, server_host: str, server_port: int, metric_file_entries, event):
         self._logger.debug("REST system_meter start")
+        event.set()
         try:
             with MeasurementDispatcher() as dl:
                 for host_name, resource_path in metric_file_entries:
@@ -67,8 +69,11 @@ class SystemMetricsStep(Step):
             self._logger.debug("REST system_meter shut down")
 
     def start(self, executor: Executor):
-        return executor.submit(self._system_collector, self._metrics_server,
-                               "192.168.1.201", 10000, self._metric_file_entries)
+        event = threading.Event()
+        future = executor.submit(self._system_collector, self._metrics_server, "192.168.1.201", 10000,
+                                 self._metric_file_entries, event)
+        event.wait()
+        return future
 
     def stop(self):
         self._metrics_server.shut_down(False)
@@ -93,8 +98,9 @@ class USBMeterStep(Step):
             raise RuntimeError("Too many devices found with: %s" % self._serial_number)
         return device
 
-    def _electric_collector(self, usb_meter, electrical_log):
+    def _electric_collector(self, usb_meter, electrical_log, event):
         self._logger.info("USB meter start")
+        event.set()
         try:
             with CSVElectricLogger(electrical_log, latest_only=True) as data_logger:
                 usb_meter.run(data_logger)
@@ -109,7 +115,10 @@ class USBMeterStep(Step):
         self._electrical_log = environment.get_resources_path() / "electrical.csv"
 
     def start(self, executor: Executor):
-        return executor.submit(self._electric_collector, self._usb_meter, self._electrical_log)
+        event = threading.Event()
+        future = executor.submit(self._electric_collector, self._usb_meter, self._electrical_log, event)
+        event.wait()
+        return future
 
     def stop(self):
         self._stop_provider.shut_down(False)
