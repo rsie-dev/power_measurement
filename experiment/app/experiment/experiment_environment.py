@@ -9,3 +9,6 @@ class ExperimentEnvironment:
 
     def add_shutdown_handler(self, handler: ShutdownHandler):
         pass
+
+    def register_for_system_meter(self, host: str) -> None:
+        pass

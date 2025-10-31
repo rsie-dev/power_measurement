@@ -33,6 +33,16 @@ class Step:
         pass
 
 
+class RegisterForSystemMeterStep(Step):
+    def __init__(self, host: str):
+        super().__init__("register for system meter")
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._host = host
+
+    def init(self, environment: ExperimentEnvironment):
+        environment.register_for_system_meter(self._host)
+
+
 class USBMeterStep(Step):
     def __init__(self, host: str, serial_number: str):
         super().__init__("host")

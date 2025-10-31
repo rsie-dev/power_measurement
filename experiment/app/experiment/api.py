@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, USBMeterStep, HostCommandStep
+from .steps import Step, RegisterForSystemMeterStep, USBMeterStep, HostCommandStep
 from .experiment import Experiment
 
 
@@ -36,10 +36,15 @@ class HostBuilder(Builder):
     def __init__(self, parent: ExperimentBuilder, host: str):
         self._parent = parent
         self._host = host
+        self._use_metrics_server = False
         self._serial_number = None
         self._steps: List[Step] = []
 
-    def monitor_usb_meter(self, serial_number: str) -> Self:
+    def log_metrics(self):
+        self._use_metrics_server = True
+        return self
+
+    def log_usb_meter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
         return self
 
@@ -52,6 +57,9 @@ class HostBuilder(Builder):
 
     def done(self) -> ExperimentBuilder:
         steps = []
+        if self._use_metrics_server:
+            step = RegisterForSystemMeterStep(self._host)
+            steps.append(step)
         if self._serial_number:
             step = USBMeterStep(self._host, self._serial_number)
             steps.append(step)
