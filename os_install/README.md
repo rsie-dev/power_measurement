@@ -17,6 +17,21 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 
+## VisionFive2
+1. Get image for the device from [Dietpi](https://dietpi.com/) and extract it<br>
+'''
+wget https://dietpi.com/downloads/images/DietPi_VisionFive2-RISC-V-Trixie.img.xz
+xz -d DietPi_VisionFive2-RISC-V-Trixie.img.xz
+'''
+1. Prepare and write the image to SD card:
+'''
+sudo dd if=DietPi_RPi5-ARMv8-Trixie.img of=/dev/<sdX>
+sudo mount -t auto /dev/<sdX>1 /mnt/tmp/
+sudo patch /mnt/tmp/dietpi.txt patches/dietpi_visionfive2.patch
+sudo umount /mnt/tmp/
+'''
+1. Insert SD card into device and boot.
+
 ## Radxa X4
 1. [Update BIOS if needed](https://docs.radxa.com/en/x/x4/bios/update-bios)
 1. Get X68_64 UEFI installer image for the device from [Dietpi](https://dietpi.com/)

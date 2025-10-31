@@ -8,7 +8,8 @@ SERVER_PORT = 10000
 
 hosts = ([
         ('raspi5', {'ssh_hostname': '192.168.1.202'}),
-        ('radxax4', {'ssh_hostname': '192.168.1.200'}),
+        ('radxax4', {'ssh_hostname': '192.168.1.203'}),
+        ('visionfive2', {'ssh_hostname': '192.168.1.204'}),
         ],
         {"ssh_user": user_name,
          "ssh_password": PASSWORD,
