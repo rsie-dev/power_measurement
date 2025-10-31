@@ -5,11 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
 from app.run.signal_handler import SignalHandler
 from app.system_meter import ShutdownHandler
-from app.system_meter import MetricsServer
-from app.run.csv_system_logger import CSVSystemLogger
-from .steps import Step
+from .steps import Step, SystemMeterStep
 from .experiment_environment import ExperimentEnvironment
-from .measurement_dispatcher import MeasurementDispatcher
 
 
 class Experiment:
@@ -19,16 +16,6 @@ class Experiment:
 
     def _get_steps(self):
         return self._steps[:]
-
-    def _system_collector(self, metrics_server, server_host: str, server_port: int, metric_file_entries):
-        self._logger.debug("REST system_meter start")
-        try:
-            with MeasurementDispatcher() as dl:
-                for host_name, resource_path in metric_file_entries:
-                    dl.enter_host_context(host_name, CSVSystemLogger(resource_path))
-                metrics_server.run(server_host, server_port, dl)
-        finally:
-            self._logger.debug("REST system_meter shut down")
 
     def run(self, resources: Path, signal_handler: SignalHandler):
         system_meter_hosts: List[str] = []
@@ -49,21 +36,18 @@ class Experiment:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
+        if system_meter_hosts:
+            metric_file_entries = []
+            for host in system_meter_hosts:
+                metric_file_path = resources / "system.csv"
+                metric_file_entries.append((host, metric_file_path))
+            step = SystemMeterStep(metric_file_entries)
+            steps.insert(0, step)
+            self._logger.debug("init step: %s", step.name)
+            step.init(environment)
+
         with ThreadPoolExecutor() as executor:
             futures = []
-
-            metrics_server = None
-            if system_meter_hosts:
-                metrics_server = MetricsServer()
-                signal_handler.add_shutdown_handler(metrics_server)
-                metric_file_entries = []
-                for host in system_meter_hosts:
-                    metric_file_path = resources / "system.csv"
-                    metric_file_entries.append((host, metric_file_path))
-                sc = executor.submit(self._system_collector, metrics_server,
-                                     "192.168.1.201", 10000, metric_file_entries)
-                futures.append(sc)
-
             for step in steps:
                 self._logger.debug("start step: %s", step.name)
                 future = step.start(executor)
@@ -77,9 +61,6 @@ class Experiment:
             for step in steps:
                 self._logger.debug("stop step: %s", step.name)
                 step.stop()
-
-            if metrics_server:
-                metrics_server.shut_down(False)
 
             self._logger.debug("wait for threads")
             wait(futures, return_when=FIRST_EXCEPTION)

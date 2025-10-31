@@ -9,7 +9,10 @@ from app.usb_meter.device import Device
 from app.usb_meter import USBMeter
 from app.run.signal_stop_provider import SignalStopProvider
 from app.run.csv_electrical_logger import CSVElectricLogger
+from app.run.csv_system_logger import CSVSystemLogger
+from app.system_meter import MetricsServer
 from .experiment_environment import ExperimentEnvironment
+from .measurement_dispatcher import MeasurementDispatcher
 
 
 class Step:
@@ -43,9 +46,37 @@ class RegisterForSystemMeterStep(Step):
         environment.register_for_system_meter(self._host)
 
 
+class SystemMeterStep(Step):
+    def __init__(self, metric_file_entries):
+        super().__init__("system metrics")
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._metric_file_entries = metric_file_entries
+        self._metrics_server = MetricsServer()
+
+    def init(self, environment: ExperimentEnvironment):
+        environment.add_shutdown_handler(self._metrics_server)
+
+    def _system_collector(self, metrics_server, server_host: str, server_port: int, metric_file_entries):
+        self._logger.debug("REST system_meter start")
+        try:
+            with MeasurementDispatcher() as dl:
+                for host_name, resource_path in metric_file_entries:
+                    dl.enter_host_context(host_name, CSVSystemLogger(resource_path))
+                metrics_server.run(server_host, server_port, dl)
+        finally:
+            self._logger.debug("REST system_meter shut down")
+
+    def start(self, executor: Executor):
+        return executor.submit(self._system_collector, self._metrics_server,
+                               "192.168.1.201", 10000, self._metric_file_entries)
+
+    def stop(self):
+        self._metrics_server.shut_down(False)
+
+
 class USBMeterStep(Step):
     def __init__(self, host: str, serial_number: str):
-        super().__init__("host")
+        super().__init__("USB meter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
         self._serial_number = serial_number
