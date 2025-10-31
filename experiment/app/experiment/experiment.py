@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED, FIRST_EXCEPTION
 
 from app.run.signal_handler import SignalHandler
 from app.system_meter import ShutdownHandler
@@ -26,6 +26,12 @@ class Experiment:
         return step
 
     def _execute_steps(self, steps):
+        self._logger.info("execute %d steps", len(steps))
+        for step in steps:
+            self._logger.debug("execute step: %s", step.name)
+            step.execute()
+
+    def _run_experiment(self, steps):
         with ThreadPoolExecutor() as executor:
             futures = []
             for step in steps:
@@ -34,9 +40,8 @@ class Experiment:
                 if future:
                     futures.append(future)
 
-            for step in steps:
-                self._logger.debug("execute step: %s", step.name)
-                step.execute()
+            step_future = executor.submit(self._execute_steps, steps)
+            step_future.result()
 
             for step in steps:
                 self._logger.debug("stop step: %s", step.name)
@@ -74,4 +79,4 @@ class Experiment:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
-        self._execute_steps(steps)
+        self._run_experiment(steps)
