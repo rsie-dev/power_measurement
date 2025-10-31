@@ -17,6 +17,14 @@ class Experiment:
     def _get_steps(self):
         return self._steps[:]
 
+    def _create_system_metric_step(self, resources: Path, system_meter_hosts: List[str]) -> Step:
+        metric_file_entries = []
+        for host in system_meter_hosts:
+            metric_file_path = resources / "system.csv"
+            metric_file_entries.append((host, metric_file_path))
+        step = SystemMetricsStep(metric_file_entries)
+        return step
+
     def run(self, resources: Path, signal_handler: SignalHandler):
         system_meter_hosts: List[str] = []
 
@@ -37,11 +45,7 @@ class Experiment:
             step.init(environment)
 
         if system_meter_hosts:
-            metric_file_entries = []
-            for host in system_meter_hosts:
-                metric_file_path = resources / "system.csv"
-                metric_file_entries.append((host, metric_file_path))
-            step = SystemMetricsStep(metric_file_entries)
+            step = self._create_system_metric_step(resources, system_meter_hosts)
             steps.insert(0, step)
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
