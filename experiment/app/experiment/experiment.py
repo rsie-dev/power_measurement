@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED, FIRST_EXCEPTION
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
 from app.run.signal_handler import SignalHandler
 from app.system_meter import ShutdownHandler
