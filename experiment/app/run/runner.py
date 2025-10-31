@@ -18,11 +18,11 @@ class Runner:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._resources = resources
 
-    def _system_collector(self, metrics_server, args):
+    def _system_collector(self, metrics_server, host: str, port: int, args):
         self._logger.debug("REST system_meter start")
         try:
             with CSVSystemLogger(Path(args.system)) as dl:
-                metrics_server.run(args, dl)
+                metrics_server.run(host, port, dl)
         finally:
             self._logger.debug("REST system_meter shut down")
 
@@ -47,7 +47,7 @@ class Runner:
         try:
             with signal_handler.capture_signals():
                 with ThreadPoolExecutor() as executor:
-                    sc = executor.submit(self._system_collector, metrics_server, args)
+                    sc = executor.submit(self._system_collector, metrics_server, args.host, args.port, args)
                     ec = executor.submit(self._electric_collector, usb_meter, args)
                     wait([sc, ec])
         except KeyboardInterrupt:
