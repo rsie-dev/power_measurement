@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
 from app.run.signal_handler import SignalHandler
 from app.system_meter import ShutdownHandler
-from .steps import Step, SystemMeterStep
+from .steps import Step, SystemMetricsStep
 from .experiment_environment import ExperimentEnvironment
 
 
@@ -41,7 +41,7 @@ class Experiment:
             for host in system_meter_hosts:
                 metric_file_path = resources / "system.csv"
                 metric_file_entries.append((host, metric_file_path))
-            step = SystemMeterStep(metric_file_entries)
+            step = SystemMetricsStep(metric_file_entries)
             steps.insert(0, step)
             self._logger.debug("init step: %s", step.name)
             step.init(environment)

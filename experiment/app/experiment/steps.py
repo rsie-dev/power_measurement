@@ -36,7 +36,7 @@ class Step:
         pass
 
 
-class RegisterForSystemMeterStep(Step):
+class RegisterForSystemMetricsStep(Step):
     def __init__(self, host: str):
         super().__init__("register for system meter")
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -46,7 +46,7 @@ class RegisterForSystemMeterStep(Step):
         environment.register_for_system_meter(self._host)
 
 
-class SystemMeterStep(Step):
+class SystemMetricsStep(Step):
     def __init__(self, metric_file_entries):
         super().__init__("system metrics")
         self._logger = logging.getLogger(self.__class__.__name__)
