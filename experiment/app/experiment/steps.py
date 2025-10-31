@@ -82,7 +82,7 @@ class USBMeterStep(Step):
         self._serial_number = serial_number
         self._usb_meter = None
         self._electrical_log = None
-        self._stop_provider = None
+        self._stop_provider = SignalStopProvider()
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -103,7 +103,6 @@ class USBMeterStep(Step):
 
     def init(self, environment: ExperimentEnvironment):
         device = self._find_device()
-        self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
@@ -113,8 +112,6 @@ class USBMeterStep(Step):
         return executor.submit(self._electric_collector, self._usb_meter, self._electrical_log)
 
     def stop(self):
-        if not self._stop_provider:
-            return
         self._stop_provider.shut_down(False)
 
 
