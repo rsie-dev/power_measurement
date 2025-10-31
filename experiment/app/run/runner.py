@@ -41,7 +41,7 @@ class Runner:
 
         stop_provider = SignalStopProvider()
         signal_handler.add_shutdown_handler(stop_provider)
-        usb_meter = USBMeter(device=device, stop_provider=stop_provider, crc=True)
+        usb_meter = USBMeter(device=device, stop_provider=stop_provider, use_crc=True)
         usb_meter.setup_device()
         usb_meter.initialize_communication()
         try:
