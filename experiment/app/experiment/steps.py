@@ -66,7 +66,6 @@ class USBMeterStep(Step):
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
-        self._usb_meter.initialize_communication()
         self._electrical_log = environment.get_resources_path() / "electrical.csv"
 
     def start(self, executor: Executor):
