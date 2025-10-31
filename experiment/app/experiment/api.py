@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, HostStep, HostCommandStep
+from .steps import Step, USBMeterStep, HostCommandStep
 from .experiment import Experiment
 
 
@@ -39,11 +39,11 @@ class HostBuilder(Builder):
         self._serial_number = None
         self._steps: List[Step] = []
 
-    def with_usb_meter(self, serial_number: str) -> Self:
+    def monitor_usb_meter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
         return self
 
-    def execute_commands_on(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
+    def execute_commands(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
         ssh_user = ssh_user or "dietpi"
         return HostCommandBuilder(self, host_name, ssh_user)
 
@@ -53,7 +53,7 @@ class HostBuilder(Builder):
     def done(self) -> ExperimentBuilder:
         steps = []
         if self._serial_number:
-            step = HostStep(self._host, self._serial_number)
+            step = USBMeterStep(self._host, self._serial_number)
             steps.append(step)
         steps.extend(self._steps)
         self._parent.add_steps(steps)

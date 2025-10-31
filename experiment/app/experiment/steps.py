@@ -33,7 +33,7 @@ class Step:
         pass
 
 
-class HostStep(Step):
+class USBMeterStep(Step):
     def __init__(self, host: str, serial_number: str):
         super().__init__("host")
         self._logger = logging.getLogger(self.__class__.__name__)
