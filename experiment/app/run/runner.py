@@ -14,6 +14,10 @@ class Runner:
         experiment_module = Path(args.experiment[0])
         experiment = experiment_loader.load_steps_from_path(experiment_module)
         resources = self._resources / experiment_module.stem
-        self._logger.info("experiment resources: %s", resources)
+        self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
         resources.mkdir(parents=True, exist_ok=True)
-        experiment.run(resources)
+        self._logger.info("Experiment start: %s", experiment_module.stem)
+        try:
+            experiment.run(resources)
+        finally:
+            self._logger.info("Experiment finished: %s", experiment_module.stem)

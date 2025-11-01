@@ -62,7 +62,6 @@ class Experiment:
                     future.result()
 
     def run(self, resources: Path):
-        self._logger.info("Experiment start")
         system_meter_hosts: List[str] = []
         signal_handler = SignalHandler()
 
@@ -89,4 +88,3 @@ class Experiment:
             step.init(environment)
 
         self._run_experiment(steps, signal_handler)
-        self._logger.info("Experiment finished")
