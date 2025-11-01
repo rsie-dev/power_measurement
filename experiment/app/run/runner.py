@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 
-from .signal_handler import SignalHandler
 from .experiment_loader import ExperimentLoader
 
 
@@ -17,9 +16,4 @@ class Runner:
         resources = self._resources / experiment_module.stem
         self._logger.info("experiment resources: %s", resources)
         resources.mkdir(parents=True, exist_ok=True)
-        signal_handler = SignalHandler()
-        try:
-            with signal_handler.capture_signals():
-                experiment.run(resources, signal_handler)
-        except KeyboardInterrupt:
-            pass
+        experiment.run(resources)

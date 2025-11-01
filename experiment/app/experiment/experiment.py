@@ -31,31 +31,40 @@ class Experiment:
             self._logger.debug("execute step: %s", step.name)
             step.execute()
 
-    def _run_experiment(self, steps):
+    def _run_experiment(self, steps, signal_handler):
         with ThreadPoolExecutor() as executor:
             futures = []
-            for step in steps:
-                self._logger.debug("start step: %s", step.name)
-                future = step.start(executor)
-                if future:
-                    futures.append(future)
+            try:
+                for step in steps:
+                    self._logger.debug("start step: %s", step.name)
+                    future = step.start(executor)
+                    if future:
+                        futures.append(future)
 
-            step_future = executor.submit(self._execute_steps, steps)
-            step_future.result()
+                try:
+                    with signal_handler.capture_signals():
+                        for step in steps:
+                            self._logger.debug("execute step: %s", step.name)
+                            step.execute()
+                except KeyboardInterrupt:
+                    pass
 
-            for step in steps:
-                self._logger.debug("stop step: %s", step.name)
-                step.stop()
+            finally:
+                self._logger.info("Stopping all steps")
+                for step in steps:
+                    self._logger.debug("stop step: %s", step.name)
+                    step.stop()
 
-            self._logger.debug("wait for threads")
+            self._logger.info("Wait for threads")
             wait(futures, return_when=FIRST_EXCEPTION)
             for future in futures:
                 if future.done():
                     future.result()
-        self._logger.debug("executor shut down")
 
-    def run(self, resources: Path, signal_handler: SignalHandler):
+    def run(self, resources: Path):
+        self._logger.info("Experiment start")
         system_meter_hosts: List[str] = []
+        signal_handler = SignalHandler()
 
         class Environment(ExperimentEnvironment):
             def get_resources_path(self):
@@ -79,4 +88,5 @@ class Experiment:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
-        self._run_experiment(steps)
+        self._run_experiment(steps, signal_handler)
+        self._logger.info("Experiment finished")
