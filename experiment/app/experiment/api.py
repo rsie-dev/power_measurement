@@ -8,8 +8,15 @@ from .experiment import Experiment
 
 
 class Builder:
+    pass
+
+
+class CompositeBuilder(Builder):
+    def __init__(self):
+        self._steps: List[Step] = []
+
     def add_steps(self, steps: List[Step]) -> None:
-        pass
+        self._steps.extend(steps)
 
 
 class HostCommandBuilder(Builder):
@@ -29,13 +36,13 @@ class HostCommandBuilder(Builder):
         return self._parent
 
 
-class HostBuilder(Builder):
+class HostBuilder(CompositeBuilder):
     def __init__(self, parent: ExperimentBuilder, host: str):
+        super().__init__()
         self._parent = parent
         self._host = host
         self._use_metrics_server = False
         self._serial_number = None
-        self._steps: List[Step] = []
 
     def log_metrics(self) -> Self:
         self._use_metrics_server = True
@@ -48,9 +55,6 @@ class HostBuilder(Builder):
     def execute_commands(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
         ssh_user = ssh_user or "dietpi"
         return HostCommandBuilder(self, host_name, ssh_user)
-
-    def add_steps(self, steps: List[Step]) -> None:
-        self._steps.extend(steps)
 
     def done(self) -> ExperimentBuilder:
         steps = []
@@ -65,13 +69,10 @@ class HostBuilder(Builder):
         return self._parent
 
 
-class ExperimentBuilder(Builder):
+class ExperimentBuilder(CompositeBuilder):
     def __init__(self):
+        super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._steps: List[Step] = []
-
-    def add_steps(self, steps: List[Step]) -> None:
-        self._steps.extend(steps)
 
     def on_host(self, host: str) -> HostBuilder:
         return HostBuilder(self, host)
