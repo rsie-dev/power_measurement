@@ -24,15 +24,25 @@ class NodeCommandBuilder(Builder):
         self._parent = parent
         self._host_name = host_name
         self._ssh_user = ssh_user
+        self._use_metrics_server = False
         self._commands = []
+
+    def log_metrics(self) -> Self:
+        self._use_metrics_server = True
+        return self
 
     def execute(self, command) -> Self:
         self._commands.append(command)
         return self
 
     def done(self) -> HostBuilder:
+        steps = []
+        if self._use_metrics_server:
+            step = RegisterForSystemMetricsStep(self._parent.host)
+            steps.append(step)
         step = HostCommandStep(self._host_name, self._ssh_user, self._commands)
-        self._parent.add_steps([step])
+        steps.append(step)
+        self._parent.add_steps(steps)
         return self._parent
 
 
@@ -41,12 +51,11 @@ class HostBuilder(CompositeBuilder):
         super().__init__()
         self._parent = parent
         self._host = host
-        self._use_metrics_server = False
         self._serial_number = None
 
-    def log_metrics(self) -> Self:
-        self._use_metrics_server = True
-        return self
+    @property
+    def host(self) -> str:
+        return self._host
 
     def log_usb_meter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
@@ -58,9 +67,6 @@ class HostBuilder(CompositeBuilder):
 
     def done(self) -> ExperimentBuilder:
         steps = []
-        if self._use_metrics_server:
-            step = RegisterForSystemMetricsStep(self._host)
-            steps.append(step)
         if self._serial_number:
             step = USBMeterStep(self._host, self._serial_number)
             steps.append(step)
