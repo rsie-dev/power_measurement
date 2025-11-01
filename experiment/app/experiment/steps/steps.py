@@ -87,6 +87,7 @@ class USBMeterStep(Step):
         self._usb_meter = None
         self._electrical_log = None
         self._stop_provider = SignalStopProvider()
+        self._start_timeout = 3
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -116,7 +117,7 @@ class USBMeterStep(Step):
     def start(self, executor: Executor):
         event = threading.Event()
         future = executor.submit(self._electric_collector, self._usb_meter, self._electrical_log, event)
-        event.wait()
+        event.wait(self._start_timeout)
         return future
 
     def stop(self):
