@@ -6,7 +6,7 @@ import threading
 from collections.abc import Generator
 from types import FrameType
 
-from app.system_meter import ShutdownHandler
+from .shutdown_handler import ShutdownHandler
 
 HANDLED_SIGNALS = (
     signal.SIGINT,  # Unix signal 2. Sent by Ctrl+C.

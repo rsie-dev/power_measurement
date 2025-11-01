@@ -6,7 +6,7 @@ from types import FrameType
 from uvicorn.config import Config
 from uvicorn.server import Server
 
-from .shutdown_handler import ShutdownHandler
+from app.common.shutdown_handler import ShutdownHandler
 from .app import create_app
 from .measurement_logger import MeasurementLogger
 

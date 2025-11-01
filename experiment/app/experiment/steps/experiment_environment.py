@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.system_meter import ShutdownHandler
+from app.common import ShutdownHandler
 
 
 class ExperimentEnvironment:

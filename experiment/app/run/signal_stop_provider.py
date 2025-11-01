@@ -1,4 +1,4 @@
-from app.system_meter import ShutdownHandler
+from app.common import ShutdownHandler
 from app.usb_meter import StopProvider
 
 

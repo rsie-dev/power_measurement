@@ -57,21 +57,20 @@ class SystemMetricsStep(Step):
     def init(self, environment: ExperimentEnvironment):
         environment.add_shutdown_handler(self._metrics_server)
 
-    def _system_collector(self, metrics_server, server_host: str, server_port: int, metric_file_entries, event):
+    def _system_collector(self, server_host: str, server_port: int, metric_file_entries, event):
         self._logger.debug("REST system_meter start")
         event.set()
         try:
             with MeasurementDispatcher() as dl:
                 for host_name, resource_path in metric_file_entries:
                     dl.enter_host_context(host_name, CSVSystemLogger(resource_path))
-                metrics_server.run(server_host, server_port, dl)
+                self._metrics_server.run(server_host, server_port, dl)
         finally:
             self._logger.debug("REST system_meter shut down")
 
     def start(self, executor: Executor):
         event = threading.Event()
-        future = executor.submit(self._system_collector, self._metrics_server, "192.168.1.201", 10000,
-                                 self._metric_file_entries, event)
+        future = executor.submit(self._system_collector, "192.168.1.201", 10000, self._metric_file_entries, event)
         event.wait()
         return future
 
@@ -136,22 +135,12 @@ class HostCommandStep(Step):
     def init(self, environment: ExperimentEnvironment):
         self._ssh_password = getpass(f'SSH password for {self._ssh_user}@{self._host_name}: ')
 
-    def _getpass(self):
-        return getpass(f'SSH password for {self._ssh_user}@{self._host_name}: ')
-
     def execute(self):
         self._logger.info("on host: %s execute: %s", self._host_name, ",".join(self._commands))
-        #password = getpass(f'SSH password for {self._ssh_user}@{self._host_name}: ')
         connect_kwargs = {
-            #"password": password,
-            #"password": self._getpass,
             "password": self._ssh_password,
         }
-        #try:
-        if True:
-            with Connection(self._host_name, user=self._ssh_user, connect_kwargs=connect_kwargs) as con:
-                for command in self._commands:
-                    con.run(command, hide=True)
-            self._logger.info("commands executed")
-        #except Exception as e:
-        #    self._logger.exception("Error: %s", e)
+        with Connection(self._host_name, user=self._ssh_user, connect_kwargs=connect_kwargs) as con:
+            for command in self._commands:
+                con.run(command, hide=True)
+        self._logger.info("commands executed")
