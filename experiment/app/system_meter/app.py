@@ -1,4 +1,6 @@
 import logging
+from contextlib import asynccontextmanager
+from typing import Callable
 
 from fastapi import FastAPI
 
@@ -8,8 +10,13 @@ from .measurement_logger import MeasurementLogger
 logger = logging.getLogger('system_meter.main')
 
 
-def create_app(measurement_logger: MeasurementLogger):
-    app = FastAPI()
+def create_app(measurement_logger: MeasurementLogger, startup_call_back: Callable):
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):  # pylint: disable=unused-argument
+        startup_call_back()
+        yield
+
+    app = FastAPI(lifespan=lifespan)
 
     @app.post("/measurement/single/")
     def add_line(measurement: SystemMeasurement) -> SystemMeasurement:

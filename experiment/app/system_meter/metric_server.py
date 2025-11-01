@@ -2,6 +2,7 @@ import logging
 import contextlib
 from collections.abc import Generator
 from types import FrameType
+from typing import Callable
 
 from uvicorn.config import Config
 from uvicorn.server import Server
@@ -36,8 +37,8 @@ class MetricsServer(ShutdownHandler):
             return
         self._server.shut_down(force)
 
-    def run(self, host: str, port: int, measurement_logger: MeasurementLogger) -> None:
-        app = create_app(measurement_logger)
+    def run(self, host: str, port: int, measurement_logger: MeasurementLogger, startup_call_back: Callable) -> None:
+        app = create_app(measurement_logger, startup_call_back)
         config = Config(
             app,
             host=host,

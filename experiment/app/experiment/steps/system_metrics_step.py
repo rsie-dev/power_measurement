@@ -24,25 +24,29 @@ class SystemMetricsStep(Step):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._metric_file_entries = metric_file_entries
         self._metrics_server = MetricsServer()
+        self._start_timeout = 3
 
     def init(self, environment: ExperimentEnvironment):
         environment.add_shutdown_handler(self._metrics_server)
 
     def _system_collector(self, server_host: str, server_port: int, metric_file_entries, event):
+        def on_startup():
+            self._logger.debug("REST system_meter running")
+            event.set()
+
         self._logger.debug("REST system_meter start")
-        event.set()
         try:
             with MeasurementDispatcher() as dl:
                 for host_name, resource_path in metric_file_entries:
                     dl.enter_host_context(host_name, CSVSystemLogger(resource_path))
-                self._metrics_server.run(server_host, server_port, dl)
+                self._metrics_server.run(server_host, server_port, dl, on_startup)
         finally:
             self._logger.debug("REST system_meter shut down")
 
     def start(self, executor: Executor):
         event = threading.Event()
         future = executor.submit(self._system_collector, "192.168.1.201", 10000, self._metric_file_entries, event)
-        event.wait()
+        event.wait(self._start_timeout)
         return future
 
     def stop(self):
