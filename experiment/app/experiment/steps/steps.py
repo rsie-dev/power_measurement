@@ -12,8 +12,8 @@ from app.run.signal_stop_provider import SignalStopProvider
 from app.run.csv_electrical_logger import CSVElectricLogger
 from app.run.csv_system_logger import CSVSystemLogger
 from app.system_meter import MetricsServer
+from app.experiment.measurement_dispatcher import MeasurementDispatcher
 from .experiment_environment import ExperimentEnvironment
-from .measurement_dispatcher import MeasurementDispatcher
 
 
 class Step:

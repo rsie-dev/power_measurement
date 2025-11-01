@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
 from app.run.signal_handler import SignalHandler
 from app.system_meter import ShutdownHandler
+from .steps.experiment_environment import ExperimentEnvironment
 from .steps import Step, SystemMetricsStep
-from .experiment_environment import ExperimentEnvironment
 
 
 class Experiment:
