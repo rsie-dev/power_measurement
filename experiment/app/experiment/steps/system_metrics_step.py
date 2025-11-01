@@ -1,0 +1,49 @@
+import logging
+import threading
+from concurrent.futures import Executor
+
+from app.experiment.measurement_dispatcher import MeasurementDispatcher
+from app.system_meter import MetricsServer
+from .steps import Step, ExperimentEnvironment
+from .csv_system_logger import CSVSystemLogger
+
+
+class RegisterForSystemMetricsStep(Step):
+    def __init__(self, host: str):
+        super().__init__("register for system meter")
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._host = host
+
+    def init(self, environment: ExperimentEnvironment):
+        environment.register_for_system_meter(self._host)
+
+
+class SystemMetricsStep(Step):
+    def __init__(self, metric_file_entries):
+        super().__init__("system metrics")
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._metric_file_entries = metric_file_entries
+        self._metrics_server = MetricsServer()
+
+    def init(self, environment: ExperimentEnvironment):
+        environment.add_shutdown_handler(self._metrics_server)
+
+    def _system_collector(self, server_host: str, server_port: int, metric_file_entries, event):
+        self._logger.debug("REST system_meter start")
+        event.set()
+        try:
+            with MeasurementDispatcher() as dl:
+                for host_name, resource_path in metric_file_entries:
+                    dl.enter_host_context(host_name, CSVSystemLogger(resource_path))
+                self._metrics_server.run(server_host, server_port, dl)
+        finally:
+            self._logger.debug("REST system_meter shut down")
+
+    def start(self, executor: Executor):
+        event = threading.Event()
+        future = executor.submit(self._system_collector, "192.168.1.201", 10000, self._metric_file_entries, event)
+        event.wait()
+        return future
+
+    def stop(self):
+        self._metrics_server.shut_down(False)
