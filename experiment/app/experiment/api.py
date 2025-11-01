@@ -19,7 +19,7 @@ class CompositeBuilder(Builder):
         self._steps.extend(steps)
 
 
-class HostCommandBuilder(Builder):
+class NodeCommandBuilder(Builder):
     def __init__(self, parent: HostBuilder, host_name: str, ssh_user: str):
         self._parent = parent
         self._host_name = host_name
@@ -52,9 +52,9 @@ class HostBuilder(CompositeBuilder):
         self._serial_number = serial_number
         return self
 
-    def execute_commands(self, host_name: str, ssh_user: Optional[str] = None) -> HostCommandBuilder:
+    def on_node(self, host_name: str, ssh_user: Optional[str] = None) -> NodeCommandBuilder:
         ssh_user = ssh_user or "dietpi"
-        return HostCommandBuilder(self, host_name, ssh_user)
+        return NodeCommandBuilder(self, host_name, ssh_user)
 
     def done(self) -> ExperimentBuilder:
         steps = []
