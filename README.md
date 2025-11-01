@@ -6,13 +6,8 @@
 git clone [-b branch] --recurse-submodules git@github.com:rsie-dev/power_measurement.git
 ```
 
-### Install dependencies
-```
-python -m venv venv
-./venv/bin/pip install -r requirements.txt
-```
+# OS installs
+check folder os_install an infra
 
-### Test
-```
-venv/bin/pylint .
-```
+# Power measurement
+check folder experiment
