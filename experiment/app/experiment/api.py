@@ -8,10 +8,7 @@ from .experiment import Experiment
 
 
 class Builder:
-    def build(self):
-        pass
-
-    def add_steps(self, steps: List[Step]):
+    def add_steps(self, steps: List[Step]) -> None:
         pass
 
 
@@ -40,7 +37,7 @@ class HostBuilder(Builder):
         self._serial_number = None
         self._steps: List[Step] = []
 
-    def log_metrics(self):
+    def log_metrics(self) -> Self:
         self._use_metrics_server = True
         return self
 
@@ -52,7 +49,7 @@ class HostBuilder(Builder):
         ssh_user = ssh_user or "dietpi"
         return HostCommandBuilder(self, host_name, ssh_user)
 
-    def add_steps(self, steps: List[Step]):
+    def add_steps(self, steps: List[Step]) -> None:
         self._steps.extend(steps)
 
     def done(self) -> ExperimentBuilder:
@@ -73,7 +70,7 @@ class ExperimentBuilder(Builder):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._steps: List[Step] = []
 
-    def add_steps(self, steps: List[Step]):
+    def add_steps(self, steps: List[Step]) -> None:
         self._steps.extend(steps)
 
     def on_host(self, host: str) -> HostBuilder:
