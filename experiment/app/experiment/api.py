@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, RegisterForSystemMetricsStep, USBMeterStep, HostCommandStep
+from .steps import Step, RegisterForSystemMetricsStep, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep
 from .experiment import Experiment
 
 
@@ -39,6 +39,8 @@ class NodeCommandBuilder(Builder):
         steps = []
         if self._use_metrics_server:
             step = RegisterForSystemMetricsStep(self._parent.host)
+            steps.append(step)
+            step = StartSystemMetricsClientStep(self._host_name, self._ssh_user)
             steps.append(step)
         step = HostCommandStep(self._host_name, self._ssh_user, self._commands)
         steps.append(step)
