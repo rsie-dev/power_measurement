@@ -14,9 +14,6 @@ class Experiment:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._steps = steps
 
-    def _get_steps(self):
-        return self._steps[:]
-
     def _create_system_metric_step(self, resources: Path, system_meter_hosts: List[str]) -> Step:
         metric_file_entries = []
         for host in system_meter_hosts:
@@ -51,7 +48,7 @@ class Experiment:
 
             finally:
                 self._logger.info("Stopping all steps")
-                for step in steps:
+                for step in list(reversed(steps)):
                     self._logger.debug("stop step: %s", step.name)
                     step.stop()
 
@@ -76,7 +73,7 @@ class Experiment:
                 system_meter_hosts.append(host)
 
         environment = Environment()
-        steps = self._get_steps()
+        steps = self._steps[:]
         for step in steps:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
