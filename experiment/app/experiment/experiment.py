@@ -69,7 +69,8 @@ class Experiment:
                               measurement_dispatcher: MeasurementDispatcher):
         steps = self._steps[:]
         for run in range(self._runs):
-            run_resource = runs_resources / ("run_%03d" % run)
+            self._logger.info("Start run %d/%d", run + 1, self._runs)
+            run_resource = runs_resources / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
 
             class Environment(ExperimentEnvironment):
