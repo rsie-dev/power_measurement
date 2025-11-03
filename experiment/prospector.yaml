@@ -1,0 +1,13 @@
+
+pycodestyle:
+  run: False
+
+pyflakes:
+  run: False
+
+mccabe:
+  run: False
+
+dodgy:
+  run: False
+
