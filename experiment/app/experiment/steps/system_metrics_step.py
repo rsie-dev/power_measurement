@@ -20,7 +20,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
     def _execute_commands(self, connection: Connection):
         self._logger.info("start telegraf on: %s", self._host_name)
         connection.run("sudo systemctl start telegraf", hide=True, pty=True)
-        self._logger.info("started telegraf on: %s", self._host_name)
 
     def _execute_stop_command(self, connection: Connection):
         self._logger.info("stop telegraf on: %s", self._host_name)
