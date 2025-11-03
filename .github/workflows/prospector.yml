@@ -23,5 +23,5 @@ jobs:
       working-directory: experiment
     - name: Analysing the code with prospector
       run: |
-        prospector .
+        prospector
       working-directory: experiment
