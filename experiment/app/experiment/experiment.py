@@ -65,8 +65,8 @@ class Experiment:
                 if future.done():
                     future.result()
 
-    def _run_with_ssh_manager(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
-                              measurement_dispatcher: MeasurementDispatcher):
+    def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
+                      measurement_dispatcher: MeasurementDispatcher):
         steps = self._steps[:]
         for run in range(self._runs):
             self._logger.info("Start run %d/%d", run + 1, self._runs)
@@ -136,7 +136,7 @@ class Experiment:
                     event.wait(self._metrics_server_start_timeout)
 
                 with SSHManager() as ssh_manager:
-                    self._run_with_ssh_manager(ssh_manager, runs_resources, signal_handler, measurement_dispatcher)
+                    self._execute_runs(ssh_manager, runs_resources, signal_handler, measurement_dispatcher)
 
             if future:
                 metrics_server.shut_down(False)
