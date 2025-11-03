@@ -3,6 +3,7 @@ from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 import threading
+import contextlib
 
 from fabric import Connection
 
@@ -117,23 +118,24 @@ class Experiment:
         runs_resources = resources / "runs"
         runs_resources.mkdir(parents=True, exist_ok=True)
 
-
-
         with ThreadPoolExecutor() as metrics_executor:
-            # ToDo: as context manager
-            measurement_dispatcher = None
-            future = None
-            metrics_server = None
             if self._with_metrics_server:
-                metrics_server = MetricsServer()
-                signal_handler.add_shutdown_handler(metrics_server)
                 measurement_dispatcher = MeasurementDispatcher()
-                event = threading.Event()
-                future = metrics_executor.submit(self._system_collector, metrics_server, measurement_dispatcher, event)
-                event.wait(self._metrics_server_start_timeout)
+            else:
+                measurement_dispatcher = contextlib.nullcontext()
+            with measurement_dispatcher:
+                future = None
+                metrics_server = None
+                if self._with_metrics_server:
+                    metrics_server = MetricsServer()
+                    signal_handler.add_shutdown_handler(metrics_server)
+                    event = threading.Event()
+                    future = metrics_executor.submit(self._system_collector, metrics_server, measurement_dispatcher,
+                                                     event)
+                    event.wait(self._metrics_server_start_timeout)
 
-            with SSHManager() as ssh_manager:
-                self._run_with_ssh_manager(ssh_manager, runs_resources, signal_handler, measurement_dispatcher)
+                with SSHManager() as ssh_manager:
+                    self._run_with_ssh_manager(ssh_manager, runs_resources, signal_handler, measurement_dispatcher)
 
             if future:
                 metrics_server.shut_down(False)

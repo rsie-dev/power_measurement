@@ -7,6 +7,12 @@ class MeasurementDispatcher(MeasurementLogger):
         super().__init__()
         self._logger_dict = {}
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):  # pylint: disable=redefined-builtin
+        self.close()
+
     def add_logger(self, host: str, logger) -> None:
         self._logger_dict[host] = logger
 
