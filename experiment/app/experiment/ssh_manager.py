@@ -1,6 +1,7 @@
 import logging
 from getpass import getpass
 from typing import Optional
+from contextlib import ExitStack
 
 from fabric import Connection
 
@@ -13,9 +14,10 @@ class ConnectionEntry:
         self.connection: Optional[Connection] = None
 
 
-class SSHManager:
+class SSHManager(ExitStack):
 
     def __init__(self):
+        super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._connections: dict[str, ConnectionEntry] = {}
 
@@ -41,15 +43,5 @@ class SSHManager:
         entry = self._connections[entry_name]
         if not entry.connection:
             entry.connection = self._create_connection(entry)
+            self.enter_context(entry.connection)
         return entry.connection
-
-    def _close_all_connections(self):
-        for entry in self._connections.values():
-            if entry.connection:
-                entry.connection.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):  # pylint: disable=redefined-builtin
-        self._close_all_connections()
