@@ -1,5 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 [![Pylint](https://github.com/rsie-dev/power_measurement/actions/workflows/pylint.yml/badge.svg)](https://github.com/rsie-dev/power_measurement/actions/workflows/pylint.yml)
+[![Prospector](https://github.com/rsie-dev/power_measurement/actions/workflows/prospector.yml/badge.svg)](https://github.com/rsie-dev/power_measurement/actions/workflows/prospector.yml)
 
 ## Setup
 ### Clone
