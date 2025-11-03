@@ -1,5 +1,4 @@
 import logging
-from getpass import getpass
 from concurrent.futures import Executor
 
 from fabric import Connection
@@ -38,7 +37,7 @@ class HostCommandStep(Step):
         self._commands = commands
 
     def init(self, environment: ExperimentEnvironment):
-        self._ssh_password = getpass(f'SSH password for {self._ssh_user}@{self._host_name}: ')
+        self._ssh_password = environment.get_password(self._ssh_user, self._host_name)
 
     def _create_connection(self):
         connect_kwargs = {

@@ -16,3 +16,7 @@ class ExperimentEnvironment(ABC):
     @abstractmethod
     def register_for_system_meter(self, host: str) -> None:
         pass
+
+    @abstractmethod
+    def get_password(self, user: str, host: str) -> str:
+        pass
