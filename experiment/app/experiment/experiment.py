@@ -27,13 +27,13 @@ class Experiment:
         self._metrics_server_port: int = 10000
         self._metrics_server_start_timeout: float = 3
 
-    def _execute_steps(self, steps):
-        self._logger.info("Execute %d steps", len(steps))
+    def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
+                        steps, signal_handler):
+        self._logger.info("Initialize all steps")
         for step in steps:
-            self._logger.debug("execute step: %s", step.name)
-            step.execute()
+            self._logger.debug("init step: %s", step.name)
+            step.init(environment)
 
-    def _run_experiment(self, steps, runtime, signal_handler):
         with ThreadPoolExecutor() as executor:
             futures = []
             try:
@@ -63,15 +63,6 @@ class Experiment:
             for future in futures:
                 if future.done():
                     future.result()
-
-    def _run_experiment_runs(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                             steps, signal_handler):
-        self._logger.info("Initialize all steps")
-        for step in steps:
-            self._logger.debug("init step: %s", step.name)
-            step.init(environment)
-
-        self._run_experiment(steps, runtime, signal_handler)
 
     def _run_with_ssh_manager(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
                               measurement_dispatcher: MeasurementDispatcher):
@@ -108,7 +99,7 @@ class Experiment:
 
             environment = Environment(run_resource)
             runtime = Runtime()
-            self._run_experiment_runs(environment, runtime, steps, signal_handler)
+            self._run_experiment(environment, runtime, steps, signal_handler)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
         def on_startup():
