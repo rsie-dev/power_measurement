@@ -1,7 +1,1 @@
 
-mccabe:
-  run: False
-
-dodgy:
-  run: False
-
