@@ -81,10 +81,16 @@ class ExperimentBuilder(CompositeBuilder):
     def __init__(self):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._runs: Optional[int] = None
+
+    def with_runs(self, runs: int) -> Self:
+        self._runs = runs
+        return self
 
     def on_host(self, host: str) -> HostBuilder:
         return HostBuilder(self, host)
 
     def build(self) -> Experiment:
-        experiment = Experiment(self._steps)
+        runs = self._runs or 1
+        experiment = Experiment(self._steps, runs)
         return experiment

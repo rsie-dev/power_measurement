@@ -14,9 +14,10 @@ from .ssh_manager import SSHManager
 
 
 class Experiment:
-    def __init__(self, steps: List[Step]):
+    def __init__(self, steps: List[Step], runs: int):
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._steps = steps
+        self._steps: List[Step] = steps
+        self._runs: int = runs
 
     def _create_system_metric_step(self, resources: Path, system_meter_hosts: List[str]) -> Step:
         metric_file_entries = []
@@ -63,40 +64,48 @@ class Experiment:
                 if future.done():
                     future.result()
 
-    def run(self, resources: Path):
+    def _run_experiment_runs(self, resources, steps, signal_handler, ssh_manager):
         system_meter_hosts: List[str] = []
+
+        class Environment(ExperimentEnvironment):
+            def get_resources_path(self) -> Path:
+                return resources
+
+            def add_shutdown_handler(self, handler: ShutdownHandler) -> None:
+                signal_handler.add_shutdown_handler(handler)
+
+            def register_for_system_meter(self, host: str) -> None:
+                system_meter_hosts.append(host)
+
+            def register_ssh_connection(self, user: str, host: str) -> None:
+                ssh_manager.register_ssh_connection(user, host)
+
+        environment = Environment()
+        self._logger.info("Initialize all steps")
+        for step in steps:
+            self._logger.debug("init step: %s", step.name)
+            step.init(environment)
+
+        if system_meter_hosts:
+            step = self._create_system_metric_step(resources, system_meter_hosts)
+            steps.insert(0, step)
+            self._logger.debug("init step: %s", step.name)
+            step.init(environment)
+
+        class Runtime(ExperimentRuntime):
+            def get_ssh_connection(self, user: str, host: str) -> Connection:
+                return ssh_manager.get_ssh_connection(user, host)
+
+        runtime = Runtime()
+        self._run_experiment(steps, runtime, signal_handler)
+
+    def run(self, resources: Path):
+        steps = self._steps[:]
         signal_handler = SignalHandler()
+        runs_resources = resources / "runs"
+        runs_resources.mkdir(parents=True, exist_ok=True)
         with SSHManager() as ssh_manager:
-
-            class Environment(ExperimentEnvironment):
-                def get_resources_path(self):
-                    return resources
-
-                def add_shutdown_handler(self, handler: ShutdownHandler):
-                    signal_handler.add_shutdown_handler(handler)
-
-                def register_for_system_meter(self, host: str) -> None:
-                    system_meter_hosts.append(host)
-
-                def register_ssh_connection(self, user: str, host: str) -> None:
-                    ssh_manager.register_ssh_connection(user, host)
-
-            environment = Environment()
-            steps = self._steps[:]
-            self._logger.info("Initialize all steps")
-            for step in steps:
-                self._logger.debug("init step: %s", step.name)
-                step.init(environment)
-
-            if system_meter_hosts:
-                step = self._create_system_metric_step(resources, system_meter_hosts)
-                steps.insert(0, step)
-                self._logger.debug("init step: %s", step.name)
-                step.init(environment)
-
-            class Runtime(ExperimentRuntime):
-                def get_ssh_connection(self, user: str, host: str) -> Connection:
-                    return ssh_manager.get_ssh_connection(user, host)
-
-            runtime = Runtime()
-            self._run_experiment(steps, runtime, signal_handler)
+            for run in range(self._runs):
+                run_resource = runs_resources / ("run_%03d" % run)
+                run_resource.mkdir(parents=True, exist_ok=True)
+                self._run_experiment_runs(run_resource, steps, signal_handler, ssh_manager)
