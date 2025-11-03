@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, RegisterForSystemMetricsStep, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep
+from .steps import Step, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep
 from .experiment import Experiment
 
 
@@ -24,11 +24,11 @@ class NodeCommandBuilder(Builder):
         self._parent = parent
         self._host_name = host_name
         self._ssh_user = ssh_user
-        self._use_metrics_server = False
+        self._as_metrics_client = False
         self._commands = []
 
-    def log_metrics(self) -> Self:
-        self._use_metrics_server = True
+    def as_metrics_client(self) -> Self:
+        self._as_metrics_client = True
         return self
 
     def execute(self, command) -> Self:
@@ -37,10 +37,8 @@ class NodeCommandBuilder(Builder):
 
     def done(self) -> HostBuilder:
         steps = []
-        if self._use_metrics_server:
-            step = RegisterForSystemMetricsStep(self._parent.host)
-            steps.append(step)
-            step = StartSystemMetricsClientStep(self._host_name, self._ssh_user)
+        if self._as_metrics_client:
+            step = StartSystemMetricsClientStep(self._parent.host, self._host_name, self._ssh_user)
             steps.append(step)
         step = HostCommandStep(self._host_name, self._ssh_user, self._commands)
         steps.append(step)
@@ -82,9 +80,14 @@ class ExperimentBuilder(CompositeBuilder):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._runs: Optional[int] = None
+        self._with_metrics_server: bool = False
 
     def with_runs(self, runs: int) -> Self:
         self._runs = runs
+        return self
+
+    def with_metrics_server(self) -> Self:
+        self._with_metrics_server = True
         return self
 
     def on_host(self, host: str) -> HostBuilder:
@@ -92,5 +95,5 @@ class ExperimentBuilder(CompositeBuilder):
 
     def build(self) -> Experiment:
         runs = self._runs or 1
-        experiment = Experiment(self._steps, runs)
+        experiment = Experiment(self._steps, runs, self._with_metrics_server)
         return experiment

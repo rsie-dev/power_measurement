@@ -17,12 +17,15 @@ class CSVSystemLogger(MeasurementLogger):
         self._writer = csv.DictWriter(self._stream, fieldnames=self.FIELD_NAMES)
         self._start_time = None
 
+    def close(self):
+        self._stream.close()
+
     def __enter__(self):
         self._writer.writeheader()
         return self
 
     def __exit__(self, _type, value, traceback):
-        self._stream.close()
+        self.close()
 
     def log(self, measurement: SystemMeasurement) -> None:
         if self._start_time is None:
