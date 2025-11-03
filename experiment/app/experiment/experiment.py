@@ -120,16 +120,16 @@ class Experiment:
         runs_resources.mkdir(parents=True, exist_ok=True)
 
         with ThreadPoolExecutor() as metrics_executor:
+            future = None
             if self._with_metrics_server:
+                metrics_server = MetricsServer()
+                signal_handler.add_shutdown_handler(metrics_server)
                 measurement_dispatcher = MeasurementDispatcher()
             else:
+                metrics_server = None
                 measurement_dispatcher = contextlib.nullcontext()
             with measurement_dispatcher:
-                future = None
-                metrics_server = None
-                if self._with_metrics_server:
-                    metrics_server = MetricsServer()
-                    signal_handler.add_shutdown_handler(metrics_server)
+                if metrics_server:
                     event = threading.Event()
                     future = metrics_executor.submit(self._system_collector, metrics_server, measurement_dispatcher,
                                                      event)
