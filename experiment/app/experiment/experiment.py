@@ -62,32 +62,32 @@ class Experiment:
     def run(self, resources: Path):
         system_meter_hosts: List[str] = []
         signal_handler = SignalHandler()
-        ssh_manager = SSHManager()
+        with SSHManager() as ssh_manager:
 
-        class Environment(ExperimentEnvironment):
-            def get_resources_path(self):
-                return resources
+            class Environment(ExperimentEnvironment):
+                def get_resources_path(self):
+                    return resources
 
-            def add_shutdown_handler(self, handler: ShutdownHandler):
-                signal_handler.add_shutdown_handler(handler)
+                def add_shutdown_handler(self, handler: ShutdownHandler):
+                    signal_handler.add_shutdown_handler(handler)
 
-            def register_for_system_meter(self, host: str) -> None:
-                system_meter_hosts.append(host)
+                def register_for_system_meter(self, host: str) -> None:
+                    system_meter_hosts.append(host)
 
-            def get_password(self, user: str, host: str) -> str:
-                return ssh_manager.get_password(user, host)
+                def get_password(self, user: str, host: str) -> str:
+                    return ssh_manager.get_password(user, host)
 
-        environment = Environment()
-        steps = self._steps[:]
-        self._logger.info("Initialize all steps")
-        for step in steps:
-            self._logger.debug("init step: %s", step.name)
-            step.init(environment)
+            environment = Environment()
+            steps = self._steps[:]
+            self._logger.info("Initialize all steps")
+            for step in steps:
+                self._logger.debug("init step: %s", step.name)
+                step.init(environment)
 
-        if system_meter_hosts:
-            step = self._create_system_metric_step(resources, system_meter_hosts)
-            steps.insert(0, step)
-            self._logger.debug("init step: %s", step.name)
-            step.init(environment)
+            if system_meter_hosts:
+                step = self._create_system_metric_step(resources, system_meter_hosts)
+                steps.insert(0, step)
+                self._logger.debug("init step: %s", step.name)
+                step.init(environment)
 
-        self._run_experiment(steps, signal_handler)
+            self._run_experiment(steps, signal_handler)

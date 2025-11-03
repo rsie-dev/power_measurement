@@ -8,3 +8,9 @@ class SSHManager:
 
     def get_password(self, user: str, host: str) -> str:
         return getpass(f'SSH password for {user}@{host}: ')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):  # pylint: disable=redefined-builtin
+        pass
