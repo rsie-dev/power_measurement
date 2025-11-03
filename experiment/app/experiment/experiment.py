@@ -2,13 +2,12 @@ import logging
 from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
-from getpass import getpass
 
 from app.common import SignalHandler
 from app.common import ShutdownHandler
 from .steps.experiment_environment import ExperimentEnvironment
 from .steps import Step, SystemMetricsStep
-
+from .ssh_manager import SSHManager
 
 class Experiment:
     def __init__(self, steps: List[Step]):
@@ -63,6 +62,7 @@ class Experiment:
     def run(self, resources: Path):
         system_meter_hosts: List[str] = []
         signal_handler = SignalHandler()
+        ssh_manager = SSHManager()
 
         class Environment(ExperimentEnvironment):
             def get_resources_path(self):
@@ -75,7 +75,7 @@ class Experiment:
                 system_meter_hosts.append(host)
 
             def get_password(self, user: str, host: str) -> str:
-                return getpass(f'SSH password for {user}@{host}: ')
+                return ssh_manager.get_password(user, host)
 
         environment = Environment()
         steps = self._steps[:]
