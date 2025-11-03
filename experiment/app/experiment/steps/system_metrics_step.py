@@ -6,7 +6,7 @@ from fabric import Connection
 
 from app.experiment.measurement_dispatcher import MeasurementDispatcher
 from app.system_meter import MetricsServer
-from .steps import Step, ExperimentEnvironment
+from .step import Step, ExperimentEnvironment
 from .host_command_step import HostCommandStep
 from .csv_system_logger import CSVSystemLogger
 

@@ -4,7 +4,7 @@ from concurrent.futures import Executor
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
-from .steps import Step, ExperimentEnvironment
+from .step import Step, ExperimentEnvironment
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_stop_provider import SignalStopProvider
 

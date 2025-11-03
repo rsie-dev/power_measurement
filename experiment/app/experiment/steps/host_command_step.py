@@ -2,7 +2,7 @@ import logging
 
 from fabric import Connection
 
-from .steps import Step
+from .step import Step
 from .experiment_environment import ExperimentEnvironment
 
 
