@@ -18,5 +18,5 @@ class ExperimentEnvironment(ABC):
         pass
 
     @abstractmethod
-    def get_password(self, user: str, host: str) -> str:
+    def register_ssh_connection(self, user: str, host: str) -> None:
         pass

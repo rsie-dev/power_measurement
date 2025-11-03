@@ -3,11 +3,15 @@ from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
+from fabric import Connection
+
 from app.common import SignalHandler
 from app.common import ShutdownHandler
 from .steps.experiment_environment import ExperimentEnvironment
+from .steps.experiment_runtime import ExperimentRuntime
 from .steps import Step, SystemMetricsStep
 from .ssh_manager import SSHManager
+
 
 class Experiment:
     def __init__(self, steps: List[Step]):
@@ -28,7 +32,7 @@ class Experiment:
             self._logger.debug("execute step: %s", step.name)
             step.execute()
 
-    def _run_experiment(self, steps, signal_handler):
+    def _run_experiment(self, steps, runtime, signal_handler):
         with ThreadPoolExecutor() as executor:
             futures = []
             try:
@@ -43,7 +47,7 @@ class Experiment:
                     with signal_handler.capture_signals():
                         for step in steps:
                             self._logger.debug("execute step: %s", step.name)
-                            step.execute()
+                            step.execute(runtime)
                 except KeyboardInterrupt:
                     pass
 
@@ -51,7 +55,7 @@ class Experiment:
                 self._logger.info("Stopping all steps")
                 for step in list(reversed(steps)):
                     self._logger.debug("stop step: %s", step.name)
-                    step.stop()
+                    step.stop(runtime)
 
             self._logger.info("Wait for threads")
             wait(futures, return_when=FIRST_EXCEPTION)
@@ -74,8 +78,8 @@ class Experiment:
                 def register_for_system_meter(self, host: str) -> None:
                     system_meter_hosts.append(host)
 
-                def get_password(self, user: str, host: str) -> str:
-                    return ssh_manager.get_password(user, host)
+                def register_ssh_connection(self, user: str, host: str) -> None:
+                    ssh_manager.register_ssh_connection(user, host)
 
             environment = Environment()
             steps = self._steps[:]
@@ -90,4 +94,9 @@ class Experiment:
                 self._logger.debug("init step: %s", step.name)
                 step.init(environment)
 
-            self._run_experiment(steps, signal_handler)
+            class Runtime(ExperimentRuntime):
+                def get_ssh_connection(self, user: str, host: str) -> Connection:
+                    return ssh_manager.get_ssh_connection(user, host)
+
+            runtime = Runtime()
+            self._run_experiment(steps, runtime, signal_handler)

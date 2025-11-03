@@ -6,7 +6,9 @@ from fabric import Connection
 
 from app.experiment.measurement_dispatcher import MeasurementDispatcher
 from app.system_meter import MetricsServer
-from .step import Step, ExperimentEnvironment
+from .step import Step
+from .experiment_environment import ExperimentEnvironment
+from .experiment_runtime import ExperimentRuntime
 from .host_command_step import HostCommandStep
 from .csv_system_logger import CSVSystemLogger
 
@@ -34,9 +36,9 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._logger.info("stop telegraf on: %s", self._host_name)
         connection.run("sudo systemctl stop telegraf", hide=True, pty=True)
 
-    def stop(self):
-        with self._create_connection() as con:
-            self._execute_stop_command(con)
+    def stop(self, runtime: ExperimentRuntime):
+        connection = runtime.get_ssh_connection(self._ssh_user, self._host_name)
+        self._execute_stop_command(connection)
 
 
 class SystemMetricsStep(Step):
@@ -70,5 +72,5 @@ class SystemMetricsStep(Step):
         event.wait(self._start_timeout)
         return future
 
-    def stop(self):
+    def stop(self, runtime: ExperimentRuntime):
         self._metrics_server.shut_down(False)

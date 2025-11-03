@@ -4,7 +4,9 @@ from concurrent.futures import Executor
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
-from .step import Step, ExperimentEnvironment
+from .step import Step
+from .experiment_environment import ExperimentEnvironment
+from .experiment_runtime import ExperimentRuntime
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_stop_provider import SignalStopProvider
 
@@ -51,5 +53,5 @@ class USBMeterStep(Step):
         event.wait(self._start_timeout)
         return future
 
-    def stop(self):
+    def stop(self, runtime: ExperimentRuntime):
         self._stop_provider.shut_down(False)

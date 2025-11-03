@@ -4,6 +4,7 @@ from fabric import Connection
 
 from .step import Step
 from .experiment_environment import ExperimentEnvironment
+from .experiment_runtime import ExperimentRuntime
 
 
 class HostCommandStep(Step):
@@ -12,17 +13,10 @@ class HostCommandStep(Step):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host_name = host_name
         self._ssh_user = ssh_user
-        self._ssh_password = None
         self._commands = commands
 
     def init(self, environment: ExperimentEnvironment):
-        self._ssh_password = environment.get_password(self._ssh_user, self._host_name)
-
-    def _create_connection(self):
-        connect_kwargs = {
-            "password": self._ssh_password,
-        }
-        return Connection(self._host_name, user=self._ssh_user, connect_kwargs=connect_kwargs)
+        environment.register_ssh_connection(self._ssh_user, self._host_name)
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("on host: %s execute: %s", self._host_name, ",".join(self._commands))
@@ -30,6 +24,6 @@ class HostCommandStep(Step):
             connection.run(command, hide=True)
         self._logger.info("commands executed")
 
-    def execute(self):
-        with self._create_connection() as con:
-            self._execute_commands(con)
+    def execute(self, runtime: ExperimentRuntime):
+        connection = runtime.get_ssh_connection(self._ssh_user, self._host_name)
+        self._execute_commands(connection)
