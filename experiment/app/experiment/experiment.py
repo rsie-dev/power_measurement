@@ -128,15 +128,14 @@ class Experiment:
             else:
                 metrics_server = None
                 measurement_dispatcher = contextlib.nullcontext()
-            with measurement_dispatcher:
-                if metrics_server:
+            with measurement_dispatcher as md:
+                if md:
                     event = threading.Event()
-                    future = metrics_executor.submit(self._system_collector, metrics_server, measurement_dispatcher,
-                                                     event)
+                    future = metrics_executor.submit(self._system_collector, metrics_server, md, event)
                     event.wait(self._metrics_server_start_timeout)
 
                 with SSHManager() as ssh_manager:
-                    self._execute_runs(ssh_manager, runs_resources, signal_handler, measurement_dispatcher)
+                    self._execute_runs(ssh_manager, runs_resources, signal_handler, md)
 
             if future:
                 metrics_server.shut_down(False)
