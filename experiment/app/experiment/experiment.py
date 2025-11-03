@@ -24,7 +24,7 @@ class Experiment:
         return step
 
     def _execute_steps(self, steps):
-        self._logger.info("execute %d steps", len(steps))
+        self._logger.info("Execute %d steps", len(steps))
         for step in steps:
             self._logger.debug("execute step: %s", step.name)
             step.execute()
@@ -33,6 +33,7 @@ class Experiment:
         with ThreadPoolExecutor() as executor:
             futures = []
             try:
+                self._logger.info("Starting all steps")
                 for step in steps:
                     self._logger.debug("start step: %s", step.name)
                     future = step.start(executor)
@@ -78,6 +79,7 @@ class Experiment:
 
         environment = Environment()
         steps = self._steps[:]
+        self._logger.info("Initialize all steps")
         for step in steps:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
