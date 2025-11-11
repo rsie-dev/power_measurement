@@ -1,0 +1,3 @@
+- copy experiment file to resource folder
+- add command timing support
+- 
