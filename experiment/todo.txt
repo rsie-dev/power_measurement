@@ -2,8 +2,11 @@
 - add command timing support
 - add support for warmup step/time
 - add support rest/sleep time
+- add support to add parameters
 - add support to somehow mix/randomize tools and parameters
 - collect sensor temperature and SBC temperature, too
-- suppress systemd times etc. during execution
+- suppress systemd timers etc. during execution
 - log time diff to DUT
-ntpdate -q host2 
+ntpdate -q host2
+- add time adjustment to system log?
+- log timestamps with 3 decimal points -> milliseconds precsion
