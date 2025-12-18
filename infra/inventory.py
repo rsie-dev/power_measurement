@@ -3,13 +3,14 @@ import getpass
 user_name = "dietpi"
 PASSWORD = getpass.getpass(prompt="password for %s: " % user_name)
 
-SERVER_IP = "192.168.1.201"
+SERVER_IP = "192.168.1.203"
 SERVER_PORT = 10000
 
 hosts = ([
         ('raspi5', {'ssh_hostname': '192.168.1.202'}),
         ('radxax4', {'ssh_hostname': '192.168.1.203'}),
         ('visionfive2', {'ssh_hostname': '192.168.1.204'}),
+        ('visionfive2lite', {'ssh_hostname': '192.168.1.205', "install_cpupower": False}),
         ],
         {"ssh_user": user_name,
          "ssh_password": PASSWORD,

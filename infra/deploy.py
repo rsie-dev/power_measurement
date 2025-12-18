@@ -1,9 +1,15 @@
 from io import StringIO
 
-from pyinfra.operations import apt, files, systemd
+from pyinfra.operations import apt, files, systemd, server
 from pyinfra import host
 from pyinfra.facts.server import Arch
 from pyinfra.facts.files import FindFiles
+
+server.hostname(
+        name="Set hostname",
+        hostname=host.name,
+        _sudo=True,
+        )
 
 files.file(
     name="Remove check password trigger file",
@@ -19,10 +25,18 @@ apt.update(
 
 apt.packages(
     name="Install base packages",
-    packages=["fish", "vim", "less", "tmux", "iputils-ping", "iptables", "wget", "git", "lm-sensors", "linux-cpupower"],
+    packages=["fish", "vim", "less", "tmux", "iputils-ping", "iptables", "wget", "git", "lm-sensors"],
     no_recommends=True,
     _sudo=True,
 )
+
+if host.data.get("install_cpupower", True):
+    apt.packages(
+        name="Install CPU power util",
+        packages=["linux-cpupower"],
+        no_recommends=True,
+        _sudo=True,
+    )
 
 apt.packages(
     name="Install fix for ssh disconnect",
