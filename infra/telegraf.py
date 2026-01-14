@@ -7,7 +7,7 @@ from pyinfra.facts.files import FindFiles
 from pyinfra.api import deploy
 
 
-@deploy("Install telegraf")
+@deploy("Telegraf")
 def telegraf():
     install_telegraf()
     config_telegraf()
