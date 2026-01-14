@@ -12,8 +12,8 @@ def test_read_string_short():
     assert actual_entry.device == "tmpfs"
     assert actual_entry.dir == "/var/log"
     assert actual_entry.options == "size=50M,noatime,lazytime,nodev,nosuid"
-    assert actual_entry.dump == 0
-    assert actual_entry.fsck == 0
+    assert actual_entry.dump is None
+    assert actual_entry.fsck is None
 
 
 def test_read_string_long():
@@ -42,34 +42,32 @@ def test_read_string_swap():
     assert actual_entry.device == "/dev/swap"
     assert actual_entry.dir == "none"
     assert actual_entry.options == "sw"
-    assert actual_entry.dump == 0
-    assert actual_entry.fsck == 0
+    assert actual_entry.dump is None
+    assert actual_entry.fsck is None
 
 
 def test_write_string_short():
-    entry = ExtEntry()
-    entry.valid = True
-    entry.type = "tmpfs"
-    entry.device = "tmpfs"
-    entry.dir = "/var/log"
-    entry.options = "size=50M,noatime,lazytime,nodev,nosuid"
-    entry.dump = 0
-    entry.fsck = 0
+    entry = ExtEntry(
+        _device="tmpfs",
+        _dir="/var/log",
+        _type="tmpfs",
+        _options="size=50M,noatime,lazytime,nodev,nosuid",
+    )
 
     actual_line = entry.write_string()
 
-    assert actual_line == "tmpfs /var/log tmpfs size=50M,noatime,lazytime,nodev,nosuid 0 0"
+    assert actual_line == "tmpfs /var/log tmpfs size=50M,noatime,lazytime,nodev,nosuid"
 
 
 def test_write_string_long():
-    entry = ExtEntry()
-    entry.valid = True
-    entry.type = "ext4"
-    entry.device = "/dev/mapper/root"
-    entry.dir = "/"
-    entry.options = "defaults"
-    entry.dump = 0
-    entry.fsck = 1
+    entry = ExtEntry(
+        _device="/dev/mapper/root",
+        _dir="/",
+        _type="ext4",
+        _options="defaults",
+        _dump=0,
+        _fsck=1,
+    )
 
     actual_line = entry.write_string()
 

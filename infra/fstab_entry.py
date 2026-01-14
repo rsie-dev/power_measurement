@@ -4,6 +4,58 @@ from pyfstab import Entry, InvalidFstabLine, InvalidEntry
 
 
 class ExtEntry(Entry):
+    def __init__(
+        self,
+        _device=None,
+        _dir=None,
+        _type=None,
+        _options=None,
+        _dump=None,
+        _fsck=None,
+    ):
+        """
+        :param _device:
+            Fstab device (1st parameter in the fstab entry).
+            Tuple/list in form of (type, value) is also accepted
+            (e.g. ("UUID", "1234567890"))
+        :type _device: Union[str, tuple, list]
+
+        :param _dir: Fstab device (2nd parameter in the fstab entry)
+        :type _dir: str
+
+        :param _type: Fstab device (3rd parameter in the fstab entry)
+        :type _type: str
+
+        :param _options: Fstab device (4th parameter in the fstab entry)
+        :type _options: str
+
+        :param _dump: Fstab device (5th parameter in the fstab entry)
+        :type _dump: int
+
+        :param _fsck: Fstab device (6th parameter in the fstab entry)
+        :type _fsck: int
+        """
+        # Use setters and getters for these
+        self._device = None
+        self._device_tag_type = None
+        self._device_tag_value = None
+
+        self.device = _device
+        self.dir = _dir
+        self.type = _type
+        self.options = _options
+        self.dump = _dump
+        self.fsck = _fsck
+
+        self.valid = True
+        self.valid &= self._device is not None
+        self.valid &= isinstance(self._device, (str, tuple, list))
+        self.valid &= self.dir is not None
+        self.valid &= self.type is not None
+        self.valid &= self.options is not None
+
+        self.valid &= (self.dump is not None and self.fsck is not None) or (self.dump is None and self.fsck is None)
+
     def read_string(self, line):
         """
         Parses an entry from a string
@@ -59,10 +111,40 @@ class ExtEntry(Entry):
             self.dir = _dir
             self.type = _type
             self.options = _options
-            self.dump = 0
-            self.fsck = 0
+            self.dump = None
+            self.fsck = None
 
             self.valid = True
             return self
 
         raise InvalidFstabLine(line)
+
+    def write_string(self):
+        """
+        Formats the Entry into fstab entry line.
+
+        :return: Fstab entry line.
+        :rtype: str
+
+        :raises InvalidEntry:
+            A string cannot be generated because the entry is invalid.
+        """
+        if not self:
+            raise InvalidEntry("Entry cannot be formatted")
+
+        if self.dump is not None:
+            return "{} {} {} {} {} {}".format(
+                self.device,
+                self.dir,
+                self.type,
+                self.options,
+                self.dump,
+                self.fsck,
+            )
+
+        return "{} {} {} {}".format(
+            self.device,
+            self.dir,
+            self.type,
+            self.options,
+        )
