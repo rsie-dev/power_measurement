@@ -3,9 +3,10 @@ from pyinfra import host
 
 from base import base
 from telegraf import telegraf
-
+from compressors import compressors
 
 base()
+compressors()
 
 if host.data.get("install_cpupower", True):
     apt.packages(

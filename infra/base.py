@@ -46,13 +46,6 @@ def base():
     )
 
     apt.packages(
-        name="Install compression tools",
-        packages=["xz-utils", "lzop", "lz4", "bzip2", "bzip3"],
-        no_recommends=True,
-        _sudo=True,
-    )
-
-    apt.packages(
         name="Install stressor tools",
         packages=["stress-ng"],
         no_recommends=True,
