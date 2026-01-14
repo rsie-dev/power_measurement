@@ -77,6 +77,22 @@ def test_read_string_comment():
     assert actual_entry.fsck is None
 
 
+def test_read_string_empty():
+    entry = ExtEntry()
+    line = ""
+
+    actual_entry = entry.read_string(line)
+
+    assert not actual_entry.valid
+    assert actual_entry.empty_line
+    assert actual_entry.comment is None
+    assert actual_entry.type is None
+    assert actual_entry.device is None
+    assert actual_entry.dir is None
+    assert actual_entry.options is None
+    assert actual_entry.dump is None
+    assert actual_entry.fsck is None
+
 def test_write_string_short():
     entry = ExtEntry(
         _device="tmpfs",
@@ -128,3 +144,13 @@ def test_write_string_comment():
     actual_line = entry.write_string()
 
     assert actual_line == "# some comment"
+
+
+def test_write_string_empty():
+    entry = ExtEntry(
+        _empty_line=True
+    )
+
+    actual_line = entry.write_string()
+
+    assert actual_line == ""

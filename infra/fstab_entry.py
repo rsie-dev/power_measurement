@@ -13,6 +13,7 @@ class ExtEntry(Entry):
         _dump=None,
         _fsck=None,
         _comment=None,
+        _empty_line=None,
     ):
         """
         :param _device:
@@ -48,6 +49,7 @@ class ExtEntry(Entry):
         self.dump = _dump
         self.fsck = _fsck
         self._comment = _comment
+        self._empty_line = _empty_line
 
         self.valid = True
         self.valid &= self._device is not None
@@ -61,6 +63,10 @@ class ExtEntry(Entry):
     @property
     def comment(self):
         return self._comment
+
+    @property
+    def empty_line(self):
+        return self._empty_line
 
     def read_string(self, line):
         """
@@ -83,13 +89,15 @@ class ExtEntry(Entry):
         self.fsck = None
 
         line = line.strip()
-        if line:
-            if line[0] == "#":
-                self._comment = line
-                return self
-            return self._parse_entry(line)
+        if not line:
+            self._empty_line = True
+            return self
 
-        raise InvalidEntry("Entry cannot be parsed")
+        if line[0] == "#":
+            self._comment = line
+            return self
+
+        return self._parse_entry(line)
 
     def _parse_entry(self, line):
         parts = re.split(r"\s+", line)
@@ -142,6 +150,9 @@ class ExtEntry(Entry):
                 return "{}".format(
                     self._comment,
                 )
+            if self._empty_line:
+                return ""
+
             raise InvalidEntry("Entry cannot be formatted")
 
         if self.dump is not None:
