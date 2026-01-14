@@ -12,6 +12,7 @@ class ExtEntry(Entry):
         _options=None,
         _dump=None,
         _fsck=None,
+        _comment=None,
     ):
         """
         :param _device:
@@ -46,6 +47,7 @@ class ExtEntry(Entry):
         self.options = _options
         self.dump = _dump
         self.fsck = _fsck
+        self._comment = _comment
 
         self.valid = True
         self.valid &= self._device is not None
@@ -55,6 +57,10 @@ class ExtEntry(Entry):
         self.valid &= self.options is not None
 
         self.valid &= (self.dump is None) == (self.fsck is None)
+
+    @property
+    def comment(self):
+        return self._comment
 
     def read_string(self, line):
         """
@@ -68,10 +74,7 @@ class ExtEntry(Entry):
 
         :raises InvalidEntry: If the data in the string cannot be parsed.
         """
-        line = line.strip()
-        if line and not line[0] == "#":
-            return self._parse_entry(line)
-
+        self.valid = False
         self.device = None
         self.dir = None
         self.type = None
@@ -79,7 +82,12 @@ class ExtEntry(Entry):
         self.dump = None
         self.fsck = None
 
-        self.valid = False
+        line = line.strip()
+        if line:
+            if line[0] == "#":
+                self._comment = line
+                return self
+            return self._parse_entry(line)
 
         raise InvalidEntry("Entry cannot be parsed")
 
@@ -130,6 +138,10 @@ class ExtEntry(Entry):
             A string cannot be generated because the entry is invalid.
         """
         if not self:
+            if self._comment:
+                return "{}".format(
+                    self._comment,
+                )
             raise InvalidEntry("Entry cannot be formatted")
 
         if self.dump is not None:

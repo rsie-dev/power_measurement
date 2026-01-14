@@ -61,6 +61,22 @@ def test_read_string_tag():
     assert actual_entry.fsck == 1
 
 
+def test_read_string_comment():
+    entry = ExtEntry()
+    line = "# some comment"
+
+    actual_entry = entry.read_string(line)
+
+    assert not actual_entry.valid
+    assert actual_entry.comment == "# some comment"
+    assert actual_entry.type is None
+    assert actual_entry.device is None
+    assert actual_entry.dir is None
+    assert actual_entry.options is None
+    assert actual_entry.dump is None
+    assert actual_entry.fsck is None
+
+
 def test_write_string_short():
     entry = ExtEntry(
         _device="tmpfs",
@@ -102,3 +118,13 @@ def test_write_string_tag():
     actual_line = entry.write_string()
 
     assert actual_line == "PARTUUID=ff3aa3cd-02 / ext4 defaults 0 1"
+
+
+def test_write_string_comment():
+    entry = ExtEntry(
+        _comment="# some comment"
+    )
+
+    actual_line = entry.write_string()
+
+    assert actual_line == "# some comment"
