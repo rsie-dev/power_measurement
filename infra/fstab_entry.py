@@ -54,7 +54,7 @@ class ExtEntry(Entry):
         self.valid &= self.type is not None
         self.valid &= self.options is not None
 
-        self.valid &= (self.dump is not None and self.fsck is not None) or (self.dump is None and self.fsck is None)
+        self.valid &= (self.dump is None) == (self.fsck is None)
 
     def read_string(self, line):
         """
