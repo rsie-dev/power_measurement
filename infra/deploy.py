@@ -4,6 +4,8 @@ from pyinfra import host
 from base import base
 from telegraf import telegraf
 from compressors import compressors
+from system import switch_to_read_only
+
 
 base()
 
@@ -17,3 +19,4 @@ if host.data.get("install_cpupower", True):
 
 telegraf()
 compressors()
+switch_to_read_only()
