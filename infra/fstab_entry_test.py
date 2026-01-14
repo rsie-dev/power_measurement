@@ -46,6 +46,21 @@ def test_read_string_swap():
     assert actual_entry.fsck is None
 
 
+def test_read_string_tag():
+    entry = ExtEntry()
+    line = "PARTUUID=ff3aa3cd-02 / ext4 defaults 0 1"
+
+    actual_entry = entry.read_string(line)
+
+    assert actual_entry.valid
+    assert actual_entry.type == "ext4"
+    assert actual_entry.device == "PARTUUID=ff3aa3cd-02"
+    assert actual_entry.dir == "/"
+    assert actual_entry.options == "defaults"
+    assert actual_entry.dump == 0
+    assert actual_entry.fsck == 1
+
+
 def test_write_string_short():
     entry = ExtEntry(
         _device="tmpfs",
@@ -73,3 +88,17 @@ def test_write_string_long():
 
     assert actual_line == "/dev/mapper/root / ext4 defaults 0 1"
 
+
+def test_write_string_tag():
+    entry = ExtEntry(
+        _device="PARTUUID=ff3aa3cd-02",
+        _dir="/",
+        _type="ext4",
+        _options="defaults",
+        _dump=0,
+        _fsck=1,
+    )
+
+    actual_line = entry.write_string()
+
+    assert actual_line == "PARTUUID=ff3aa3cd-02 / ext4 defaults 0 1"
