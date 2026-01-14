@@ -4,7 +4,13 @@ from pyinfra.operations import apt, files, systemd
 from pyinfra import host
 from pyinfra.facts.server import Arch
 from pyinfra.facts.files import FindFiles
+from pyinfra.api import deploy
 
+
+@deploy("Install telegraf")
+def telegraf():
+    install_telegraf()
+    config_telegraf()
 
 
 def install_telegraf():

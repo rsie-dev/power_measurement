@@ -1,7 +1,7 @@
 from pyinfra.operations import apt, files, server
 from pyinfra import host
 
-from telegraf import install_telegraf, config_telegraf
+from telegraf import telegraf
 
 
 server.hostname(
@@ -74,5 +74,4 @@ apt.packages(
 )
 
 
-install_telegraf()
-config_telegraf()
+telegraf()
