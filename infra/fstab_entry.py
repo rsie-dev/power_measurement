@@ -1,4 +1,5 @@
 import re
+from typing import Self
 
 from pyfstab import Entry, InvalidFstabLine, InvalidEntry
 
@@ -68,7 +69,7 @@ class ExtEntry(Entry):
     def empty_line(self):
         return self._empty_line
 
-    def read_string(self, line):
+    def read_string(self, line) -> Self:
         """
         Parses an entry from a string
 
