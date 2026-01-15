@@ -7,7 +7,8 @@ def test_read_string_short():
 
     actual_entry = entry.read_string(line)
 
-    assert actual_entry.valid
+    assert actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.type == "tmpfs"
     assert actual_entry.device == "tmpfs"
     assert actual_entry.dir == "/var/log"
@@ -22,7 +23,8 @@ def test_read_string_long():
 
     actual_entry = entry.read_string(line)
 
-    assert actual_entry.valid
+    assert actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.type == "ext4"
     assert actual_entry.device == "/dev/mapper/root"
     assert actual_entry.dir == "/"
@@ -37,7 +39,8 @@ def test_read_string_swap():
 
     actual_entry = entry.read_string(line)
 
-    assert actual_entry.valid
+    assert actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.type == "swap"
     assert actual_entry.device == "/dev/swap"
     assert actual_entry.dir == "none"
@@ -52,7 +55,8 @@ def test_read_string_tag():
 
     actual_entry = entry.read_string(line)
 
-    assert actual_entry.valid
+    assert actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.type == "ext4"
     assert actual_entry.device == "PARTUUID=ff3aa3cd-02"
     assert actual_entry.dir == "/"
@@ -67,7 +71,8 @@ def test_read_string_comment():
 
     actual_entry = entry.read_string(line)
 
-    assert not actual_entry.valid
+    assert not actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.comment == "# some comment"
     assert actual_entry.type is None
     assert actual_entry.device is None
@@ -83,7 +88,8 @@ def test_read_string_empty():
 
     actual_entry = entry.read_string(line)
 
-    assert not actual_entry.valid
+    assert not actual_entry.valid_entries
+    assert actual_entry.valid_line
     assert actual_entry.empty_line
     assert actual_entry.comment is None
     assert actual_entry.type is None
@@ -92,6 +98,7 @@ def test_read_string_empty():
     assert actual_entry.options is None
     assert actual_entry.dump is None
     assert actual_entry.fsck is None
+
 
 def test_write_string_short():
     entry = ExtEntry(

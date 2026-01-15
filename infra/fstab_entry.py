@@ -69,6 +69,15 @@ class ExtEntry(Entry):
     def empty_line(self):
         return self._empty_line
 
+    @property
+    def valid_entries(self):
+        return self.valid
+
+    @property
+    def valid_line(self):
+        return self.valid or self._comment or self._empty_line
+
+
     def read_string(self, line) -> Self:
         """
         Parses an entry from a string
@@ -136,7 +145,7 @@ class ExtEntry(Entry):
 
         raise InvalidFstabLine(line)
 
-    def write_string(self):
+    def write_string(self) -> str:
         """
         Formats the Entry into fstab entry line.
 
@@ -146,15 +155,15 @@ class ExtEntry(Entry):
         :raises InvalidEntry:
             A string cannot be generated because the entry is invalid.
         """
-        if not self:
-            if self._comment:
-                return "{}".format(
-                    self._comment,
-                )
-            if self._empty_line:
-                return ""
-
+        if not self.valid_line:
             raise InvalidEntry("Entry cannot be formatted")
+
+        if self._comment:
+            return "{}".format(
+                self._comment,
+            )
+        if self._empty_line:
+            return ""
 
         if self.dump is not None:
             return "{} {} {} {} {} {}".format(
@@ -172,3 +181,6 @@ class ExtEntry(Entry):
             self.type,
             self.options,
         )
+
+    def __bool__(self) -> bool:
+        return self.valid_line
