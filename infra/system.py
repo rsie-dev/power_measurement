@@ -1,8 +1,10 @@
 from pathlib import Path
+import crypt
 
 from pyinfra import host
 from pyinfra.api import deploy
 from pyinfra.operations import files
+from pyinfra.operations import server
 from pyinfra.facts.files import Link
 
 from fstab import FstabDirs
@@ -40,5 +42,17 @@ def set_kernel_ro_flag():
         path=str(cmd_path),
         text=r"rootfstype=ext4 rootwait",
         replace="rootfstype=ext4 ro rootwait",
+        _sudo=True,
+    )
+
+
+def add_test_user():
+    hashed_pw = crypt.crypt("ctest", crypt.mksalt(crypt.METHOD_SHA512))
+    server.user(
+        name="Create test user",
+        user="ctest",
+        password=hashed_pw,
+        shell="/bin/bash",
+        create_home=True,
         _sudo=True,
     )
