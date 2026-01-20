@@ -44,7 +44,6 @@ def base():
         _sudo=True,
     )
 
-
     apt.packages(
         name="Install network tools",
         packages=["wireless-tools", "netcat-openbsd", "wavemon"],
