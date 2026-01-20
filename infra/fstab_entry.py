@@ -74,9 +74,8 @@ class ExtEntry(Entry):
         return self.valid
 
     @property
-    def valid_line(self):
-        return self.valid or self._comment or self._empty_line
-
+    def valid_line(self) -> bool:
+        return self.valid or self._empty_line or self._comment is not None
 
     def read_string(self, line) -> Self:
         """
@@ -109,7 +108,7 @@ class ExtEntry(Entry):
 
         return self._parse_entry(line)
 
-    def _parse_entry(self, line):
+    def _parse_entry(self, line) -> Self:
         parts = re.split(r"\s+", line)
 
         if len(parts) == 6:
