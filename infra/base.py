@@ -18,8 +18,15 @@ def base():
         _sudo=True,
     )
 
+    files.directory(
+        name="Ensure apt last update time folder exists",
+        path="/var/lib/apt/periodic",
+        _sudo=True,
+    )
+
     apt.update(
             name="Update apt repositories",
+            cache_time=10 * 60,
             _sudo=True,
             )
 
