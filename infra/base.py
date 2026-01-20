@@ -54,7 +54,7 @@ def base():
 
     apt.packages(
         name="Install python",
-        packages=["python3", "python3-venv"],
+        packages=["python3", "python3-venv", "python3-pip"],
         no_recommends=True,
         _sudo=True,
     )

@@ -12,9 +12,9 @@ ntpdate -q host2
 - log timestamps with 3 decimal points -> milliseconds precsion
 - add support to retreive command execution time with time command
 - log used multimeter device
-- pip support
 - log DUT type/name
 
 done:
 - mount system RO -> issues with eth dhcp
 - add dedicated test user
+- pip support
