@@ -11,12 +11,14 @@ import pyfstab.fstab as fstabpy
 from fstab_entry import ExtEntry
 fstabpy.Entry = ExtEntry
 
-_FSTAB = "/tmp/fstab"
+_FSTAB = "/etc/fstab"
 
 
 class Fstab(FactBase):
-    def command(self):
-        return 'cat %s' % _FSTAB
+    def command(self, fstab=None):
+        if fstab is None:
+            fstab = _FSTAB
+        return 'cat %s' % fstab
 
     def process(self, output):
         fstab = fstabpy.Fstab().read_string("\n".join(output))
@@ -24,8 +26,10 @@ class Fstab(FactBase):
 
 
 class FstabDirs(FactBase):
-    def command(self):
-        return 'cat %s' % _FSTAB
+    def command(self, fstab=None):
+        if fstab is None:
+            fstab = _FSTAB
+        return 'cat %s' % fstab
 
     def process(self, output):
         fstab = fstabpy.Fstab().read_string("\n".join(output))
@@ -36,16 +40,20 @@ class FstabDirs(FactBase):
 def fstab_option(mount_dir: str,
                  read_only=None,
                  read_write=None,
+                 fstab=None,
                  ):
     logger.info("Update fstab entry for mount: {0}".format(mount_dir))
 
     if read_only and read_write:
         raise OperationValueError("only one option can be given: read_only or read_write")
 
-    fstab = host.get_fact(Fstab)
-    if mount_dir not in fstab.entry_by_dir:
+    if fstab is None:
+        fstab = _FSTAB
+
+    fstab_content = host.get_fact(Fstab, fstab)
+    if mount_dir not in fstab_content.entry_by_dir:
         raise OperationError("no fstab entry for {0}".format(mount_dir))
-    entry = fstab.entry_by_dir[mount_dir]
+    entry = fstab_content.entry_by_dir[mount_dir]
     options = entry.options.split(",")
 
     new_options = []
@@ -74,14 +82,13 @@ def fstab_option(mount_dir: str,
         options.remove(o)
     entry.options = ",".join(options)
 
-    yield _write_fstab(fstab)
+    yield _write_fstab(fstab_content, fstab)
 
 
-def _write_fstab(fstab):
-    content = fstab.write_string() + "\n"
-    dest = _FSTAB
+def _write_fstab(fstab_content, fstab):
+    content = fstab_content.write_string() + "\n"
     return FileUploadCommand(
         StringIO(content),
-        dest,
-        remote_temp_filename=host.get_temp_filename(dest),
+        fstab,
+        remote_temp_filename=host.get_temp_filename(fstab),
     )

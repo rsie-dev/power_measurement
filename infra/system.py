@@ -5,12 +5,28 @@ from pyinfra.api import deploy
 from pyinfra.operations import files
 from pyinfra.facts.files import Link
 
+from fstab import FstabDirs
+from fstab import fstab_option
+
 
 @deploy("Switch to read only")
 def switch_to_read_only():
     set_kernel_ro_flag()
-    # ToDo:
-    #update_fstab()
+    #update_fstab_ro()
+
+
+def update_fstab_ro():
+    entries = ["/", "/boot/firmware"]
+    fstab_dirs = host.get_fact(FstabDirs)
+    for entry in entries:
+        if entry not in fstab_dirs:
+            continue
+        fstab_option(
+            name="Change fstab entry ro: {0}".format(entry),
+            mount_dir=entry,
+            read_only=True,
+            _sudo=True,
+        )
 
 
 def set_kernel_ro_flag():
