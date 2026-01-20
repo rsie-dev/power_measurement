@@ -17,4 +17,5 @@ ntpdate -q host2
 done:
 - mount system RO -> issues with eth dhcp
 - add dedicated test user
+- allow test user to start/stop telegraf
 - pip support

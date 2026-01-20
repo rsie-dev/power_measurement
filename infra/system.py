@@ -1,5 +1,7 @@
 from pathlib import Path
 import crypt
+from io import StringIO
+
 
 from pyinfra import host
 from pyinfra.api import deploy
@@ -47,12 +49,24 @@ def set_kernel_ro_flag():
 
 
 def add_test_user():
+    test_user = "ctest"
     hashed_pw = crypt.crypt("ctest", crypt.mksalt(crypt.METHOD_SHA512))
     server.user(
         name="Create test user",
-        user="ctest",
+        user=test_user,
         password=hashed_pw,
         shell="/bin/bash",
         create_home=True,
+        _sudo=True,
+    )
+
+    lines = []
+    for op in ["status","start","stop","restart"]:
+        lines.append(f"{test_user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf")
+    content = StringIO("\n".join(lines) + "\n")
+    files.put(
+        name="Allow %s to control telegraf service" % test_user,
+        src=content,
+        dest="/etc/sudoers.d/%s" % test_user,
         _sudo=True,
     )
