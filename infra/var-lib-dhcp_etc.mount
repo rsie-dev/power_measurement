@@ -1,0 +1,16 @@
+[Unit]
+Description=dhcp_etc overlay mount
+Requires=tmp-dhcp.mount
+After=tmp-dhcp.mount
+
+[Mount]
+What=overlay
+#Where=/tmp/dhcp_etc
+Where=/var/lib/dhcp_etc
+Type=overlay
+#Options=noauto,user,lowerdir=/etc,/upperdir=/tmp/dhcp/upper,workdir=/tmp/dhcp/work
+Options=noauto,user,lowerdir=/var/lib/dhcp_etc,upperdir=/tmp/dhcp/upper,workdir=/tmp/dhcp/work
+#overlay	/tmp/dhcp_etc	overlay	noauto,user,lowerdir=/etc,upperdir=/tmp/dhcp/upper,workdir=/tmp/dhcp/work
+
+[Install]
+WantedBy=multi-user.target

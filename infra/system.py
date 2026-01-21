@@ -5,7 +5,7 @@ from io import StringIO
 
 from pyinfra import host
 from pyinfra.api import deploy
-from pyinfra.operations import files
+from pyinfra.operations import files, systemd
 from pyinfra.operations import server
 from pyinfra.facts.files import Link
 
@@ -16,8 +16,61 @@ from fstab import fstab_option,fstab_add_entry
 @deploy("Switch to read only")
 def switch_to_read_only():
     set_kernel_ro_flag()
-    #update_fstab_ro()
+    prepare_for_ro()
+    update_fstab_ro()
+
+
+def prepare_for_ro():
     fix_dhcp_on_ro()
+    tmp_dhcp_mount = files.put(
+        name="Create /tmp/dhcp mount unit",
+        src="tmp-dhcp.mount",
+        dest="/etc/systemd/system",
+        _sudo=True,
+    )
+    var_lib_dhcp_etc_mount = files.put(
+        name="Create /var/lib/dhcp_etc mount unit",
+        src="var-lib-dhcp_etc.mount",
+        dest="/etc/systemd/system",
+        _sudo=True,
+    )
+
+    new_resolv_folder = Path("/var/lib/dhcp_etc")
+    files.directory(
+        name="Alternative folder for resolv.conf",
+        path=str(new_resolv_folder),
+        _sudo=True,
+    )
+    etc_resolv = Path("/etc/resolv.conf")
+    link_info = host.get_fact(Link, str(etc_resolv))
+    if link_info is False:
+        # Exists but not a link
+        files.copy(
+            name=f"Copy {etc_resolv} to overlay folder",
+            src=str(etc_resolv),
+            dest=str(new_resolv_folder),
+            _sudo=True,
+        )
+
+    files.link(
+        name=f"Create link {etc_resolv} that points to {new_resolv_folder / etc_resolv.name}",
+        path=str(etc_resolv),
+        target=str(new_resolv_folder / etc_resolv.name),
+        force=True,
+        _sudo=True,
+    )
+
+    if tmp_dhcp_mount.changed or var_lib_dhcp_etc_mount.changed:
+        systemd.daemon_reload(
+            name="Reload the systemd daemon",
+            _sudo=True,
+        )
+    systemd.service(
+        name="Enable the /var/lib/dhcp_etc mount unit",
+        service="var-lib-dhcp_etc.mount",
+        enabled=True,
+        _sudo=True,
+    )
 
 
 def fix_dhcp_on_ro():
@@ -25,7 +78,8 @@ def fix_dhcp_on_ro():
         device="tmpfs",
         mount_dir="/var/lib/dhcp",
         fs_type="tmpfs",
-        fstab="/tmp/fstab",
+        fstab="/etc/fstab",
+        _sudo=True,
     )
 
 
