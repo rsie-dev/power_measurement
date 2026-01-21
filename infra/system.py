@@ -96,6 +96,61 @@ def prepare_for_ro():
         _sudo=True,
     )
 
+    adapt_fake_hwclock()
+    disable_timers()
+
+
+def adapt_fake_hwclock():
+    tmp_fakehwclock_mount = files.put(
+        name="Create /tmp/fakehwclock mount unit",
+        src="tmp-fakehwclock.mount",
+        dest="/etc/systemd/system",
+        _sudo=True,
+    )
+    fakehwclock_override_conf = files.put(
+        name="Create fake-hwclock-load override",
+        src="fakehwclock_override.conf",
+        dest="/etc/systemd/system/fake-hwclock-load.service.d/override.conf",
+        _sudo=True,
+    )
+    if tmp_fakehwclock_mount.changed or fakehwclock_override_conf.changed:
+        systemd.daemon_reload(
+            name="Reload the systemd daemon",
+            _sudo=True,
+        )
+    systemd.service(
+        name="Enable the /tmp/fakehwclock mount unit",
+        service="tmp-fakehwclock.mount",
+        enabled=True,
+        running=True,
+        _sudo=True,
+    )
+    files.block(
+        name="Set new location for fake-hwclock",
+        path="/etc/default/fake-hwclock",
+        content="FILE=/tmp/fakehwclock/fake-hwclock.data",
+        after=True,
+        line="#FORCE=false",
+        _sudo=True,
+    )
+
+
+def disable_timers():
+    systemd.service(
+        name="Disable the dpkg-db-backup timer unit",
+        service="dpkg-db-backup.timer",
+        enabled=False,
+        running=False,
+        _sudo=True,
+    )
+    systemd.service(
+        name="Disable the man-db timer unit",
+        service="man-db.timer",
+        enabled=False,
+        running=False,
+        _sudo=True,
+    )
+
 
 def update_fstab_ro():
     entries = ["/", "/boot/firmware"]

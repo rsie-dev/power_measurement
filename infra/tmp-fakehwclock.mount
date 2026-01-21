@@ -1,0 +1,9 @@
+[Unit]
+
+[Mount]
+What=tmpfs
+Where=/tmp/fakehwclock
+Type=tmpfs
+
+[Install]
+WantedBy=multi-user.target
