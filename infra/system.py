@@ -10,13 +10,23 @@ from pyinfra.operations import server
 from pyinfra.facts.files import Link
 
 from fstab import FstabDirs
-from fstab import fstab_option
+from fstab import fstab_option,fstab_add_entry
 
 
 @deploy("Switch to read only")
 def switch_to_read_only():
     set_kernel_ro_flag()
     #update_fstab_ro()
+    fix_dhcp_on_ro()
+
+
+def fix_dhcp_on_ro():
+    fstab_add_entry(
+        device="tmpfs",
+        mount_dir="/var/lib/dhcp",
+        fs_type="tmpfs",
+        fstab="/tmp/fstab",
+    )
 
 
 def update_fstab_ro():
