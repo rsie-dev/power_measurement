@@ -39,6 +39,12 @@ def prepare_for_ro():
         dest="/etc/systemd/system",
         _sudo=True,
     )
+    var_tmp_dietpi_logs_mount = files.put(
+        name="Create /var/tmp/dietpi/logs mount unit",
+        src="var-tmp-dietpi-logs.mount",
+        dest="/etc/systemd/system",
+        _sudo=True,
+    )
 
     new_resolv_folder = Path("/var/lib/dhcp_etc")
     files.directory(
@@ -65,7 +71,7 @@ def prepare_for_ro():
         _sudo=True,
     )
 
-    if var_lib_dhcp_mount.changed or tmp_dhcp_mount.changed or var_lib_dhcp_etc_mount.changed:
+    if var_lib_dhcp_mount.changed or tmp_dhcp_mount.changed or var_lib_dhcp_etc_mount.changed or var_tmp_dietpi_logs_mount.changed:
         systemd.daemon_reload(
             name="Reload the systemd daemon",
             _sudo=True,
@@ -80,6 +86,12 @@ def prepare_for_ro():
     systemd.service(
         name="Enable the /var/lib/dhcp_etc mount unit",
         service="var-lib-dhcp_etc.mount",
+        enabled=True,
+        _sudo=True,
+    )
+    systemd.service(
+        name="Enable the /var/tmp/dietpi/logs mount unit",
+        service="var-tmp-dietpi-logs.mount",
         enabled=True,
         _sudo=True,
     )

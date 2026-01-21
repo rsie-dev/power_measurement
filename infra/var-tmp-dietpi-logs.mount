@@ -1,0 +1,9 @@
+[Unit]
+
+[Mount]
+What=tmpfs
+Where=/var/tmp/dietpi/logs
+Type=tmpfs
+
+[Install]
+WantedBy=multi-user.target
