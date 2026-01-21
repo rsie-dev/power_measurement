@@ -2,7 +2,7 @@
 
 [Mount]
 What=tmpfs
-Where=/tmp/dhcp
+Where=/var/lib/dhcp
 Type=tmpfs
 
 [Install]

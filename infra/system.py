@@ -10,7 +10,7 @@ from pyinfra.operations import server
 from pyinfra.facts.files import Link
 
 from fstab import FstabDirs
-from fstab import fstab_option,fstab_add_entry
+from fstab import fstab_option
 
 
 @deploy("Switch to read only")
@@ -21,7 +21,12 @@ def switch_to_read_only():
 
 
 def prepare_for_ro():
-    fix_dhcp_on_ro()
+    var_lib_dhcp_mount = files.put(
+        name="Create /var/lib/dhcp mount unit",
+        src="var-lib-dhcp.mount",
+        dest="/etc/systemd/system",
+        _sudo=True,
+    )
     tmp_dhcp_mount = files.put(
         name="Create /tmp/dhcp mount unit",
         src="tmp-dhcp.mount",
@@ -60,25 +65,22 @@ def prepare_for_ro():
         _sudo=True,
     )
 
-    if tmp_dhcp_mount.changed or var_lib_dhcp_etc_mount.changed:
+    if var_lib_dhcp_mount.changed or tmp_dhcp_mount.changed or var_lib_dhcp_etc_mount.changed:
         systemd.daemon_reload(
             name="Reload the systemd daemon",
             _sudo=True,
         )
+
+    systemd.service(
+        name="Enable the /var/lib/dhcp mount unit",
+        service="var-lib-dhcp.mount",
+        enabled=True,
+        _sudo=True,
+    )
     systemd.service(
         name="Enable the /var/lib/dhcp_etc mount unit",
         service="var-lib-dhcp_etc.mount",
         enabled=True,
-        _sudo=True,
-    )
-
-
-def fix_dhcp_on_ro():
-    fstab_add_entry(
-        device="tmpfs",
-        mount_dir="/var/lib/dhcp",
-        fs_type="tmpfs",
-        fstab="/etc/fstab",
         _sudo=True,
     )
 
