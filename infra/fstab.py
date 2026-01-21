@@ -92,21 +92,27 @@ def fstab_add_entry(device: str,
                     options=None,
                     fstab=None,
                     ):
-    logger.info("Update fstab entry for mount: {0}".format(mount_dir))
 
     if fstab is None:
         fstab = _FSTAB
 
     fstab_content = host.get_fact(Fstab, fstab)
 
-    entry = ExtEntry(
-        _device=device,
-        _dir=mount_dir,
-        _type=fs_type,
-        _options=options if options else "defaults",
-    )
-
-    fstab_content.entries.append(entry)
+    if mount_dir in fstab_content.entry_by_dir:
+        logger.info("Update fstab entry for mount: {0}".format(mount_dir))
+        entry = fstab_content.entry_by_dir[mount_dir]
+        entry.device = device
+        entry.type = fs_type
+        entry.options = options if options else "defaults"
+    else:
+        logger.info("Add fstab entry for mount: {0}".format(mount_dir))
+        entry = ExtEntry(
+            _device=device,
+            _dir=mount_dir,
+            _type=fs_type,
+            _options=options if options else "defaults",
+        )
+        fstab_content.entries.append(entry)
 
     yield _write_fstab(fstab_content, fstab)
 
