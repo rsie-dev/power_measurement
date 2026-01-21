@@ -13,9 +13,10 @@ ntpdate -q host2
 - add support to retreive command execution time with time command
 - log used multimeter device
 - log DUT type/name
+- log git informations
 
 done:
-- mount system RO -> issues with eth dhcp
+- mount system RO
 - add dedicated test user
 - allow test user to start/stop telegraf
 - pip support
