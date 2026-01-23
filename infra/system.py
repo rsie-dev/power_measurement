@@ -97,10 +97,10 @@ def prepare_for_ro():
         _sudo=True,
     )
 
+    arch = host.get_fact(Arch, )
     adapt_fake_hwclock()
     disable_timers()
 
-    arch = host.get_fact(Arch, )
     if arch == "x86_64":
         prepare_for_ro_x86()
 
@@ -176,8 +176,12 @@ def update_fstab_ro():
     arch = host.get_fact(Arch, )
     if arch == "x86_64":
         entries.append("/boot/efi")
-    else:
+    elif arch == "riscv64":
+        pass
+    elif arch == "aarch64":
         entries.append("/boot/firmware")
+    else:
+        raise RuntimeError("unsupported architecture: %s" % arch)
 
     fstab_dirs = host.get_fact(FstabDirs)
     for entry in entries:
@@ -195,8 +199,12 @@ def set_kernel_ro_flag():
     arch = host.get_fact(Arch, )
     if arch == "x86_64":
         set_kernel_ro_flag_x86()
-    else:
+    elif arch == "riscv64":
+        set_kernel_ro_flag_riscv()
+    elif arch == "aarch64":
         set_kernel_ro_flag_raspi()
+    else:
+        raise RuntimeError("unsupported architecture: %s" % arch)
 
 
 def set_kernel_ro_flag_x86():
@@ -213,6 +221,16 @@ def set_kernel_ro_flag_x86():
             commands="/usr/sbin/update-grub",
             _sudo=True,
         )
+
+
+def set_kernel_ro_flag_riscv():
+    files.replace(
+        name="Boot root FS ro",
+        path="/boot/extlinux/extlinux.conf",
+        text=r"rootfstype=ext4 rootwait",
+        replace="rootfstype=ext4 ro rootwait",
+        _sudo=True,
+    )
 
 
 def set_kernel_ro_flag_raspi():
