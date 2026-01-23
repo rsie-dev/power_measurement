@@ -100,6 +100,10 @@ def prepare_for_ro():
     adapt_fake_hwclock()
     disable_timers()
 
+    arch = host.get_fact(Arch, )
+    if arch == "x86_64":
+        prepare_for_ro_x86()
+
 
 def adapt_fake_hwclock():
     tmp_fakehwclock_mount = files.put(
@@ -151,6 +155,20 @@ def disable_timers():
         running=False,
         _sudo=True,
     )
+
+
+def prepare_for_ro_x86():
+    grub_common_override = files.put(
+        name="Add overlay for grub-common.service",
+        src="grub-common_override.conf",
+        dest="/etc/systemd/system/grub-common.service.d/override.conf",
+        _sudo=True,
+    )
+    if grub_common_override.changed:
+        systemd.daemon_reload(
+            name="Reload the systemd daemon",
+            _sudo=True,
+        )
 
 
 def update_fstab_ro():
