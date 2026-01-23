@@ -8,6 +8,7 @@ from pyinfra.api import deploy
 from pyinfra.operations import files, systemd
 from pyinfra.operations import server
 from pyinfra.facts.files import Link
+from pyinfra.facts.server import Arch
 
 from fstab import FstabDirs
 from fstab import fstab_option
@@ -153,7 +154,13 @@ def disable_timers():
 
 
 def update_fstab_ro():
-    entries = ["/", "/boot/firmware"]
+    entries = ["/"]
+    arch = host.get_fact(Arch, )
+    if arch == "x86_64":
+        entries.append("/boot/efi")
+    else:
+        entries.append("/boot/firmware")
+
     fstab_dirs = host.get_fact(FstabDirs)
     for entry in entries:
         if entry not in fstab_dirs:
@@ -167,6 +174,30 @@ def update_fstab_ro():
 
 
 def set_kernel_ro_flag():
+    arch = host.get_fact(Arch, )
+    if arch == "x86_64":
+        set_kernel_ro_flag_x86()
+    else:
+        set_kernel_ro_flag_raspi()
+
+
+def set_kernel_ro_flag_x86():
+    grub = files.replace(
+        name="Boot root FS ro",
+        path="/etc/default/grub",
+        text=r"GRUB_CMDLINE_LINUX=\"fsck.repair=yes net.ifnames=0\"",
+        replace="GRUB_CMDLINE_LINUX=\"fsck.repair=yes net.ifnames=0 ro\"",
+        _sudo=True,
+    )
+    if grub.changed:
+        server.shell(
+            name="Update grub",
+            commands="/usr/sbin/update-grub",
+            _sudo=True,
+        )
+
+
+def set_kernel_ro_flag_raspi():
     cmd_path = Path("/boot/cmdline.txt")
     link_info = host.get_fact(Link, str(cmd_path))
     if link_info:
