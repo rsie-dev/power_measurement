@@ -1,9 +1,10 @@
 from io import StringIO
+from pathlib import Path
 
 from pyinfra.operations import apt, files, systemd
 from pyinfra import host
 from pyinfra.facts.server import Arch
-from pyinfra.facts.files import FindFiles
+from pyinfra.facts.files import FindFiles, File
 from pyinfra.api import deploy
 
 
@@ -24,14 +25,17 @@ def install_telegraf():
 
     telegraf_version = "1.36.3-1"
     telegraf_package = "telegraf_%s_%s.deb" % (telegraf_version, get_telegraf_arch())
-    files.download(
-        name="Download telgraf package",
-        src="https://dl.influxdata.com/telegraf/releases/%s" % telegraf_package,
-        dest="/var/tmp/%s" % telegraf_package,
-    )
+    telegraf_package_path = Path("/var/tmp") / telegraf_package
+    package = host.get_fact(File, str(telegraf_package_path))
+    if package is None:
+        files.download(
+            name="Download telgraf package",
+            src="https://dl.influxdata.com/telegraf/releases/%s" % telegraf_package,
+            dest=str(telegraf_package_path),
+        )
     apt.deb(
         name="Install telegraf",
-        src="/var/tmp/%s" % telegraf_package,
+        src=str(telegraf_package_path),
         _sudo=True,
     )
     systemd.daemon_reload(
