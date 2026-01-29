@@ -1,4 +1,5 @@
 - check systemd timers
+- ask for / take current IP address as telegraf server IP
 
 done:
 - mount system RO
