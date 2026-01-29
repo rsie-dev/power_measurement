@@ -38,4 +38,6 @@ if "dut" in host.groups:
     stressors()
     compressors()
     add_test_user()
-    switch_to_read_only()
+
+
+switch_to_read_only()
