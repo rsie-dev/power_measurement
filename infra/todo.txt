@@ -1,1 +1,7 @@
 - check systemd timers
+
+done:
+- mount system RO
+- add dedicated test user
+- allow test user to start/stop telegraf
+- pip support
