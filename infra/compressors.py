@@ -10,3 +10,14 @@ def compressors():
         no_recommends=True,
         _sudo=True,
     )
+
+
+@deploy("Stressors")
+def stressors():
+        apt.packages(
+        name="Install stressor tools",
+        packages=["stress-ng"],
+        no_recommends=True,
+        _sudo=True,
+    )
+
