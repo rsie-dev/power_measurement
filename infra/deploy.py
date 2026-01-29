@@ -3,6 +3,7 @@ from pyinfra import host
 
 from base import base
 from develop import develop
+from network import network_base
 from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, add_test_user
@@ -16,6 +17,7 @@ server.mount(
 )
 
 base()
+network_base()
 
 if "controller" in host.groups:
     develop()

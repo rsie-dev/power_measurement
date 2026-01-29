@@ -32,7 +32,7 @@ def base():
 
     apt.packages(
         name="Install base packages",
-        packages=["fish", "vim", "less", "tmux", "iputils-ping", "iptables", "wget", "git", "lm-sensors"],
+        packages=["fish", "vim", "less", "tmux", "wget", "git", "lm-sensors"],
         no_recommends=True,
         _sudo=True,
     )
@@ -40,13 +40,6 @@ def base():
     apt.packages(
         name="Install fix for ssh disconnect",
         packages=["libpam-systemd", "dbus"],
-        no_recommends=True,
-        _sudo=True,
-    )
-
-    apt.packages(
-        name="Install network tools",
-        packages=["wireless-tools", "netcat-openbsd", "wavemon"],
         no_recommends=True,
         _sudo=True,
     )
