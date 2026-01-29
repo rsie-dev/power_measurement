@@ -19,7 +19,11 @@ def network_base():
     )
 
 
-@deploy("DhcpServer")
+@deploy("Router")
+def router():
+    dhcp_server()
+
+
 def dhcp_server():
     apt.packages(
         name="Install DHCP server",
