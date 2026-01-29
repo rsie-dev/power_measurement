@@ -21,7 +21,16 @@ def network_base():
 
 @deploy("Router")
 def router():
+    ntp_server()
     dhcp_server()
+
+
+def ntp_server():
+    apt.packages(
+        name="Install NTP server",
+        packages=["chrony"],
+        _sudo=True,
+    )
 
 
 def dhcp_server():
@@ -33,6 +42,7 @@ def dhcp_server():
     )
 
     # ToDo configure
+    # ToDo use own IP addresses for router and ntp
     # option domain-name "swamp.de";
     # subnet 192.168.3.0 netmask 255.255.255.0 {
     #   range 192.168.3.200 192.168.3.220;
