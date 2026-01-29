@@ -2,6 +2,7 @@
 - ask for / take current IP address as telegraf server IP
 
 done:
+- add controller install
 - mount system RO
 - add dedicated test user
 - allow test user to start/stop telegraf

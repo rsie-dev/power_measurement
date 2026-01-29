@@ -32,7 +32,7 @@ def base():
 
     apt.packages(
         name="Install base packages",
-        packages=["fish", "vim", "less", "tmux", "wget", "git", "lm-sensors"],
+        packages=["fish", "vim", "less", "tmux", "wget", "lm-sensors", "duf", "bat"],
         no_recommends=True,
         _sudo=True,
     )
@@ -40,6 +40,16 @@ def base():
     apt.packages(
         name="Install fix for ssh disconnect",
         packages=["libpam-systemd", "dbus"],
+        no_recommends=True,
+        _sudo=True,
+    )
+
+
+@deploy("BaseFileSystem")
+def base_filesystem():
+    apt.packages(
+        name="Install filesystem support",
+        packages=["btrfs-progs", "xfsprogs"],
         no_recommends=True,
         _sudo=True,
     )

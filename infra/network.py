@@ -3,7 +3,7 @@ from pyinfra.api import deploy
 
 
 @deploy("NetworkBase")
-def network_base():
+def base_network():
     apt.packages(
         name="Install core network tools",
         packages=["iputils-ping", "iptables", "netcat-openbsd"],
