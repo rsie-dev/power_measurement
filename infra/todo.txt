@@ -1,5 +1,7 @@
 - check systemd timers
 - ask for / take current IP address as telegraf server IP
+- add brotli
+- add zopfli
 
 done:
 - add controller install
