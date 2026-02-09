@@ -29,7 +29,7 @@ xz -d DietPi_VisionFive2-RISC-V-Trixie.img.xz
 '''
 sudo dd if=DietPi_RPi5-ARMv8-Trixie.img of=/dev/<sdX>
 sudo mount -t auto /dev/<sdX>1 /mnt/tmp/
-sudo patch /mnt/tmp/dietpi.txt patches/dietpi_visionfive2.patch
+sudo patch /mnt/tmp/boot/dietpi.txt patches/dietpi_visionfive2.patch
 sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
