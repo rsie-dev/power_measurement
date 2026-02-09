@@ -14,5 +14,6 @@ ntpdate -q host2
 - log used multimeter device
 - log DUT type/name
 - log git informations
+- add pypi deployment
 
 done:
