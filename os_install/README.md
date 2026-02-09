@@ -16,6 +16,8 @@ sudo patch /mnt/tmp/dietpi.txt patches/dietpi_raspi5.patch
 sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
+1. Wait till initial setup and update are through
+1. Continue with custom setup in ../infra
 
 ## VisionFive2
 1. Get image for the device from [Dietpi](https://dietpi.com/) and extract it<br>
