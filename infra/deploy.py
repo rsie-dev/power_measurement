@@ -3,7 +3,7 @@ from pyinfra import host
 
 from base import base, base_filesystem
 from develop import develop
-from network import base_network, router
+from network import base_network, router, ntp_client
 from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, add_test_user
@@ -34,6 +34,7 @@ if "dut" in host.groups:
             _sudo=True,
         )
 
+    ntp_client()
     telegraf()
     stressors()
     compressors()

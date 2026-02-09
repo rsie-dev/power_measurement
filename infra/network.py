@@ -1,4 +1,4 @@
-from pyinfra.operations import apt
+from pyinfra.operations import apt, files
 from pyinfra.api import deploy
 
 
@@ -26,8 +26,24 @@ def router():
 
 
 def ntp_server():
+    _ntp_service()
+
+
+def ntp_client():
+    _ntp_service()
+
+    files.line(
+        name="Disable default debian NTP pool",
+        path="/etc/chrony/chrony.conf",
+        line="pool 2.debian.pool.ntp.org iburst",
+        replace="#pool 2.debian.pool.ntp.org iburst",
+        _sudo=True,
+    )
+
+
+def _ntp_service():
     apt.packages(
-        name="Install NTP server",
+        name="Install NTP service",
         packages=["chrony"],
         _sudo=True,
     )

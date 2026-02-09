@@ -4,6 +4,7 @@
 - add zopfli
 
 done:
+- change to chrony for NTP
 - add controller install
 - mount system RO
 - add dedicated test user
