@@ -225,6 +225,18 @@ def config_telegraf():
   #json_nested_fields_exclude = []
 """
 
+    server_ip = host.data.get("server_ip")
+    server_port = host.data.get("server_port")
+    default_content = f"""
+TELEGRAF_SERVER="{server_ip}:{server_port}"
+"""
+    files.put(
+        name="Set telegraf server",
+        src=StringIO(default_content),
+        dest="/etc/default/telegraf",
+        _sudo=True,
+    )
+
     #     output_file_content = f"""
     # [[outputs.file]]
     #   files = ["/tmp/metrics.json"]
@@ -242,11 +254,9 @@ def config_telegraf():
     #         _sudo=True,
     #     )
 
-    server_ip = host.data.get("server_ip")
-    server_port = host.data.get("server_port")
     output_http_content = f"""
 [[outputs.http]]
-  url = "http://{server_ip}:{server_port}/measurement/batch/"
+  url = "http://${{TELEGRAF_SERVER}}/measurement/batch/"
 
   use_batch_format = true
 
