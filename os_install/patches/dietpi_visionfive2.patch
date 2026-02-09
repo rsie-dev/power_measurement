@@ -81,7 +81,7 @@
  
  # Network time sync: 0=disabled | 1=boot only | 2=boot + daily | 3=boot + hourly | 4=Daemon + Drift
 -CONFIG_NTP_MODE=2
-+CONFIG_NTP_MODE=3
++CONFIG_NTP_MODE=0
  
  # Sound card
  CONFIG_SOUNDCARD=none
