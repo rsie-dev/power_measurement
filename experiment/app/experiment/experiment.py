@@ -60,11 +60,11 @@ class Experiment:
                     self._logger.debug("stop step: %s", step.name)
                     step.stop(runtime)
 
-            self._logger.info("Wait for threads")
-            wait(futures, return_when=FIRST_EXCEPTION)
-            for future in futures:
-                if future.done():
-                    future.result()
+                self._logger.info("Wait for threads")
+                wait(futures, return_when=FIRST_EXCEPTION)
+                for future in futures:
+                    if future.done():
+                        future.result()
 
     def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
                       measurement_dispatcher: MeasurementDispatcher):
@@ -134,18 +134,19 @@ class Experiment:
             else:
                 metrics_server = None
                 measurement_dispatcher = contextlib.nullcontext()
-            with measurement_dispatcher as md:
-                if md:
-                    event = threading.Event()
-                    future = metrics_executor.submit(self._system_collector, metrics_server, md, event)
-                    event.wait(self._metrics_server_start_timeout)
+            try:
+                with measurement_dispatcher as md:
+                    if md:
+                        event = threading.Event()
+                        future = metrics_executor.submit(self._system_collector, metrics_server, md, event)
+                        event.wait(self._metrics_server_start_timeout)
 
-                with SSHManager() as ssh_manager:
-                    self._execute_runs(ssh_manager, runs_resources, signal_handler, md)
-
-            if future:
-                metrics_server.shut_down(False)
-                self._logger.info("Wait for system_meter")
-                wait([future], return_when=FIRST_EXCEPTION)
-                if future.done():
-                    future.result()
+                    with SSHManager() as ssh_manager:
+                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md)
+            finally:
+                if future:
+                    metrics_server.shut_down(False)
+                    self._logger.info("Wait for system_meter")
+                    wait([future], return_when=FIRST_EXCEPTION)
+                    if future.done():
+                        future.result()
