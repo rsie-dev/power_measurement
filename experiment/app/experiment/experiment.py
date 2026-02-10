@@ -57,7 +57,7 @@ class Experiment:
             self._logger.info("Stopped all steps")
 
     def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
-                      measurement_dispatcher: MeasurementDispatcher, executor: Executor):
+                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: ExperimentRuntime):
         steps = self._steps[:]
         for run in range(self._runs):
             self._logger.info("Start run %d/%d", run + 1, self._runs)
@@ -66,7 +66,6 @@ class Experiment:
 
             environment = Environment(ssh_manager, signal_handler, measurement_dispatcher, run_resource,
                                       self._metrics_server_host, self._metrics_server_port)
-            runtime = Runtime(ssh_manager, measurement_dispatcher)
             self._run_experiment(environment, runtime, steps, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
@@ -102,7 +101,8 @@ class Experiment:
                         event.wait(self._metrics_server_start_timeout)
 
                     with SSHManager() as ssh_manager:
-                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md, executor)
+                        runtime = Runtime(ssh_manager, measurement_dispatcher)
+                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md, executor, runtime)
             finally:
                 if future:
                     metrics_server.shut_down(False)
