@@ -22,7 +22,7 @@ class ExperimentRunner:
         self._signal_handler = signal_handler
         self._steps = steps[:]
 
-    def execute_runs(self, run_count, measurement_dispatcher: MeasurementDispatcher,
+    def execute_runs(self, run_count: int, measurement_dispatcher: MeasurementDispatcher,
                      runtime: ExperimentRuntime, environment: ExperimentEnvironment):
         for run in range(run_count):
             self._logger.info("Start run %d/%d", run + 1, run_count)
