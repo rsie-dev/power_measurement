@@ -37,14 +37,11 @@ class Experiment:
             step.init(environment)
 
         with ThreadPoolExecutor() as executor:
-            futures = []
             try:
                 self._logger.info("Starting all steps")
                 for step in steps:
                     self._logger.debug("start step: %s", step.name)
-                    future = step.start(executor)
-                    if future:
-                        futures.append(future)
+                    step.start(executor)
 
                 try:
                     with signal_handler.capture_signals():
@@ -59,12 +56,7 @@ class Experiment:
                 for step in list(reversed(steps)):
                     self._logger.debug("stop step: %s", step.name)
                     step.stop(runtime)
-
-                self._logger.info("Wait for threads")
-                wait(futures, return_when=FIRST_EXCEPTION)
-                for future in futures:
-                    if future.done():
-                        future.result()
+                self._logger.info("Stopped all steps")
 
     def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
                       measurement_dispatcher: MeasurementDispatcher):

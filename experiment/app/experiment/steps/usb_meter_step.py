@@ -1,6 +1,6 @@
 import logging
 import threading
-from concurrent.futures import Executor
+from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
@@ -12,15 +12,15 @@ from .signal_stop_provider import SignalStopProvider
 
 
 class USBMeterStep(Step):
-    def __init__(self, host: str, serial_number: str):
+    def __init__(self, _host: str, serial_number: str):
         super().__init__("USB meter")
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._host = host
         self._serial_number = serial_number
         self._usb_meter = None
         self._electrical_log = None
         self._stop_provider = None
         self._start_timeout = 3
+        self._future = None
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -52,8 +52,11 @@ class USBMeterStep(Step):
         event = threading.Event()
         future = executor.submit(self._electric_collector, self._usb_meter, self._electrical_log, event)
         event.wait(self._start_timeout)
-        return future
+        self._future = future
 
     def stop(self, runtime: ExperimentRuntime):
         if self._stop_provider:
             self._stop_provider.shut_down(False)
+
+        wait([self._future], return_when=FIRST_EXCEPTION)
+        self._future.result()

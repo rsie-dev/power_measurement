@@ -12,14 +12,14 @@ class Step:
     def name(self):
         return self._name
 
-    def init(self, environment: ExperimentEnvironment):
+    def init(self, environment: ExperimentEnvironment) -> None:
         pass
 
-    def start(self, executor: Executor):
+    def start(self, executor: Executor) -> None:
         pass
 
-    def stop(self, runtime: ExperimentRuntime):
+    def stop(self, runtime: ExperimentRuntime) -> None:
         pass
 
-    def execute(self, runtime: ExperimentRuntime):
+    def execute(self, runtime: ExperimentRuntime) -> None:
         pass
