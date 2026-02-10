@@ -62,16 +62,14 @@ class Experiment:
             self._logger.info("Stopped all steps")
 
     def _execute_runs(self, runs_resources: Path, signal_handler: SignalHandler,
-                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: Runtime):
+                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: ExperimentRuntime,
+                      environment: ExperimentEnvironment):
         for run in range(self._runs):
             self._logger.info("Start run %d/%d", run + 1, self._runs)
             run_resource = runs_resources / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
             resources = Resources(run_resource)
             measurement = Measurement(measurement_dispatcher, resources)
-            ssh_manager = runtime.ssh_manager
-            metrics_server = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
-            environment = Environment(ssh_manager, signal_handler, metrics_server)
             self._run_experiment(environment, runtime, measurement, resources, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
@@ -108,7 +106,9 @@ class Experiment:
 
                     with SSHManager() as ssh_manager:
                         runtime = Runtime(ssh_manager)
-                        self._execute_runs(runs_resources, signal_handler, md, executor, runtime)
+                        metrics_server_address = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
+                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
+                        self._execute_runs(runs_resources, signal_handler, md, executor, runtime, environment)
             finally:
                 if future:
                     metrics_server.shut_down(False)
