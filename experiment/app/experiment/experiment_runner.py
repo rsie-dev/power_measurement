@@ -15,26 +15,25 @@ from .measurement_dispatcher import MeasurementDispatcher
 
 
 class ExperimentRunner:
-    def __init__(self, resource_path: Path, signal_handler: SignalHandler, steps: List[Step], runs):
+    def __init__(self, executor: Executor, resource_path: Path, signal_handler: SignalHandler, steps: List[Step]):
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._executor = executor
         self._resource_path = resource_path
         self._signal_handler = signal_handler
         self._steps = steps[:]
-        self._runs = runs
 
-    def execute_runs(self, measurement_dispatcher: MeasurementDispatcher, executor: Executor,
+    def execute_runs(self, run_count, measurement_dispatcher: MeasurementDispatcher,
                      runtime: ExperimentRuntime, environment: ExperimentEnvironment):
-        for run in range(self._runs):
-            self._logger.info("Start run %d/%d", run + 1, self._runs)
+        for run in range(run_count):
+            self._logger.info("Start run %d/%d", run + 1, run_count)
             run_resource = self._resource_path / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
             resources = Resources(run_resource)
             measurement = Measurement(measurement_dispatcher, resources)
-            self._run_experiment(environment, runtime, measurement, resources, executor)
+            self._run_experiment(environment, runtime, measurement, resources)
 
     def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        measurement: ExperimentMeasurement, resources: ExperimentResources,
-                        executor: Executor):
+                        measurement: ExperimentMeasurement, resources: ExperimentResources):
         self._logger.info("Initialize all steps")
         for step in self._steps:
             self._logger.debug("init step: %s", step.name)
@@ -44,7 +43,7 @@ class ExperimentRunner:
             self._logger.info("Starting all steps")
             for step in self._steps:
                 self._logger.debug("start step: %s", step.name)
-                step.start(executor)
+                step.start(self._executor)
 
             try:
                 with self._signal_handler.capture_signals():
