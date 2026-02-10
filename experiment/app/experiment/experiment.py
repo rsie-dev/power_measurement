@@ -24,7 +24,8 @@ class Experiment:
         self._steps: List[Step] = steps
         self._runs: int = runs
         self._with_metrics_server: bool = with_metrics_server
-        self._metrics_server_host: str = "192.168.1.201"
+        # ToDo: find out local IP address
+        self._metrics_server_host: str = "192.168.1.190"
         self._metrics_server_port: int = 10000
         self._metrics_server_start_timeout: float = 3
 
@@ -74,8 +75,13 @@ class Experiment:
             run_resource.mkdir(parents=True, exist_ok=True)
 
             class Environment(ExperimentEnvironment):
-                def __init__(self, resource_path: Path):
+                def __init__(self, resource_path: Path, metrics_server_host: str, metrics_server_port: int):
                     self._resource_path = resource_path
+                    self._metrics_server_host: str = metrics_server_host
+                    self._metrics_server_port: int = metrics_server_port
+
+                def get_metrics_server(self) -> str:
+                    return "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
 
                 def get_resources_path(self) -> Path:
                     return self._resource_path
@@ -99,7 +105,7 @@ class Experiment:
                     if logger:
                         logger.close()
 
-            environment = Environment(run_resource)
+            environment = Environment(run_resource, self._metrics_server_host, self._metrics_server_port)
             runtime = Runtime()
             self._run_experiment(environment, runtime, steps, signal_handler)
 

@@ -12,11 +12,12 @@ class StartSystemMetricsClientStep(HostCommandStep):
         super().__init__(host_name, ssh_user, [])
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
-        self._telegraf_server = "192.168.1.190:10000"
+        self._telegraf_server = None
 
     def init(self, environment: ExperimentEnvironment):
         super().init(environment)
         environment.register_for_system_meter(self._host)
+        self._telegraf_server = environment.get_metrics_server()
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("start telegraf on: %s", self._host_name)
