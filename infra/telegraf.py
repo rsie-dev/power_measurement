@@ -7,7 +7,7 @@ from pyinfra.facts.server import Arch
 from pyinfra.facts.files import FindFiles, File
 from pyinfra.api import deploy
 
-from file import rename
+from file import copy_to
 
 
 @deploy("Telegraf")
@@ -52,7 +52,7 @@ def install_telegraf():
         _sudo=True,
     )
 
-    service_created = rename(
+    service_created = copy_to(
         name="Create parameterized telegraf service",
         src="/usr/lib/systemd/system/telegraf.service",
         dest="/etc/systemd/system/telegraf@.service",
