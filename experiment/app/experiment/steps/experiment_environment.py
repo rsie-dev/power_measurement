@@ -18,9 +18,5 @@ class ExperimentEnvironment(ABC):
         pass
 
     @abstractmethod
-    def register_for_system_meter(self, host: str) -> None:
-        pass
-
-    @abstractmethod
     def register_ssh_connection(self, user: str, host: str) -> None:
         pass

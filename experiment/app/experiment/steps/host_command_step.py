@@ -5,6 +5,7 @@ from fabric import Connection
 from .step import Step
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
+from .experiment_measurement import ExperimentMeasurement
 
 
 class HostCommandStep(Step):
@@ -15,7 +16,7 @@ class HostCommandStep(Step):
         self._ssh_user = ssh_user
         self._commands = commands
 
-    def init(self, environment: ExperimentEnvironment):
+    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement):
         environment.register_ssh_connection(self._ssh_user, self._host_name)
 
     def _execute_commands(self, connection: Connection):

@@ -10,11 +10,13 @@ from app.common import SignalHandler
 from app.system_meter import MetricsServer
 from .steps.experiment_environment import ExperimentEnvironment
 from .steps.experiment_runtime import ExperimentRuntime
+from .steps.experiment_measurement import ExperimentMeasurement
 from .steps import Step
 from .ssh_manager import SSHManager
 from .measurement_dispatcher import MeasurementDispatcher
 from .environment import Environment
 from .runtime import Runtime
+from .measurement import Measurement
 
 
 class Experiment:
@@ -29,11 +31,11 @@ class Experiment:
         self._metrics_server_start_timeout: float = 3
 
     def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        signal_handler, executor: Executor):
+                        measurement: ExperimentMeasurement, signal_handler, executor: Executor):
         self._logger.info("Initialize all steps")
         for step in self._steps:
             self._logger.debug("init step: %s", step.name)
-            step.init(environment)
+            step.init(environment, measurement)
 
         try:
             self._logger.info("Starting all steps")
@@ -53,7 +55,7 @@ class Experiment:
             self._logger.info("Stopping all steps")
             for step in list(reversed(self._steps)):
                 self._logger.debug("stop step: %s", step.name)
-                step.stop(runtime)
+                step.stop(runtime, measurement)
             self._logger.info("Stopped all steps")
 
     def _execute_runs(self, runs_resources: Path, signal_handler: SignalHandler,
@@ -62,11 +64,11 @@ class Experiment:
             self._logger.info("Start run %d/%d", run + 1, self._runs)
             run_resource = runs_resources / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
+            measurement = Measurement(measurement_dispatcher, run_resource)
             ssh_manager = runtime.ssh_manager
             metrics_server = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
-            environment = Environment(ssh_manager, signal_handler, measurement_dispatcher, run_resource,
-                                      metrics_server)
-            self._run_experiment(environment, runtime, signal_handler, executor)
+            environment = Environment(ssh_manager, signal_handler, run_resource, metrics_server)
+            self._run_experiment(environment, runtime, measurement, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
         def on_startup():
@@ -101,7 +103,7 @@ class Experiment:
                         event.wait(self._metrics_server_start_timeout)
 
                     with SSHManager() as ssh_manager:
-                        runtime = Runtime(ssh_manager, measurement_dispatcher)
+                        runtime = Runtime(ssh_manager)
                         self._execute_runs(runs_resources, signal_handler, md, executor, runtime)
             finally:
                 if future:

@@ -2,19 +2,15 @@ from pathlib import Path
 
 from app.common import SignalHandler
 from app.common import ShutdownHandler
-from .steps.csv_system_logger import CSVSystemLogger
 from .steps.experiment_environment import ExperimentEnvironment
 from .ssh_manager import SSHManager
-from .measurement_dispatcher import MeasurementDispatcher
 
 
 class Environment(ExperimentEnvironment):
     def __init__(self, ssh_manager: SSHManager, signal_handler: SignalHandler,
-                 measurement_dispatcher: MeasurementDispatcher, resource_path: Path,
-                 metrics_server):
+                 resource_path: Path, metrics_server):
         self._ssh_manager = ssh_manager
         self._signal_handler = signal_handler
-        self._measurement_dispatcher = measurement_dispatcher
         self._resource_path = resource_path
         self._metrics_server: str = metrics_server
 
@@ -26,10 +22,6 @@ class Environment(ExperimentEnvironment):
 
     def add_shutdown_handler(self, handler: ShutdownHandler) -> None:
         self._signal_handler.add_shutdown_handler(handler)
-
-    def register_for_system_meter(self, host: str) -> None:
-        metric_file_path = self.get_resources_path() / "system.csv"
-        self._measurement_dispatcher.add_logger(host, CSVSystemLogger(metric_file_path))
 
     def register_ssh_connection(self, user: str, host: str) -> None:
         self._ssh_manager.register_ssh_connection(user, host)
