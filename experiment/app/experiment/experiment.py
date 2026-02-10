@@ -20,7 +20,7 @@ from .runtime import Runtime
 class Experiment:
     def __init__(self, steps: List[Step], runs: int, with_metrics_server: bool):
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._steps: List[Step] = steps
+        self._steps: List[Step] = steps[:]
         self._runs: int = runs
         self._with_metrics_server: bool = with_metrics_server
         # ToDo: find out local IP address
@@ -29,21 +29,21 @@ class Experiment:
         self._metrics_server_start_timeout: float = 3
 
     def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        steps, signal_handler, executor: Executor):
+                        signal_handler, executor: Executor):
         self._logger.info("Initialize all steps")
-        for step in steps:
+        for step in self._steps:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
         try:
             self._logger.info("Starting all steps")
-            for step in steps:
+            for step in self._steps:
                 self._logger.debug("start step: %s", step.name)
                 step.start(executor)
 
             try:
                 with signal_handler.capture_signals():
-                    for step in steps:
+                    for step in self._steps:
                         self._logger.debug("execute step: %s", step.name)
                         step.execute(runtime)
             except KeyboardInterrupt:
@@ -51,22 +51,21 @@ class Experiment:
 
         finally:
             self._logger.info("Stopping all steps")
-            for step in list(reversed(steps)):
+            for step in list(reversed(self._steps)):
                 self._logger.debug("stop step: %s", step.name)
                 step.stop(runtime)
             self._logger.info("Stopped all steps")
 
-    def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
-                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: ExperimentRuntime):
-        steps = self._steps[:]
+    def _execute_runs(self, runs_resources: Path, signal_handler: SignalHandler,
+                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: Runtime):
         for run in range(self._runs):
             self._logger.info("Start run %d/%d", run + 1, self._runs)
             run_resource = runs_resources / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
-
+            ssh_manager = runtime.ssh_manager
             environment = Environment(ssh_manager, signal_handler, measurement_dispatcher, run_resource,
                                       self._metrics_server_host, self._metrics_server_port)
-            self._run_experiment(environment, runtime, steps, signal_handler, executor)
+            self._run_experiment(environment, runtime, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
         def on_startup():
@@ -102,7 +101,7 @@ class Experiment:
 
                     with SSHManager() as ssh_manager:
                         runtime = Runtime(ssh_manager, measurement_dispatcher)
-                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md, executor, runtime)
+                        self._execute_runs(runs_resources, signal_handler, md, executor, runtime)
             finally:
                 if future:
                     metrics_server.shut_down(False)
