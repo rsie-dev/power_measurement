@@ -63,8 +63,8 @@ class Experiment:
                         runtime = Runtime(ssh_manager)
                         metrics_server_address = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
                         environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                        runner = ExperimentRunner(runs_resources, self._steps, self._runs)
-                        runner.execute_runs(signal_handler, md, executor, runtime, environment)
+                        runner = ExperimentRunner(runs_resources, signal_handler, self._steps, self._runs)
+                        runner.execute_runs(md, executor, runtime, environment)
             finally:
                 if future:
                     metrics_server.shut_down(False)
