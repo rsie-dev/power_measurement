@@ -397,7 +397,7 @@ timeout-methods = ["requests.api.delete", "requests.api.get", "requests.api.head
 # check-fixme-in-docstring =
 
 # List of note tags to take in consideration, separated by a comma.
-notes = ["FIXME", "XXX", "TODO"]
+notes = ["FIXME", "XXX"]
 
 # Regular expression of note tags to take in consideration.
 # notes-rgx =
