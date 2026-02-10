@@ -19,7 +19,7 @@ from .experiment_runner import ExperimentRunner
 class Experiment:
     def __init__(self, steps: List[Step], runs: int, with_metrics_server: bool):
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._steps: List[Step] = steps[:]
+        self._steps: List[Step] = steps
         self._runs: int = runs
         self._with_metrics_server: bool = with_metrics_server
         # ToDo: find out local IP address
@@ -63,8 +63,8 @@ class Experiment:
                         runtime = Runtime(ssh_manager)
                         metrics_server_address = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
                         environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                        runner = ExperimentRunner(self._steps, self._runs)
-                        runner.execute_runs(runs_resources, signal_handler, md, executor, runtime, environment)
+                        runner = ExperimentRunner(runs_resources, self._steps, self._runs)
+                        runner.execute_runs(signal_handler, md, executor, runtime, environment)
             finally:
                 if future:
                     metrics_server.shut_down(False)
