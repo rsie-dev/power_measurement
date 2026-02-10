@@ -1,7 +1,7 @@
 - check systemd timers
-- ask for / take / parameterize telegraf service for current IP address as telegraf server IP
 
 done:
+- parameterize telegraf service with server IP address
 - add brotli, zopfli, zstd, pigz, pbzip2
 - change to chrony for NTP
 - add controller install

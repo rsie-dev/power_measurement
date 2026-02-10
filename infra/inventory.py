@@ -10,8 +10,6 @@ _ssh_config = {
     "ssh_user": user_name,
     "ssh_password": PASSWORD,
     "_sudo_password": PASSWORD,
-    "server_ip": SERVER_IP,
-    "server_port": SERVER_PORT,
 }
 
 

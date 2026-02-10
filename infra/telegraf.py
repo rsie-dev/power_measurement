@@ -7,6 +7,8 @@ from pyinfra.facts.server import Arch
 from pyinfra.facts.files import FindFiles, File
 from pyinfra.api import deploy
 
+from file import rename
+
 
 @deploy("Telegraf")
 def telegraf():
@@ -50,24 +52,36 @@ def install_telegraf():
         _sudo=True,
     )
 
+    service_created = rename(
+        name="Create parameterized telegraf service",
+        src="/usr/lib/systemd/system/telegraf.service",
+        dest="/etc/systemd/system/telegraf@.service",
+        _sudo=True,
+    )
+
     drop_in_content = """
+[Unit]
+Description=Telegraf reporting to %i
+    
 [Service]
 #CPUSchedulingPolicy=fifo
 #CPUSchedulingPriority=80
 #IOSchedulingClass=realtime
 IOSchedulingPriority=2
 Nice=-10
+Environment="TELEGRAF_SERVER=%i"
 """
     add_drop_in = files.put(
         name="Create telegraf drop-in configuration",
         src=StringIO(drop_in_content),
-        dest="/etc/systemd/system/telegraf.service.d/override.conf",
+        dest="/etc/systemd/system/telegraf@.service.d/override.conf",
         _sudo=True,
     )
+
     systemd.daemon_reload(
         name="Reload systemd config",
         _sudo=True,
-        _if=add_drop_in.did_change
+        _if=service_created.did_change or add_drop_in.did_change
     )
 
 
@@ -225,17 +239,17 @@ def config_telegraf():
   #json_nested_fields_exclude = []
 """
 
-    server_ip = host.data.get("server_ip")
-    server_port = host.data.get("server_port")
-    default_content = f"""
-TELEGRAF_SERVER="{server_ip}:{server_port}"
-"""
-    files.put(
-        name="Set telegraf server",
-        src=StringIO(default_content),
-        dest="/etc/default/telegraf",
-        _sudo=True,
-    )
+    #server_ip = host.data.get("server_ip")
+    #server_port = host.data.get("server_port")
+    #default_content = f"""
+#TELEGRAF_SERVER="{server_ip}:{server_port}"
+#"""
+    #files.put(
+    #    name="Set telegraf server",
+    #    src=StringIO(default_content),
+    #    dest="/etc/default/telegraf",
+    #    _sudo=True,
+    #)
 
     #     output_file_content = f"""
     # [[outputs.file]]

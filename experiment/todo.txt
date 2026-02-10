@@ -17,3 +17,4 @@ ntpdate -q host2
 - add pypi deployment
 
 done:
+- parameterize telegraf service with server IP address
