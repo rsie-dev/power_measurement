@@ -11,16 +11,15 @@ from .measurement_dispatcher import MeasurementDispatcher
 class Environment(ExperimentEnvironment):
     def __init__(self, ssh_manager: SSHManager, signal_handler: SignalHandler,
                  measurement_dispatcher: MeasurementDispatcher, resource_path: Path,
-                 metrics_server_host: str, metrics_server_port: int):
+                 metrics_server):
         self._ssh_manager = ssh_manager
         self._signal_handler = signal_handler
         self._measurement_dispatcher = measurement_dispatcher
         self._resource_path = resource_path
-        self._metrics_server_host: str = metrics_server_host
-        self._metrics_server_port: int = metrics_server_port
+        self._metrics_server: str = metrics_server
 
     def get_metrics_server(self) -> str:
-        return "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
+        return self._metrics_server
 
     def get_resources_path(self) -> Path:
         return self._resource_path

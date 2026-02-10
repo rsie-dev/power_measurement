@@ -63,8 +63,9 @@ class Experiment:
             run_resource = runs_resources / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
             ssh_manager = runtime.ssh_manager
+            metrics_server = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
             environment = Environment(ssh_manager, signal_handler, measurement_dispatcher, run_resource,
-                                      self._metrics_server_host, self._metrics_server_port)
+                                      metrics_server)
             self._run_experiment(environment, runtime, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
