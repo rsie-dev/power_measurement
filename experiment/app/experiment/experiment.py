@@ -1,24 +1,19 @@
 import logging
 from typing import List
 from pathlib import Path
-from concurrent.futures import Executor, ThreadPoolExecutor, wait, FIRST_EXCEPTION
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 import threading
 import contextlib
 
 
 from app.common import SignalHandler
 from app.system_meter import MetricsServer
-from .steps.experiment_environment import ExperimentEnvironment
-from .steps.experiment_runtime import ExperimentRuntime
-from .steps.experiment_measurement import ExperimentMeasurement
-from .steps.experiment_resources import ExperimentResources
 from .steps import Step
 from .ssh_manager import SSHManager
 from .measurement_dispatcher import MeasurementDispatcher
 from .environment import Environment
 from .runtime import Runtime
-from .measurement import Measurement
-from .resources import Resources
+from .experiment_runner import ExperimentRunner
 
 
 class Experiment:
@@ -31,46 +26,6 @@ class Experiment:
         self._metrics_server_host: str = "192.168.1.190"
         self._metrics_server_port: int = 10000
         self._metrics_server_start_timeout: float = 3
-
-    def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        measurement: ExperimentMeasurement, resources: ExperimentResources,
-                        signal_handler, executor: Executor):
-        self._logger.info("Initialize all steps")
-        for step in self._steps:
-            self._logger.debug("init step: %s", step.name)
-            step.init(environment, measurement, resources)
-
-        try:
-            self._logger.info("Starting all steps")
-            for step in self._steps:
-                self._logger.debug("start step: %s", step.name)
-                step.start(executor)
-
-            try:
-                with signal_handler.capture_signals():
-                    for step in self._steps:
-                        self._logger.debug("execute step: %s", step.name)
-                        step.execute(runtime)
-            except KeyboardInterrupt:
-                pass
-
-        finally:
-            self._logger.info("Stopping all steps")
-            for step in list(reversed(self._steps)):
-                self._logger.debug("stop step: %s", step.name)
-                step.stop(runtime, measurement)
-            self._logger.info("Stopped all steps")
-
-    def _execute_runs(self, runs_resources: Path, signal_handler: SignalHandler,
-                      measurement_dispatcher: MeasurementDispatcher, executor: Executor, runtime: ExperimentRuntime,
-                      environment: ExperimentEnvironment):
-        for run in range(self._runs):
-            self._logger.info("Start run %d/%d", run + 1, self._runs)
-            run_resource = runs_resources / ("run_%03d" % (run + 1))
-            run_resource.mkdir(parents=True, exist_ok=True)
-            resources = Resources(run_resource)
-            measurement = Measurement(measurement_dispatcher, resources)
-            self._run_experiment(environment, runtime, measurement, resources, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
         def on_startup():
@@ -108,7 +63,8 @@ class Experiment:
                         runtime = Runtime(ssh_manager)
                         metrics_server_address = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
                         environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                        self._execute_runs(runs_resources, signal_handler, md, executor, runtime, environment)
+                        runner = ExperimentRunner(self._steps, self._runs)
+                        runner.execute_runs(runs_resources, signal_handler, md, executor, runtime, environment)
             finally:
                 if future:
                     metrics_server.shut_down(False)
