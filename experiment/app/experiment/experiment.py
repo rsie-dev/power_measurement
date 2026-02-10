@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
+from concurrent.futures import Executor, ThreadPoolExecutor, wait, FIRST_EXCEPTION
 import threading
 import contextlib
 
@@ -30,36 +30,35 @@ class Experiment:
         self._metrics_server_start_timeout: float = 3
 
     def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        steps, signal_handler):
+                        steps, signal_handler, executor: Executor):
         self._logger.info("Initialize all steps")
         for step in steps:
             self._logger.debug("init step: %s", step.name)
             step.init(environment)
 
-        with ThreadPoolExecutor() as executor:
+        try:
+            self._logger.info("Starting all steps")
+            for step in steps:
+                self._logger.debug("start step: %s", step.name)
+                step.start(executor)
+
             try:
-                self._logger.info("Starting all steps")
-                for step in steps:
-                    self._logger.debug("start step: %s", step.name)
-                    step.start(executor)
+                with signal_handler.capture_signals():
+                    for step in steps:
+                        self._logger.debug("execute step: %s", step.name)
+                        step.execute(runtime)
+            except KeyboardInterrupt:
+                pass
 
-                try:
-                    with signal_handler.capture_signals():
-                        for step in steps:
-                            self._logger.debug("execute step: %s", step.name)
-                            step.execute(runtime)
-                except KeyboardInterrupt:
-                    pass
-
-            finally:
-                self._logger.info("Stopping all steps")
-                for step in list(reversed(steps)):
-                    self._logger.debug("stop step: %s", step.name)
-                    step.stop(runtime)
-                self._logger.info("Stopped all steps")
+        finally:
+            self._logger.info("Stopping all steps")
+            for step in list(reversed(steps)):
+                self._logger.debug("stop step: %s", step.name)
+                step.stop(runtime)
+            self._logger.info("Stopped all steps")
 
     def _execute_runs(self, ssh_manager: SSHManager, runs_resources: Path, signal_handler: SignalHandler,
-                      measurement_dispatcher: MeasurementDispatcher):
+                      measurement_dispatcher: MeasurementDispatcher, executor: Executor):
         steps = self._steps[:]
         for run in range(self._runs):
             self._logger.info("Start run %d/%d", run + 1, self._runs)
@@ -99,7 +98,7 @@ class Experiment:
 
             environment = Environment(run_resource, self._metrics_server_host, self._metrics_server_port)
             runtime = Runtime()
-            self._run_experiment(environment, runtime, steps, signal_handler)
+            self._run_experiment(environment, runtime, steps, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
         def on_startup():
@@ -117,7 +116,7 @@ class Experiment:
         runs_resources = resources / "runs"
         runs_resources.mkdir(parents=True, exist_ok=True)
 
-        with ThreadPoolExecutor() as metrics_executor:
+        with ThreadPoolExecutor() as executor:
             future = None
             if self._with_metrics_server:
                 metrics_server = MetricsServer()
@@ -130,11 +129,11 @@ class Experiment:
                 with measurement_dispatcher as md:
                     if md:
                         event = threading.Event()
-                        future = metrics_executor.submit(self._system_collector, metrics_server, md, event)
+                        future = executor.submit(self._system_collector, metrics_server, md, event)
                         event.wait(self._metrics_server_start_timeout)
 
                     with SSHManager() as ssh_manager:
-                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md)
+                        self._execute_runs(ssh_manager, runs_resources, signal_handler, md, executor)
             finally:
                 if future:
                     metrics_server.shut_down(False)
