@@ -70,6 +70,9 @@ Description=Telegraf reporting to %i
 IOSchedulingPriority=2
 Nice=-10
 Environment="TELEGRAF_SERVER=%i"
+
+[Install]
+WantedBy=
 """
     add_drop_in = files.put(
         name="Create telegraf drop-in configuration",
