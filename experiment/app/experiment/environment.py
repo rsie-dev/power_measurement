@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from app.common import SignalHandler
 from app.common import ShutdownHandler
 from .steps.experiment_environment import ExperimentEnvironment
