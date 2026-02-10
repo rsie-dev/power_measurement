@@ -30,10 +30,10 @@ class ExperimentRunner:
             run_resource.mkdir(parents=True, exist_ok=True)
             resources = Resources(run_resource)
             measurement = Measurement(measurement_dispatcher, resources)
-            self._run_experiment(environment, runtime, measurement, resources)
+            self._execute_run(environment, runtime, measurement, resources)
 
-    def _run_experiment(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                        measurement: ExperimentMeasurement, resources: ExperimentResources):
+    def _execute_run(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
+                     measurement: ExperimentMeasurement, resources: ExperimentResources):
         self._logger.info("Initialize all steps")
         for step in self._steps:
             self._logger.debug("init step: %s", step.name)
