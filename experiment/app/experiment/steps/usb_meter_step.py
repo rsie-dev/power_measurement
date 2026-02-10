@@ -8,6 +8,7 @@ from .step import Step
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
+from .experiment_resources import ExperimentResources
 from .csv_electrical_logger import CSVElectricLogger
 from .signal_stop_provider import SignalStopProvider
 
@@ -41,13 +42,14 @@ class USBMeterStep(Step):
         finally:
             self._logger.info("USB meter shut down")
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement):
+    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+             resources: ExperimentResources):
         device = self._find_device()
         self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
-        self._electrical_log = environment.get_resources_path() / "electrical.csv"
+        self._electrical_log = resources.electrical_resources_path()
 
     def start(self, executor: Executor):
         event = threading.Event()

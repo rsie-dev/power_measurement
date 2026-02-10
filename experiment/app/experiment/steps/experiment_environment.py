@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 from app.common import ShutdownHandler
 
@@ -7,10 +6,6 @@ from app.common import ShutdownHandler
 class ExperimentEnvironment(ABC):
     @abstractmethod
     def get_metrics_server(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_resources_path(self) -> Path:
         pass
 
     @abstractmethod

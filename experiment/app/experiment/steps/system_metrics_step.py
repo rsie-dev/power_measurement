@@ -5,6 +5,7 @@ from fabric import Connection
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
+from .experiment_resources import ExperimentResources
 from .host_command_step import HostCommandStep
 
 
@@ -15,8 +16,9 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._host = host
         self._telegraf_server = None
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement):
-        super().init(environment, measurement)
+    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+             resources: ExperimentResources):
+        super().init(environment, measurement, resources)
         measurement.register_for_system_meter(self._host)
         self._telegraf_server = environment.get_metrics_server()
 

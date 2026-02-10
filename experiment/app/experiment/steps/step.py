@@ -3,6 +3,7 @@ from concurrent.futures import Executor
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
+from .experiment_resources import ExperimentResources
 
 
 class Step:
@@ -13,7 +14,7 @@ class Step:
     def name(self):
         return self._name
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement) -> None:
+    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement, resources: ExperimentResources) -> None:
         pass
 
     def start(self, executor: Executor) -> None:
