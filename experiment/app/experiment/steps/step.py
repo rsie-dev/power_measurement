@@ -14,7 +14,8 @@ class Step:
     def name(self):
         return self._name
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement, resources: ExperimentResources) -> None:
+    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+             resources: ExperimentResources) -> None:
         pass
 
     def start(self, executor: Executor) -> None:
