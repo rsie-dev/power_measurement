@@ -66,7 +66,12 @@ class Experiment:
             run_resource.mkdir(parents=True, exist_ok=True)
 
             class Environment(ExperimentEnvironment):
-                def __init__(self, resource_path: Path, metrics_server_host: str, metrics_server_port: int):
+                def __init__(self, ssh_manager: SSHManager, signal_handler: SignalHandler,
+                             measurement_dispatcher: MeasurementDispatcher, resource_path: Path,
+                             metrics_server_host: str, metrics_server_port: int):
+                    self._ssh_manager = ssh_manager
+                    self._signal_handler = signal_handler
+                    self._measurement_dispatcher = measurement_dispatcher
                     self._resource_path = resource_path
                     self._metrics_server_host: str = metrics_server_host
                     self._metrics_server_port: int = metrics_server_port
@@ -78,26 +83,31 @@ class Experiment:
                     return self._resource_path
 
                 def add_shutdown_handler(self, handler: ShutdownHandler) -> None:
-                    signal_handler.add_shutdown_handler(handler)
+                    self._signal_handler.add_shutdown_handler(handler)
 
                 def register_for_system_meter(self, host: str) -> None:
                     metric_file_path = self.get_resources_path() / "system.csv"
-                    measurement_dispatcher.add_logger(host, CSVSystemLogger(metric_file_path))
+                    self._measurement_dispatcher.add_logger(host, CSVSystemLogger(metric_file_path))
 
                 def register_ssh_connection(self, user: str, host: str) -> None:
-                    ssh_manager.register_ssh_connection(user, host)
+                    self._ssh_manager.register_ssh_connection(user, host)
 
             class Runtime(ExperimentRuntime):
+                def __init__(self, ssh_manager: SSHManager, measurement_dispatcher: MeasurementDispatcher):
+                    self._ssh_manager = ssh_manager
+                    self._measurement_dispatcher = measurement_dispatcher
+
                 def get_ssh_connection(self, user: str, host: str) -> Connection:
-                    return ssh_manager.get_ssh_connection(user, host)
+                    return self._ssh_manager.get_ssh_connection(user, host)
 
                 def unregister_for_system_meter(self, host: str) -> None:
                     logger = measurement_dispatcher.remove_logger(host)
                     if logger:
                         logger.close()
 
-            environment = Environment(run_resource, self._metrics_server_host, self._metrics_server_port)
-            runtime = Runtime()
+            environment = Environment(ssh_manager, signal_handler, measurement_dispatcher, run_resource,
+                                      self._metrics_server_host, self._metrics_server_port)
+            runtime = Runtime(ssh_manager, measurement_dispatcher)
             self._run_experiment(environment, runtime, steps, signal_handler, executor)
 
     def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
