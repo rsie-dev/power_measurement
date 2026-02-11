@@ -38,12 +38,12 @@ class StartSystemMetricsClientStep(HostCommandStep):
         return offset_delta
 
     def _execute_commands(self, connection: Connection):
-        self._logger.info("Start telegraf on: %s", self._host_name)
+        self._logger.info("Start telegraf on: %s", self._host)
 
         connection.run("sudo systemctl start telegraf@%s" % self._telegraf_server, hide=True, pty=True)
 
     def _execute_stop_command(self, connection: Connection):
-        self._logger.info("Stop telegraf on: %s", self._host_name)
+        self._logger.info("Stop telegraf on: %s", self._host)
         connection.run("sudo systemctl stop telegraf@%s" % self._telegraf_server, hide=True, pty=True)
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
