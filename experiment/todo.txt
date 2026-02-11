@@ -1,6 +1,5 @@
 - copy experiment file to resource folder
 - add command timing support
-- add command work_dir support
 - add support for warmup step/time
 - add support rest/sleep time
 - add support to add parameters
@@ -20,4 +19,5 @@ ntpdate -q host2
 - add support for ssh keys
 
 done:
+- add command work_dir support
 - parameterize telegraf service with server IP address

@@ -23,9 +23,14 @@ class CommandBuilder(Builder):
     def __init__(self, parent: NodeCommandBuilder, command: str):
         self._parent = parent
         self._command = command
+        self._work_dir = None
+
+    def with_work_dir(self, folder: str) -> Self:
+        self._work_dir = folder
+        return self
 
     def done(self) -> NodeCommandBuilder:
-        command = Command(self._command)
+        command = Command(self._command, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
@@ -42,7 +47,11 @@ class NodeCommandBuilder(Builder):
         self._as_metrics_client = True
         return self
 
-    def execute(self, command: str) -> CommandBuilder:
+    def execute(self, command: str) -> Self:
+        self.add_command(Command(command))
+        return self
+
+    def execute_with(self, command: str) -> CommandBuilder:
         return CommandBuilder(self, command)
 
     def add_command(self, command: Command) -> None:
