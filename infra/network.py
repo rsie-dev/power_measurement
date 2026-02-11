@@ -1,4 +1,6 @@
-from pyinfra.operations import apt, files
+from io import StringIO
+
+from pyinfra.operations import apt, files, systemd
 from pyinfra.api import deploy
 
 
@@ -27,17 +29,33 @@ def router():
 
 def ntp_server():
     _ntp_service()
+    config_file = _ntp_server_mode()
+    systemd.service(
+        name="Restart chrony service",
+        service="chrony.service",
+        restarted=True,
+        _sudo=True,
+        _if=config_file.did_change
+    )
 
 
 def ntp_client():
     _ntp_service()
+    config_file = _ntp_server_mode()
 
-    files.line(
+    update_config = files.line(
         name="Disable default debian NTP pool",
         path="/etc/chrony/chrony.conf",
         line="pool 2.debian.pool.ntp.org iburst",
         replace="#pool 2.debian.pool.ntp.org iburst",
         _sudo=True,
+    )
+    systemd.service(
+        name="Restart chrony service",
+        service="chrony.service",
+        restarted=True,
+        _sudo=True,
+        _if=config_file.did_change or update_config.did_change()
     )
 
 
@@ -47,6 +65,16 @@ def _ntp_service():
         packages=["chrony"],
         _sudo=True,
     )
+
+
+def _ntp_server_mode():
+    config_file = files.put(
+        name="Enable NTP server mode",
+        src=StringIO("allow all"),
+        dest="/etc/chrony/conf.d/server.conf",
+        _sudo=True,
+    )
+    return config_file
 
 
 def dhcp_server():
