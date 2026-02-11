@@ -24,23 +24,23 @@ class Command:
 
 
 class HostCommandStep(Step):
-    def __init__(self,  host_name: str, ssh_user: str, commands: list[Command]):
+    def __init__(self, host: str, ssh_user: str, commands: list[Command]):
         super().__init__("host command")
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._host_name = host_name
+        self._host = host
         self._ssh_user = ssh_user
         self._commands: list[Command] = commands
 
     def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
              resources: ExperimentResources):
-        environment.register_ssh_connection(self._ssh_user, self._host_name)
+        environment.register_ssh_connection(self._ssh_user, self._host)
 
     def _execute_commands(self, connection: Connection):
-        self._logger.info("on host: %s execute %d command(s)", self._host_name, len(self._commands))
+        self._logger.info("on host: %s execute %d command(s)", self._host, len(self._commands))
         for command in self._commands:
             command.execute(connection)
         self._logger.info("commands executed")
 
     def execute(self, runtime: ExperimentRuntime):
-        connection = runtime.get_ssh_connection(self._ssh_user, self._host_name)
+        connection = runtime.get_ssh_connection(self._ssh_user, self._host)
         self._execute_commands(connection)
