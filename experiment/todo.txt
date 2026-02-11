@@ -1,4 +1,5 @@
 - add hostname validation
+- unify/split up system.csv file
 - copy experiment file to resource folder
 - add command timing support
 - add support for warmup step/time
