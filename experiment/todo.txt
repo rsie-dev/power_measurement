@@ -17,6 +17,7 @@ ntpdate -q host2
 - log git informations
 - add pypi deployment
 - restructure log and resource files/folders
+- add support for ssh keys
 
 done:
 - parameterize telegraf service with server IP address
