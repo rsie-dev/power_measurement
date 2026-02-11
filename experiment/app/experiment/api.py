@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep
+from .steps import Step, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
 from .experiment import Experiment
 
 
@@ -19,21 +19,34 @@ class CompositeBuilder(Builder):
         self._steps.extend(steps)
 
 
+class CommandBuilder(Builder):
+    def __init__(self, parent: NodeCommandBuilder, command: str):
+        self._parent = parent
+        self._command = command
+
+    def done(self) -> NodeCommandBuilder:
+        command = Command(self._command)
+        self._parent.add_command(command)
+        return self._parent
+
+
 class NodeCommandBuilder(Builder):
     def __init__(self, parent: HostBuilder, host_name: str, ssh_user: str):
         self._parent = parent
         self._host_name = host_name
         self._ssh_user = ssh_user
         self._as_metrics_client = False
-        self._commands = []
+        self._commands: list[Command] = []
 
     def as_metrics_client(self) -> Self:
         self._as_metrics_client = True
         return self
 
-    def execute(self, command) -> Self:
+    def execute(self, command: str) -> CommandBuilder:
+        return CommandBuilder(self, command)
+
+    def add_command(self, command: Command) -> None:
         self._commands.append(command)
-        return self
 
     def done(self) -> HostBuilder:
         steps = []
