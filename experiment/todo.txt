@@ -16,6 +16,7 @@ ntpdate -q host2
 - log DUT type/name
 - log git informations
 - add pypi deployment
+- restructure log and resource files/folders
 
 done:
 - parameterize telegraf service with server IP address
