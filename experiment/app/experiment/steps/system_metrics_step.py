@@ -3,6 +3,7 @@ import datetime
 
 from fabric import Connection
 import ntplib
+import humanize
 
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
@@ -23,14 +24,18 @@ class StartSystemMetricsClientStep(HostCommandStep):
         super().init(environment, measurement, resources)
         measurement.register_for_system_meter(self._host_name)
         self._telegraf_server = environment.get_metrics_server()
+        # ToDo: log to resource folder?
         self._get_ntp_delta()
 
     def _get_ntp_delta(self):
         ntp_client = ntplib.NTPClient()
         self._logger.debug("get time diff to: %s", self._host)
-        resp = ntp_client.request(self._host, version=4)  # v4 is common
-        dt = datetime.datetime.fromtimestamp(resp.tx_time)
-        self._logger.info("Time diff to: %s = %s (%s)", self._host, resp.offset, dt)
+        response = ntp_client.request(self._host, version=4)  # v4 is common
+        offset_delta = datetime.timedelta(seconds = response.offset)
+        status = "behind" if response.offset < 0 else "ahead"
+        delta_str = humanize.precisedelta(offset_delta, minimum_unit="microseconds")
+        self._logger.info("Host %s is %s %s", self._host, status, delta_str)
+        return offset_delta
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("Start telegraf on: %s", self._host_name)
