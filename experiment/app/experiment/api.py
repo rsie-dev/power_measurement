@@ -20,7 +20,7 @@ class CompositeBuilder(Builder):
 
 
 class CommandBuilder(Builder):
-    def __init__(self, parent: NodeCommandBuilder, command: str):
+    def __init__(self, parent: HostCommandBuilder, command: str):
         self._parent = parent
         self._command = command
         self._work_dir = None
@@ -29,23 +29,18 @@ class CommandBuilder(Builder):
         self._work_dir = folder
         return self
 
-    def done(self) -> NodeCommandBuilder:
+    def done(self) -> HostCommandBuilder:
         command = Command(self._command, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
 
-class NodeCommandBuilder(Builder):
-    def __init__(self, parent: HostBuilder, host_name: str, ssh_user: str):
+class HostCommandBuilder(Builder):
+    def __init__(self, parent: HostBuilder, host: str, ssh_user: str):
         self._parent = parent
-        self._host_name = host_name
+        self._host = host
         self._ssh_user = ssh_user
-        self._as_metrics_client = False
         self._commands: list[Command] = []
-
-    def as_metrics_client(self) -> Self:
-        self._as_metrics_client = True
-        return self
 
     def execute(self, command: str) -> Self:
         self.add_command(Command(command))
@@ -59,38 +54,44 @@ class NodeCommandBuilder(Builder):
 
     def done(self) -> HostBuilder:
         steps = []
-        if self._as_metrics_client:
-            step = StartSystemMetricsClientStep(self._parent.host, self._host_name, self._ssh_user)
-            steps.append(step)
-        step = HostCommandStep(self._host_name, self._ssh_user, self._commands)
+        step = HostCommandStep(self._host, self._ssh_user, self._commands)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
 
 
 class HostBuilder(CompositeBuilder):
-    def __init__(self, parent: ExperimentBuilder, host: str):
+    def __init__(self, parent: ExperimentBuilder, host_name: str, host: str, ssh_user: str):
         super().__init__()
         self._parent = parent
+        self._host_name = host_name
         self._host = host
+        self._ssh_user = ssh_user
         self._serial_number = None
+        self._as_metrics_client = False
 
     @property
     def host(self) -> str:
-        return self._host
+        return self._host_name
 
-    def log_usb_meter(self, serial_number: str) -> Self:
+    def with_usb_meter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
         return self
 
-    def on_node(self, host_name: str, ssh_user: Optional[str] = None) -> NodeCommandBuilder:
-        ssh_user = ssh_user or "dietpi"
-        return NodeCommandBuilder(self, host_name, ssh_user)
+    def with_metrics_client(self) -> Self:
+        self._as_metrics_client = True
+        return self
+
+    def with_commands(self) -> HostCommandBuilder:
+        return HostCommandBuilder(self, self._host, self._ssh_user)
 
     def done(self) -> ExperimentBuilder:
         steps = []
         if self._serial_number:
             step = USBMeterStep(self._host, self._serial_number)
+            steps.append(step)
+        if self._as_metrics_client:
+            step = StartSystemMetricsClientStep(self._host_name, self._host, self._ssh_user)
             steps.append(step)
         steps.extend(self._steps)
         self._parent.add_steps(steps)
@@ -112,8 +113,9 @@ class ExperimentBuilder(CompositeBuilder):
         self._with_metrics_server = True
         return self
 
-    def on_host(self, host: str) -> HostBuilder:
-        return HostBuilder(self, host)
+    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
+        ssh_user = ssh_user or "dietpi"
+        return HostBuilder(self, host_name, host, ssh_user)
 
     def build(self) -> Experiment:
         runs = self._runs or 1
