@@ -1,5 +1,5 @@
 import logging
-import threading
+from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 
 from app.usb_meter import devices_by_serial_number, USBMeter
@@ -52,7 +52,7 @@ class USBMeterStep(Step):
         self._electrical_log = resources.electrical_resources_path() / "electrical.csv"
 
     def start(self, executor: Executor):
-        event = threading.Event()
+        event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, self._electrical_log, event)
         event.wait(self._start_timeout)
         self._future = future
