@@ -10,7 +10,7 @@ class Measurement(ExperimentMeasurement):
         self._resources = resources
 
     def register_for_system_meter(self, host: str) -> None:
-        metric_file_path = self._resources.system_resources_path()
+        metric_file_path = self._resources.metrics_resources_path()
         self._measurement_dispatcher.add_logger(host, CSVSystemLogger(metric_file_path))
 
     def unregister_for_system_meter(self, host: str) -> None:

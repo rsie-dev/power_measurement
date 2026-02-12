@@ -8,5 +8,5 @@ class ExperimentResources(ABC):
         pass
 
     @abstractmethod
-    def system_resources_path(self) -> Path:
+    def metrics_resources_path(self) -> Path:
         pass
