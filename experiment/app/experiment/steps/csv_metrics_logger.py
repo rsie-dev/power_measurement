@@ -5,7 +5,7 @@ from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
 
 
-class CSVSystemLogger(MeasurementLogger):
+class CSVMetricsLogger(MeasurementLogger):
     FIELD_NAMES = ["timestamp", "rel time", "host", "name", "entity",
                    "load1", "load5", "load15",
                    "usage_idle", "usage_system", "usage_user", "usage_nice", "usage_iowait",

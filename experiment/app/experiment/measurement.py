@@ -1,6 +1,6 @@
 from .steps.experiment_measurement import ExperimentMeasurement
 from .measurement_dispatcher import MeasurementDispatcher
-from .steps.csv_system_logger import CSVSystemLogger
+from .steps.csv_metrics_logger import CSVMetricsLogger
 from .steps.experiment_resources import ExperimentResources
 
 
@@ -11,7 +11,7 @@ class Measurement(ExperimentMeasurement):
 
     def register_for_system_meter(self, host: str) -> None:
         metric_file_path = self._resources.metrics_resources_path()
-        self._measurement_dispatcher.add_logger(host, CSVSystemLogger(metric_file_path))
+        self._measurement_dispatcher.add_logger(host, CSVMetricsLogger(metric_file_path))
 
     def unregister_for_system_meter(self, host: str) -> None:
         logger = self._measurement_dispatcher.remove_logger(host)
