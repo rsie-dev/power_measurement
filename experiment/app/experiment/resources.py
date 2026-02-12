@@ -8,7 +8,7 @@ class Resources(ExperimentResources):
         self._resources_path = resources_path
 
     def electrical_resources_path(self) -> Path:
-        return self._resources_path / "electrical.csv"
+        return self._resources_path
 
     def metrics_resources_path(self) -> Path:
         return self._resources_path
