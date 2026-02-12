@@ -7,3 +7,6 @@ class MeasurementLogger:
 
     def log(self, measurement: SystemMeasurement) -> None:
         pass
+
+    def close(self) -> None:
+        pass

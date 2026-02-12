@@ -11,4 +11,4 @@ class Resources(ExperimentResources):
         return self._resources_path / "electrical.csv"
 
     def metrics_resources_path(self) -> Path:
-        return self._resources_path / "system.csv"
+        return self._resources_path

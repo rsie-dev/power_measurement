@@ -5,32 +5,45 @@ from app.system_meter.measurement_logger import MeasurementLogger
 class MeasurementDispatcher(MeasurementLogger):
     def __init__(self):
         super().__init__()
-        self._logger_dict = {}
+        self._logger_dict: dict[str, list[MeasurementLogger]] = {}
+        self._initialized = False
 
     def __enter__(self):
+        self.init()
         return self
 
     def __exit__(self, type, value, traceback):  # pylint: disable=redefined-builtin
         self.close()
 
-    def add_logger(self, host: str, logger) -> None:
-        self._logger_dict[host] = logger
+    def add_logger(self, host: str, logger: MeasurementLogger) -> None:
+        if self._initialized:
+            logger.init()
+        logger_list = self._logger_dict.get(host, [])
+        logger_list.append(logger)
+        self._logger_dict[host] = logger_list
 
-    def remove_logger(self, host: str):
-        logger = self._logger_dict.pop(host)
+    def remove_logger(self, host: str, logger: MeasurementLogger):
+        logger_list = self._logger_dict.get(host, [])
+        logger_list.remove(logger)
+        self._logger_dict[host] = logger_list
         return logger
 
     def init(self) -> None:
-        for logger in self._logger_dict.values():
-            logger.prepare()
+        if self._initialized:
+            return
+        self._initialized = True
+        for logger_list in self._logger_dict.values():
+            for logger in logger_list:
+                logger.init()
 
     def close(self):
-        for logger in self._logger_dict.values():
-            logger.close()
+        for logger_list in self._logger_dict.values():
+            for logger in logger_list:
+                logger.close()
         self._logger_dict.clear()
 
     def log(self, measurement: SystemMeasurement) -> None:
         host = measurement.tags["host"]
-        logger = self._logger_dict[host]
-        if logger:
+        logger_list = self._logger_dict.get(host, [])
+        for logger in logger_list:
             logger.log(measurement)
