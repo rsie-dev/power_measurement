@@ -67,8 +67,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv")
         measurement.register_for_system_meter(self._host_name, self._system_logger)
         measurement.register_for_system_meter(self._host_name, self._cpu_logger)
-        #self._client_event.clear()
-        #measurement.register_for_system_meter(self._host_name, self._startup_monitor)
 
     def _get_ntp_delta(self):
         ntp_client = ntplib.NTPClient()
@@ -100,7 +98,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
         try:
             self._execute_stop_command(connection)
         finally:
-            #measurement.unregister_for_system_meter(self._host_name, self._startup_monitor)
             if self._system_logger:
                 measurement.unregister_for_system_meter(self._host_name, self._system_logger)
                 self._system_logger.close()
