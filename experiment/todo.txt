@@ -1,4 +1,6 @@
 - add hostname validation
+- add validation metrics client needs metrics server / client implicit
+- add wait for initial metrics data transfer
 - unify/split up system.csv file
 - copy experiment file to resource folder
 - add command timing support
