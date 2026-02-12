@@ -1,5 +1,4 @@
 - add wait for initial metrics data transfer
-- unify/split up system.csv file
 - copy experiment file to resource folder
 - add command timing support
 - add support for warmup step/time
@@ -20,6 +19,7 @@
 - clarify API, put into separate package
 
 done:
+- split up system.csv file
 - simplified metrics collection definition
 - use local ethernet IP address for metrics server
 - add hostname validation
