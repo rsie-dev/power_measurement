@@ -3,7 +3,9 @@ import logging
 from typing import List, Optional
 from typing import Self
 
-from .steps import Step, StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
+from .steps import Step, InitStep
+from .steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
+from .steps import HostnameValidationStep
 from .experiment import Experiment
 
 
@@ -104,6 +106,7 @@ class ExperimentBuilder(CompositeBuilder):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._runs: Optional[int] = None
         self._with_metrics_server: bool = False
+        self._init_steps: List[InitStep] = []
 
     def with_runs(self, runs: int) -> Self:
         self._runs = runs
@@ -115,9 +118,10 @@ class ExperimentBuilder(CompositeBuilder):
 
     def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         ssh_user = ssh_user or "dietpi"
+        self._init_steps.append(HostnameValidationStep(host_name, host, ssh_user))
         return HostBuilder(self, host_name, host, ssh_user)
 
     def build(self) -> Experiment:
         runs = self._runs or 1
-        experiment = Experiment(self._steps, runs, self._with_metrics_server)
+        experiment = Experiment(self._init_steps, self._steps, runs, self._with_metrics_server)
         return experiment

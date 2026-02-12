@@ -1,4 +1,3 @@
-- add hostname validation
 - add validation metrics client needs metrics server / client implicit
 - add wait for initial metrics data transfer
 - unify/split up system.csv file
@@ -21,6 +20,7 @@
 - add support for ssh keys
 
 done:
+- add hostname validation
 - log time diff to DUT
 - add command work_dir support
 - parameterize telegraf service with server IP address
