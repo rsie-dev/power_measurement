@@ -1,3 +1,4 @@
+- identify local/ethernet IP address for metrics server
 - add validation metrics client needs metrics server / client implicit
 - add wait for initial metrics data transfer
 - unify/split up system.csv file
