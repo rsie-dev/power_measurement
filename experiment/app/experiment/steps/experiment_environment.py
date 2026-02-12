@@ -11,7 +11,7 @@ class InitEnvironment(ABC):
 
 class ExperimentEnvironment(InitEnvironment):
     @abstractmethod
-    def get_metrics_server(self) -> str:
+    def get_metrics_server(self) -> tuple[str, int]:
         pass
 
     @abstractmethod

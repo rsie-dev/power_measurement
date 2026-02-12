@@ -28,7 +28,7 @@ class NoSignalServer(Server, ShutdownHandler):
 
 
 class MetricsServer(ShutdownHandler):
-    def __init__(self, metrics_server_address):
+    def __init__(self, metrics_server_address: tuple[str, int]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._server = None
         self._metrics_server_address = metrics_server_address
