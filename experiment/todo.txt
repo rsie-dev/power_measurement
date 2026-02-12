@@ -1,4 +1,3 @@
-- identify local/ethernet IP address for metrics server
 - add validation metrics client needs metrics server / client implicit
 - add wait for initial metrics data transfer
 - unify/split up system.csv file
@@ -22,6 +21,7 @@
 - clarify API, put into separate package
 
 done:
+- use local ethernet IP address for metrics server
 - add hostname validation
 - log time diff to DUT
 - add command work_dir support

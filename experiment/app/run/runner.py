@@ -47,6 +47,7 @@ class Runner:
         with self._add_logfile(resources / "experiment.log"):
             self._logger.info("Experiment start: %s", experiment_module.stem)
             try:
-                experiment.run(resources)
+                metrics_server_address = (args.host, args.port)
+                experiment.run(resources, metrics_server_address)
             finally:
                 self._logger.info("Experiment finished: %s", experiment_module.stem)

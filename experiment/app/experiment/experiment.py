@@ -23,11 +23,9 @@ class Experiment:
         self._steps: List[Step] = steps
         self._runs: int = runs
         self._with_metrics_server: bool = with_metrics_server
-        # ToDo: find out local IP address
-        self._metrics_server_address = ("192.168.1.190", 10000)
         self._metrics_server_start_timeout: float = 3
 
-    def run(self, resources: Path):
+    def run(self, resources: Path, metrics_server_address):
         with SSHManager() as ssh_manager:
             runtime = Runtime(ssh_manager)
             self._initialize(runtime, self._init_steps)
@@ -39,7 +37,7 @@ class Experiment:
             with ThreadPoolExecutor() as executor:
                 future = None
                 if self._with_metrics_server:
-                    metrics_server = MetricsServer()
+                    metrics_server = MetricsServer(metrics_server_address)
                     signal_handler.add_shutdown_handler(metrics_server)
                     measurement_dispatcher = MeasurementDispatcher()
                 else:
@@ -52,7 +50,7 @@ class Experiment:
                             future = executor.submit(self._system_collector, metrics_server, md, event)
                             event.wait(self._metrics_server_start_timeout)
 
-                        environment = Environment(ssh_manager, signal_handler, self._metrics_server_address)
+                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
                         runner = ExperimentRunner(executor, runs_resources, signal_handler, self._steps)
                         runner.execute_runs(self._runs, md, runtime, environment)
                 finally:
@@ -82,6 +80,6 @@ class Experiment:
 
         self._logger.debug("REST system_meter start")
         try:
-            metrics_server.run(self._metrics_server_address, measurement_dispatcher, on_startup)
+            metrics_server.run(measurement_dispatcher, on_startup)
         finally:
             self._logger.debug("REST system_meter shut down")

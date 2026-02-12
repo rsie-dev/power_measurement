@@ -28,21 +28,22 @@ class NoSignalServer(Server, ShutdownHandler):
 
 
 class MetricsServer(ShutdownHandler):
-    def __init__(self):
+    def __init__(self, metrics_server_address):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._server = None
+        self._metrics_server_address = metrics_server_address
 
     def shut_down(self, force: bool) -> None:
         if self._server is None:
             return
         self._server.shut_down(force)
 
-    def run(self, server_address, measurement_logger: MeasurementLogger, startup_call_back: Callable) -> None:
+    def run(self, measurement_logger: MeasurementLogger, startup_call_back: Callable) -> None:
         app = create_app(measurement_logger, startup_call_back)
         config = Config(
             app,
-            host=server_address[0],
-            port=server_address[1],
+            host=self._metrics_server_address[0],
+            port=self._metrics_server_address[1],
             log_config=None,
             log_level=None,
         )
