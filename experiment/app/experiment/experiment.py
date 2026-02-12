@@ -17,12 +17,12 @@ from .experiment_runner import ExperimentRunner
 
 
 class Experiment:
-    def __init__(self, init_steps: List[InitStep], steps: List[Step], runs: int, with_metrics_server: bool):
+    def __init__(self, init_steps: List[InitStep], steps: List[Step], runs: int, with_metrics_collection: bool):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_steps: List[InitStep] = init_steps
         self._steps: List[Step] = steps
         self._runs: int = runs
-        self._with_metrics_server: bool = with_metrics_server
+        self._with_metrics_collection: bool = with_metrics_collection
         self._metrics_server_start_timeout: float = 3
 
     def run(self, resources: Path, metrics_server_address: tuple[str, int]):
@@ -36,7 +36,7 @@ class Experiment:
 
             with ThreadPoolExecutor() as executor:
                 future = None
-                if self._with_metrics_server:
+                if self._with_metrics_collection:
                     metrics_server = MetricsServer(metrics_server_address)
                     signal_handler.add_shutdown_handler(metrics_server)
                     measurement_dispatcher = MeasurementDispatcher()
