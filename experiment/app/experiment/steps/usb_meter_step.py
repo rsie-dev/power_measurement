@@ -42,8 +42,8 @@ class USBMeterStep(Step):
         finally:
             self._logger.info("USB meter shut down")
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-             resources: ExperimentResources):
+    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+                resources: ExperimentResources):
         device = self._find_device()
         self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)

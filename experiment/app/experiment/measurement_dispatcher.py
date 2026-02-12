@@ -22,7 +22,7 @@ class MeasurementDispatcher(MeasurementLogger):
 
     def init(self) -> None:
         for logger in self._logger_dict.values():
-            logger.init()
+            logger.prepare()
 
     def close(self):
         for logger in self._logger_dict.values():

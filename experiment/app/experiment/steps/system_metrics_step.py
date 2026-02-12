@@ -19,9 +19,9 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._host_name = host_name
         self._telegraf_server = None
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-             resources: ExperimentResources):
-        super().init(environment, measurement, resources)
+    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+                resources: ExperimentResources):
+        super().prepare(environment, measurement, resources)
         measurement.register_for_system_meter(self._host_name)
         self._telegraf_server = environment.get_metrics_server()
         # ToDo: log to resource folder?

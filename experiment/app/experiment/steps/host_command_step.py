@@ -31,8 +31,8 @@ class HostCommandStep(Step):
         self._ssh_user = ssh_user
         self._commands: list[Command] = commands
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-             resources: ExperimentResources):
+    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+                resources: ExperimentResources):
         environment.register_ssh_connection(self._ssh_user, self._host)
 
     def _execute_commands(self, connection: Connection):

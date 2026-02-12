@@ -34,10 +34,10 @@ class ExperimentRunner:
 
     def _execute_run(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
                      measurement: ExperimentMeasurement, resources: ExperimentResources):
-        self._logger.info("Initialize all steps")
+        self._logger.info("Prepare all steps")
         for step in self._steps:
-            self._logger.debug("init step: %s", step.name)
-            step.init(environment, measurement, resources)
+            self._logger.debug("prepare step: %s", step.name)
+            step.prepare(environment, measurement, resources)
 
         try:
             self._logger.info("Starting all steps")

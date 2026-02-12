@@ -26,8 +26,8 @@ class InitStep(BaseStep):
 
 class Step(BaseStep):
 
-    def init(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-             resources: ExperimentResources) -> None:
+    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+                resources: ExperimentResources) -> None:
         pass
 
     def start(self, executor: Executor) -> None:

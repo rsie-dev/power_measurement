@@ -72,7 +72,7 @@ class Experiment:
         initial_environment = InitialEnvironment(runtime.ssh_manager)
         self._logger.info("Initialize %d step(s)", len(init_steps))
         for step in init_steps:
-            self._logger.debug("init step: %s", step.name)
+            self._logger.info("Init step: %s", step.name)
             step.init(initial_environment)
             step.execute(runtime)
 
