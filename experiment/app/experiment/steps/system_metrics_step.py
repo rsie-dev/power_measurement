@@ -17,15 +17,23 @@ from .csv_metrics_logger import CSVMetricsLogger, MetricType
 
 
 class StartupMonitor(MeasurementLogger):
+    def __init__(self, _host_name: str, measurement: ExperimentMeasurement):
+        self._host_name = _host_name
+        self._measurement = measurement
+        self._startup_event = Event()
 
-    def __init__(self, startup_event: Event):
-        self._startup_event = startup_event
+    @property
+    def startup_event(self):
+        return self._startup_event
 
     def init(self) -> None:
         pass
 
+    def start(self) -> None:
+        self._measurement.register_for_system_meter(self._host_name, self)
+
     def close(self):
-        pass
+        self._measurement.unregister_for_system_meter(self._host_name, self)
 
     def log(self, measurement: SystemMeasurement) -> None:
         self._startup_event.set()
@@ -40,13 +48,13 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._system_logger = None
         self._cpu_logger = None
         self._metrics_client_timeout: float = 10
-        self._client_event = Event()
-        self._startup_monitor = StartupMonitor(self._client_event)
+        self._startup_monitor = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
         super().prepare(environment, measurement, resources)
 
+        self._startup_monitor = StartupMonitor(self._host_name, measurement)
         self._register_loggers(resources, measurement)
         telegraf_server = environment.get_metrics_server()
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
@@ -59,8 +67,8 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv")
         measurement.register_for_system_meter(self._host_name, self._system_logger)
         measurement.register_for_system_meter(self._host_name, self._cpu_logger)
-        self._client_event.clear()
-        measurement.register_for_system_meter(self._host_name, self._startup_monitor)
+        #self._client_event.clear()
+        #measurement.register_for_system_meter(self._host_name, self._startup_monitor)
 
     def _get_ntp_delta(self):
         ntp_client = ntplib.NTPClient()
@@ -73,10 +81,15 @@ class StartSystemMetricsClientStep(HostCommandStep):
         return offset_delta
 
     def _execute_commands(self, connection: Connection):
+        startup_event = self._startup_monitor.startup_event
+        self._startup_monitor.start()
         self._logger.info("Start telegraf on: %s", self._host)
         connection.run("sudo systemctl start telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
-        self._logger.info("Wait for telegraf client...")
-        self._client_event.wait(self._metrics_client_timeout)
+        self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
+        try:
+            startup_event.wait(self._metrics_client_timeout)
+        finally:
+            self._startup_monitor.close()
 
     def _execute_stop_command(self, connection: Connection):
         self._logger.info("Stop telegraf on: %s", self._host)
@@ -87,7 +100,7 @@ class StartSystemMetricsClientStep(HostCommandStep):
         try:
             self._execute_stop_command(connection)
         finally:
-            measurement.unregister_for_system_meter(self._host_name, self._startup_monitor)
+            #measurement.unregister_for_system_meter(self._host_name, self._startup_monitor)
             if self._system_logger:
                 measurement.unregister_for_system_meter(self._host_name, self._system_logger)
                 self._system_logger.close()

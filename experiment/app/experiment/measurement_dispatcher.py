@@ -45,5 +45,5 @@ class MeasurementDispatcher(MeasurementLogger):
     def log(self, measurement: SystemMeasurement) -> None:
         host = measurement.tags["host"]
         logger_list = self._logger_dict.get(host, [])
-        for logger in logger_list:
+        for logger in logger_list[:]:
             logger.log(measurement)
