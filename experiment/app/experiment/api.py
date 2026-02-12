@@ -63,14 +63,13 @@ class HostCommandBuilder(Builder):
 
 
 class HostBuilder(CompositeBuilder):
-    def __init__(self, parent: ExperimentBuilder, host_name: str, host: str, ssh_user: str, as_metrics_client: bool):
+    def __init__(self, parent: ExperimentBuilder, host_name: str, host: str, ssh_user: str):
         super().__init__()
         self._parent = parent
         self._host_name = host_name
         self._host = host
         self._ssh_user = ssh_user
         self._serial_number = None
-        self._as_metrics_client = as_metrics_client
 
     @property
     def host(self) -> str:
@@ -88,7 +87,7 @@ class HostBuilder(CompositeBuilder):
         if self._serial_number:
             step = USBMeterStep(self._host, self._serial_number)
             steps.append(step)
-        if self._as_metrics_client:
+        if self._parent.collect_metrics:
             step = StartSystemMetricsClientStep(self._host_name, self._host, self._ssh_user)
             steps.append(step)
         steps.extend(self._steps)
@@ -104,6 +103,10 @@ class ExperimentBuilder(CompositeBuilder):
         self._with_metrics_collection: bool = False
         self._init_steps: List[InitStep] = []
 
+    @property
+    def collect_metrics(self) -> bool:
+        return self._with_metrics_collection
+
     def with_runs(self, runs: int) -> Self:
         self._runs = runs
         return self
@@ -115,7 +118,7 @@ class ExperimentBuilder(CompositeBuilder):
     def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         ssh_user = ssh_user or "dietpi"
         self._init_steps.append(HostnameValidationStep(host_name, host, ssh_user))
-        return HostBuilder(self, host_name, host, ssh_user, self._with_metrics_collection)
+        return HostBuilder(self, host_name, host, ssh_user)
 
     def build(self) -> Experiment:
         runs = self._runs or 1
