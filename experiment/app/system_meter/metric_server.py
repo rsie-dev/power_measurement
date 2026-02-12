@@ -37,12 +37,12 @@ class MetricsServer(ShutdownHandler):
             return
         self._server.shut_down(force)
 
-    def run(self, host: str, port: int, measurement_logger: MeasurementLogger, startup_call_back: Callable) -> None:
+    def run(self, server_address, measurement_logger: MeasurementLogger, startup_call_back: Callable) -> None:
         app = create_app(measurement_logger, startup_call_back)
         config = Config(
             app,
-            host=host,
-            port=port,
+            host=server_address[0],
+            port=server_address[1],
             log_config=None,
             log_level=None,
         )

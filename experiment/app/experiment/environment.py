@@ -13,10 +13,10 @@ class InitialEnvironment(InitEnvironment):
 
 
 class Environment(InitialEnvironment, ExperimentEnvironment):
-    def __init__(self, ssh_manager: SSHManager, signal_handler: SignalHandler, metrics_server):
+    def __init__(self, ssh_manager: SSHManager, signal_handler: SignalHandler, metrics_server_address):
         super().__init__(ssh_manager)
         self._signal_handler = signal_handler
-        self._metrics_server: str = metrics_server
+        self._metrics_server: str = "%s:%s" % (metrics_server_address[0], metrics_server_address[1])
 
     def get_metrics_server(self) -> str:
         return self._metrics_server

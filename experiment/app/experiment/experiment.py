@@ -2,7 +2,7 @@ import logging
 from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
-import threading
+from threading import Event
 import contextlib
 
 
@@ -24,8 +24,7 @@ class Experiment:
         self._runs: int = runs
         self._with_metrics_server: bool = with_metrics_server
         # ToDo: find out local IP address
-        self._metrics_server_host: str = "192.168.1.190"
-        self._metrics_server_port: int = 10000
+        self._metrics_server_address = ("192.168.1.190", 10000)
         self._metrics_server_start_timeout: float = 3
 
     def run(self, resources: Path):
@@ -49,12 +48,11 @@ class Experiment:
                 try:
                     with measurement_dispatcher as md:
                         if md:
-                            event = threading.Event()
+                            event = Event()
                             future = executor.submit(self._system_collector, metrics_server, md, event)
                             event.wait(self._metrics_server_start_timeout)
 
-                        metrics_server_address = "%s:%s" % (self._metrics_server_host, self._metrics_server_port)
-                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
+                        environment = Environment(ssh_manager, signal_handler, self._metrics_server_address)
                         runner = ExperimentRunner(executor, runs_resources, signal_handler, self._steps)
                         runner.execute_runs(self._runs, md, runtime, environment)
                 finally:
@@ -76,13 +74,14 @@ class Experiment:
             step.init(initial_environment)
             step.execute(runtime)
 
-    def _system_collector(self, metrics_server, measurement_dispatcher: MeasurementDispatcher, event):
+    def _system_collector(self, metrics_server: MetricsServer, measurement_dispatcher: MeasurementDispatcher,
+                          event: Event) -> None:
         def on_startup():
             self._logger.debug("REST system_meter running")
             event.set()
 
         self._logger.debug("REST system_meter start")
         try:
-            metrics_server.run(self._metrics_server_host, self._metrics_server_port, measurement_dispatcher, on_startup)
+            metrics_server.run(self._metrics_server_address, measurement_dispatcher, on_startup)
         finally:
             self._logger.debug("REST system_meter shut down")
