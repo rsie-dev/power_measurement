@@ -1,5 +1,6 @@
 import logging
 import datetime
+from pathlib import Path
 
 from fabric import Connection
 import ntplib
@@ -10,6 +11,7 @@ from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .host_command_step import HostCommandStep
+from .csv_metrics_logger import CSVMetricsLogger, MetricType
 
 
 class StartSystemMetricsClientStep(HostCommandStep):
@@ -18,15 +20,25 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host_name = host_name
         self._telegraf_server_address = None
+        self._system_logger = None
+        self._cpu_logger = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
         super().prepare(environment, measurement, resources)
-        measurement.register_for_system_meter(self._host_name)
+
+        self._register_loggers(resources, measurement)
         telegraf_server = environment.get_metrics_server()
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
         # ToDo: log to resource folder?
         self._get_ntp_delta()
+
+    def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
+        metrics_resources_path = resources.metrics_resources_path()
+        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv")
+        self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv")
+        measurement.register_for_system_meter(self._host_name, self._system_logger)
+        measurement.register_for_system_meter(self._host_name, self._cpu_logger)
 
     def _get_ntp_delta(self):
         ntp_client = ntplib.NTPClient()
@@ -48,5 +60,12 @@ class StartSystemMetricsClientStep(HostCommandStep):
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
         connection = runtime.get_ssh_connection(self._ssh_user, self._host)
-        self._execute_stop_command(connection)
-        measurement.unregister_for_system_meter(self._host_name)
+        try:
+            self._execute_stop_command(connection)
+        finally:
+            if self._system_logger:
+                measurement.unregister_for_system_meter(self._host_name, self._system_logger)
+                self._system_logger.close()
+            if self._cpu_logger:
+                measurement.unregister_for_system_meter(self._host_name, self._cpu_logger)
+                self._cpu_logger.close()

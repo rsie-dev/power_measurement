@@ -28,8 +28,8 @@ class ExperimentRunner:
             self._logger.info("Start run %d/%d", run + 1, run_count)
             run_resource = self._resource_path / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
+            measurement = Measurement(measurement_dispatcher)
             resources = Resources(run_resource)
-            measurement = Measurement(measurement_dispatcher, resources)
             self._execute_run(environment, runtime, measurement, resources)
 
     def _execute_run(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
