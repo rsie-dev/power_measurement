@@ -1,6 +1,5 @@
 import logging
 import datetime
-from pathlib import Path
 
 from fabric import Connection
 import ntplib

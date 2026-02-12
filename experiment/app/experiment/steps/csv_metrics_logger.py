@@ -11,6 +11,14 @@ class MetricType(Enum):
     CPU = 2
 
 
+def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
+    if measurement.name == "system":
+        return MetricType.SYSTEM
+    if measurement.name == "cpu":
+        return MetricType.CPU
+    raise RuntimeError("unknown measurement name: %s" % measurement.name)
+
+
 class CSVMetricsLogger(MeasurementLogger):
     FIELD_NAMES = ["timestamp", "rel time", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
@@ -44,7 +52,7 @@ class CSVMetricsLogger(MeasurementLogger):
             self._start_time = measurement.timestamp
         rel_time = measurement.timestamp - self._start_time
 
-        measurement_type = self._get_measuremnt_type(measurement)
+        measurement_type = _get_measuremnt_type(measurement)
         if self._type != measurement_type:
             return
 
@@ -76,10 +84,3 @@ class CSVMetricsLogger(MeasurementLogger):
             }
 
         self._writer.writerow(entry)
-
-    def _get_measuremnt_type(self, measurement: SystemMeasurement) -> MetricType:
-        if measurement.name == "system":
-            return MetricType.SYSTEM
-        elif measurement.name == "cpu":
-            return MetricType.CPU
-        raise RuntimeError("unknown measurement name: %s" % measurement.name)
