@@ -19,6 +19,7 @@
 - add pypi deployment
 - restructure log and resource files/folders
 - add support for ssh keys
+- clarify API, put into separate package
 
 done:
 - add hostname validation
