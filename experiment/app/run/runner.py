@@ -30,17 +30,22 @@ class Runner:
 
     @contextmanager
     def _add_logfile(self, logfile: Path):
-        config = self._get_logging_config().copy()
         handler = logging.FileHandler(logfile, mode="w")
         handler.setLevel(logging.DEBUG)
-        config_file_formatter = config["formatters"]["file"]
-        config_file_formatter["fmt"] = config_file_formatter.pop("format")
-        formatter_class = self._get_formatter_class(config_file_formatter)
-        formatter = formatter_class(**config_file_formatter)
+        formatter_info = self._get_formatter_info()
+        formatter_class, formatter_config = formatter_info
+        formatter = formatter_class(**formatter_config)
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
         yield
         logging.getLogger().removeHandler(handler)
+
+    def _get_formatter_info(self) -> tuple[type, dict]:
+        config = self._get_logging_config().copy()
+        config_file_formatter = config["formatters"]["file"]
+        config_file_formatter["fmt"] = config_file_formatter.pop("format")
+        formatter_class = self._get_formatter_class(config_file_formatter)
+        return (formatter_class, config_file_formatter)
 
     def _get_formatter_class(self, config: dict) -> type:
         if "()" in config:
