@@ -45,4 +45,4 @@ class HostnameInfoStep(InitStep):
     def _report_os_info(self, connection):
         result = connection.run('cat /etc/os-release', hide=True)
         release_info = dotenv.dotenv_values(stream=StringIO(result.stdout))
-        self._logger.info("OS : %s %s", release_info["NAME"], release_info["DEBIAN_VERSION_FULL"])
+        self._logger.info("OS:  %s %s", release_info["NAME"], release_info["DEBIAN_VERSION_FULL"])
