@@ -23,6 +23,7 @@ class HostnameInfoStep(InitStep):
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         connection = runtime.get_ssh_connection(self._ssh_user, self._host)
+        self._logger.info("Hostname: %s", self._host_name)
         self._report_cpu_info(connection)
         self._report_os_info(connection)
 
@@ -34,7 +35,7 @@ class HostnameInfoStep(InitStep):
         model = self._get_data(cpu_info, "Model:")
         cpu_count = int(self._get_data(cpu_info, "CPU(s):"))
         vendor_id = self._get_data(cpu_info, "Vendor ID:")
-        self._logger.info("CPU: %d %s %s (%s) %s", cpu_count, vendor_id, model_name, model, architecture)
+        self._logger.info("CPU:      %d %s %s (%s) %s", cpu_count, vendor_id, model_name, model, architecture)
 
     def _get_data(self, cpu_info, field):
         for entry in cpu_info["lscpu"]:
@@ -45,4 +46,4 @@ class HostnameInfoStep(InitStep):
     def _report_os_info(self, connection):
         result = connection.run('cat /etc/os-release', hide=True)
         release_info = dotenv.dotenv_values(stream=StringIO(result.stdout))
-        self._logger.info("OS:  %s %s", release_info["NAME"], release_info["DEBIAN_VERSION_FULL"])
+        self._logger.info("OS:       %s %s", release_info["NAME"], release_info["DEBIAN_VERSION_FULL"])
