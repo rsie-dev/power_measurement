@@ -14,7 +14,7 @@ class Runner:
     def run_experiment(self, args):
         experiment_loader = ExperimentLoader()
         experiment_module = Path(args.experiment[0])
-        experiment = experiment_loader.load_steps_from_path(experiment_module)
+        experiment = experiment_loader.load_experiment_from_path(experiment_module)
         resources = self._resources / experiment_module.stem
         self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
         resources.mkdir(parents=True, exist_ok=True)
