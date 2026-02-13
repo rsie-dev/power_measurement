@@ -46,8 +46,7 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._formatter = formatter
         self._host_name = host_name
         self._telegraf_server_address = None
-        self._system_logger = None
-        self._cpu_logger = None
+        self._metrics_logger : dict[MetricType, CSVMetricsLogger] = {}
         self._metrics_client_timeout: float = 5
         self._startup_monitor = None
 
@@ -64,11 +63,12 @@ class StartSystemMetricsClientStep(HostCommandStep):
 
     def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
         metrics_resources_path = resources.metrics_resources_path()
-        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv",
-                                               self._formatter)
-        self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
-        measurement.register_for_system_meter(self._host_name, self._system_logger)
-        measurement.register_for_system_meter(self._host_name, self._cpu_logger)
+        system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv", self._formatter)
+        cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
+        self._metrics_logger[MetricType.SYSTEM] = system_logger
+        self._metrics_logger[MetricType.CPU] = cpu_logger
+        for logger in self._metrics_logger.values():
+            measurement.register_for_system_meter(self._host_name, logger)
 
     def _get_ntp_delta(self):
         ntp_client = ntplib.NTPClient()
@@ -100,9 +100,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
         try:
             self._execute_stop_command(connection)
         finally:
-            if self._system_logger:
-                measurement.unregister_for_system_meter(self._host_name, self._system_logger)
-                self._system_logger.close()
-            if self._cpu_logger:
-                measurement.unregister_for_system_meter(self._host_name, self._cpu_logger)
-                self._cpu_logger.close()
+            for logger in self._metrics_logger.values():
+                measurement.unregister_for_system_meter(self._host_name, logger)
+                logger.close()
