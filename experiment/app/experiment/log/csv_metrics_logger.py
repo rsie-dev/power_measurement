@@ -1,6 +1,7 @@
 import csv
 from pathlib import Path
 from enum import Enum
+import logging
 
 from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
@@ -27,11 +28,12 @@ class CSVMetricsLogger(MeasurementLogger):
                    "usage_guest", "usage_guest_nice", "usage_irq", "usage_softirq", "usage_steal",
                    ]
 
-    def __init__(self, metric_type: MetricType, path: Path):
+    def __init__(self, metric_type: MetricType, path: Path, formatter: logging.Formatter):
         self._type = metric_type
         self._stream = path.open(mode="w", encoding="utf-8")
         headers = self.SYSTEM_FIELD_NAMES if self._type == MetricType.SYSTEM else self.CPU_FIELD_NAMES
         self._writer = csv.DictWriter(self._stream, fieldnames=headers)
+        self._formatter = formatter
         self._start_time = None
 
     def init(self) -> None:
@@ -56,8 +58,12 @@ class CSVMetricsLogger(MeasurementLogger):
         if self._type != measurement_type:
             return
 
+        timestamp = measurement.timestamp.timestamp()
+        log_record = logging.makeLogRecord({"created": timestamp})
+        formatted_time = self._formatter.formatTime(log_record)
+
         entry = {
-            "timestamp": f"{measurement.timestamp.isoformat(timespec="milliseconds")}",
+            "timestamp": f"{formatted_time}",
             "rel time": f"{rel_time.total_seconds():7.2f}",
             "host": f"{measurement.tags["host"]}",
             "name": f"{measurement.name}",

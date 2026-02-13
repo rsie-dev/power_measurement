@@ -17,8 +17,8 @@ from .host_command_step import HostCommandStep
 
 
 class StartupMonitor(MeasurementLogger):
-    def __init__(self, _host_name: str, measurement: ExperimentMeasurement):
-        self._host_name = _host_name
+    def __init__(self, host_name: str, measurement: ExperimentMeasurement):
+        self._host_name = host_name
         self._measurement = measurement
         self._startup_event = Event()
 
@@ -40,9 +40,10 @@ class StartupMonitor(MeasurementLogger):
 
 
 class StartSystemMetricsClientStep(HostCommandStep):
-    def __init__(self, host_name: str, host: str, ssh_user: str):
+    def __init__(self, formatter: logging.Formatter, host_name: str, host: str, ssh_user: str):
         super().__init__(host, ssh_user, [])
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._formatter = formatter
         self._host_name = host_name
         self._telegraf_server_address = None
         self._system_logger = None
@@ -63,8 +64,8 @@ class StartSystemMetricsClientStep(HostCommandStep):
 
     def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
         metrics_resources_path = resources.metrics_resources_path()
-        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv")
-        self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv")
+        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv", self._formatter)
+        self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
         measurement.register_for_system_meter(self._host_name, self._system_logger)
         measurement.register_for_system_meter(self._host_name, self._cpu_logger)
 

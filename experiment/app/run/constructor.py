@@ -91,7 +91,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             step = USBMeterStep(formatter, self._serial_number)
             steps.append(step)
         if self._parent.collect_metrics:
-            step = StartSystemMetricsClientStep(self._host_name, self._host, self._ssh_user)
+            formatter = formatter_class(**formatter_config)
+            step = StartSystemMetricsClientStep(formatter, self._host_name, self._host, self._ssh_user)
             steps.append(step)
         steps.extend(self._steps)
         self._parent.add_steps(steps)
