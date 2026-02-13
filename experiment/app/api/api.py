@@ -3,9 +3,8 @@ from typing import Optional
 from typing import Self
 from abc import ABC, abstractmethod
 
-
 from app.experiment.steps import Command
-from app.experiment import Experiment
+from .experiment import Experiment
 
 
 class Builder(ABC):

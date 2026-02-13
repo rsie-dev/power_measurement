@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 from threading import Event
 import contextlib
 
-
+import app.api
 from app.common import SignalHandler
 from app.system_meter import MetricsServer
 from .steps import Step, InitStep
@@ -16,7 +16,7 @@ from .runtime import Runtime
 from .experiment_runner import ExperimentRunner
 
 
-class Experiment:
+class Experiment(app.api.Experiment):
     def __init__(self, init_steps: List[InitStep], steps: List[Step], runs: int, with_metrics_collection: bool):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_steps: List[InitStep] = init_steps
