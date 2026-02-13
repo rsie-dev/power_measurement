@@ -5,9 +5,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from app.api.constructor import ExperimentExecutor
-from app.api.constructor import ExperimentConstructor
 import app.api
+from .constructor import ExperimentExecutor
+from .constructor import ExperimentConstructor
 
 
 class ExperimentLoader:
