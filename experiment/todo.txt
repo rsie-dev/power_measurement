@@ -7,7 +7,6 @@
 - suppress systemd timers etc. during execution
 - add time adjustment to system log?
 - add support to retreive command execution time with time command
-- log used multimeter device
 - log DUT type/name
 - log git informations
 - add pypi deployment
@@ -15,6 +14,7 @@
 - add support for ssh keys
 
 done:
+- log used multimeter device
 - copy experiment file to resource folder
 - clarified API, put into separate package
 - unified log file timestamps, use same format
