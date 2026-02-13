@@ -10,6 +10,7 @@ import ifaddr
 
 from .usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from .usb_meter.device import Device
+from .logging import get_formatter_info
 
 
 class ExperimentMain:
@@ -31,20 +32,22 @@ class ExperimentMain:
         num_log_level = 50 - min(4, 2 + args.verbose) * 10
         log_level = logging.getLevelName(num_log_level)
 
+        yaml_config = self._get_logging_config()
+        yaml_config['handlers']['console']['level'] = log_level
+        if log_file_name:
+            yaml_config['handlers']['file']['filename'] = log_file_name
+            yaml_config['loggers']['']['handlers'].append("file")
+            yaml_config['loggers']['uvicorn.access']['handlers'].append("file")
+        else:
+            del yaml_config['handlers']['file']
+        logging.config.dictConfig(yaml_config)
+
+    def _get_logging_config(self):
         folder = self._get_app_folder()
         config = folder / 'logging.yaml'
-
         with open(config, "rt", encoding="UTF_8") as f:
             yaml = YAML(typ="safe")
-            yaml_config = yaml.load(f)
-            yaml_config['handlers']['console']['level'] = log_level
-            if log_file_name:
-                yaml_config['handlers']['file']['filename'] = log_file_name
-                yaml_config['loggers']['']['handlers'].append("file")
-                yaml_config['loggers']['uvicorn.access']['handlers'].append("file")
-            else:
-                del yaml_config['handlers']['file']
-            logging.config.dictConfig(yaml_config)
+            return yaml.load(f)
 
     def _split_id(self, id_str):
         tokens = id_str.split(":")
@@ -92,10 +95,11 @@ class ExperimentMain:
         self._logger.info("Serial number: %s", device.serial_number)
 
     def _run_experiment(self, args):
-        #device = self._find_device(args)
         from app.run import Runner  # pylint: disable=import-outside-toplevel
         resources = self._get_resources_folder()
-        runner = Runner(resources)
+        log_config = self._get_logging_config()
+        formatter_info: tuple[type, dict] = get_formatter_info(log_config)
+        runner = Runner(resources, formatter_info)
         runner.run_experiment(args)
 
     def _get_default_host(self):
