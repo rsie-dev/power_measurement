@@ -13,17 +13,20 @@ class Runner:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._resources = resources
 
-    def _get_app_folder(self):
-        script = Path(__file__).resolve()
-        folder = script.parent.parent
-        return folder
-
-    def _get_logging_config(self):
-        folder = self._get_app_folder()
-        config = folder / 'logging.yaml'
-        with open(config, "rt", encoding="UTF_8") as f:
-            yaml = YAML(typ="safe")
-            return yaml.load(f)
+    def run_experiment(self, args):
+        experiment_loader = ExperimentLoader()
+        experiment_module = Path(args.experiment[0])
+        experiment = experiment_loader.load_steps_from_path(experiment_module)
+        resources = self._resources / experiment_module.stem
+        self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
+        resources.mkdir(parents=True, exist_ok=True)
+        with self._add_logfile(resources / "experiment.log"):
+            self._logger.info("Experiment start: %s", experiment_module.stem)
+            try:
+                metrics_server_address = (args.host, args.port)
+                experiment.run(resources, metrics_server_address)
+            finally:
+                self._logger.info("Experiment finished: %s", experiment_module.stem)
 
     @contextmanager
     def _add_logfile(self, logfile: Path):
@@ -39,7 +42,7 @@ class Runner:
         yield
         logging.getLogger().removeHandler(handler)
 
-    def _get_formatter_class(self, config: dict):
+    def _get_formatter_class(self, config: dict) -> type:
         if "()" in config:
             cls_path = config.pop("()")
             module_path, class_name = cls_path.rsplit(".", 1)
@@ -48,17 +51,14 @@ class Runner:
             return formatter_class
         return logging.Formatter
 
-    def run_experiment(self, args):
-        experiment_loader = ExperimentLoader()
-        experiment_module = Path(args.experiment[0])
-        experiment = experiment_loader.load_steps_from_path(experiment_module)
-        resources = self._resources / experiment_module.stem
-        self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
-        resources.mkdir(parents=True, exist_ok=True)
-        with self._add_logfile(resources / "experiment.log"):
-            self._logger.info("Experiment start: %s", experiment_module.stem)
-            try:
-                metrics_server_address = (args.host, args.port)
-                experiment.run(resources, metrics_server_address)
-            finally:
-                self._logger.info("Experiment finished: %s", experiment_module.stem)
+    def _get_logging_config(self):
+        folder = self._get_app_folder()
+        config = folder / 'logging.yaml'
+        with open(config, "rt", encoding="UTF_8") as f:
+            yaml = YAML(typ="safe")
+            return yaml.load(f)
+
+    def _get_app_folder(self):
+        script = Path(__file__).resolve()
+        folder = script.parent.parent
+        return folder
