@@ -4,10 +4,10 @@ from typing import List, Optional
 from typing import Self
 
 from app.experiment.steps import Step, InitStep
-from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
+from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, CommandExecutor
 from app.experiment.steps import HostnameValidationStep
 from app.experiment import ExperimentExecutor
-from .api import Builder, CommandBuilder, HostCommandBuilder, HostBuilder, ExperimentBuilder
+from .api import Builder, CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder
 
 
 class Constructor(Builder):
@@ -33,7 +33,7 @@ class CommandConstructor(Constructor, CommandBuilder):
         return self
 
     def done(self) -> HostCommandBuilder:
-        command = Command(self._command, self._work_dir)
+        command = CommandExecutor(self._command, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
@@ -46,7 +46,7 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
         self._commands: list[Command] = []
 
     def execute(self, command: str) -> Self:
-        self.add_command(Command(command))
+        self.add_command(CommandExecutor(command))
         return self
 
     def execute_with(self, command: str) -> CommandBuilder:

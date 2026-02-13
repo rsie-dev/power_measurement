@@ -3,7 +3,7 @@ from typing import Optional
 from typing import Self
 from abc import ABC, abstractmethod
 
-from app.experiment.steps import Command
+from .command import Command
 from .experiment import Experiment
 
 

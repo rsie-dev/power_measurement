@@ -3,6 +3,7 @@ from typing import Optional
 
 from fabric import Connection
 
+from app.api import Command
 from .step import Step
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
@@ -10,7 +11,7 @@ from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 
 
-class Command:
+class CommandExecutor(Command):
     def __init__(self, command: str, work_dir: Optional[str] = None):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
