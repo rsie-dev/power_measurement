@@ -47,7 +47,7 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._telegraf_server_address = None
         self._system_logger = None
         self._cpu_logger = None
-        self._metrics_client_timeout: float = 10
+        self._metrics_client_timeout: float = 5
         self._startup_monitor = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,

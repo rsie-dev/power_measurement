@@ -148,7 +148,7 @@ def config_telegraf():
 
   ## Default flushing interval for all outputs. Maximum flush_interval will be
   ## flush_interval + flush_jitter
-  flush_interval = "10s"
+  flush_interval = "5s"
   ## Jitter the flush interval by a random amount. This is primarily to avoid
   ## large write spikes for users running a large number of telegraf instances.
   ## ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
