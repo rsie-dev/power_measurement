@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from app.api.constructor import ExperimentExecutor
+from app.api.constructor import ExperimentConstructor
+import app.api
 
 
 class ExperimentLoader:
@@ -21,6 +23,8 @@ class ExperimentLoader:
         self._logger.info("load experiment module: %s", path)
         if not path.exists():
             raise FileNotFoundError(path)
+
+        app.api.EXPERIMENT_CONSTRUCTOR = ExperimentConstructor()
 
         unique_name = f"{package_name or ""}.{path.stem}"
         spec = importlib.util.spec_from_file_location(unique_name, path)

@@ -2,7 +2,6 @@ from .experiment import Experiment
 from .command import Command
 from .api import Builder
 from .api import ExperimentBuilder, HostBuilder, HostCommandBuilder
-from .constructor import ExperimentConstructor
 
 
 __all__ = [
@@ -14,5 +13,8 @@ __all__ = [
 ]
 
 
+EXPERIMENT_CONSTRUCTOR = None
+
+
 def get_experiment_builder():
-    return ExperimentConstructor()
+    return EXPERIMENT_CONSTRUCTOR
