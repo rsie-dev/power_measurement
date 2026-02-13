@@ -8,12 +8,12 @@ import humanize
 
 from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
+from app.experiment.log import CSVMetricsLogger, MetricType
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .host_command_step import HostCommandStep
-from .csv_metrics_logger import CSVMetricsLogger, MetricType
 
 
 class StartupMonitor(MeasurementLogger):

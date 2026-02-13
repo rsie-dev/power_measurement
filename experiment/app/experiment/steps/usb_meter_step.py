@@ -4,12 +4,12 @@ from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
+from app.experiment.log import CSVElectricLogger
 from .step import Step
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
-from .csv_electrical_logger import CSVElectricLogger
 from .signal_stop_provider import SignalStopProvider
 
 
