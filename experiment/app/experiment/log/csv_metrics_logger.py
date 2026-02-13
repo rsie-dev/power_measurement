@@ -5,6 +5,7 @@ import logging
 
 from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
+from .logger_base import LoggerBase
 
 
 class MetricType(Enum):
@@ -20,7 +21,7 @@ def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
     raise RuntimeError("unknown measurement name: %s" % measurement.name)
 
 
-class CSVMetricsLogger(MeasurementLogger):
+class CSVMetricsLogger(LoggerBase, MeasurementLogger):
     FIELD_NAMES = ["timestamp", "rel time", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
     CPU_FIELD_NAMES = FIELD_NAMES + ["entity",
@@ -29,11 +30,11 @@ class CSVMetricsLogger(MeasurementLogger):
                    ]
 
     def __init__(self, metric_type: MetricType, path: Path, formatter: logging.Formatter):
+        super().__init__(formatter)
         self._type = metric_type
         self._stream = path.open(mode="w", encoding="utf-8")
         headers = self.SYSTEM_FIELD_NAMES if self._type == MetricType.SYSTEM else self.CPU_FIELD_NAMES
         self._writer = csv.DictWriter(self._stream, fieldnames=headers)
-        self._formatter = formatter
         self._start_time = None
 
     def init(self) -> None:
@@ -58,9 +59,7 @@ class CSVMetricsLogger(MeasurementLogger):
         if self._type != measurement_type:
             return
 
-        timestamp = measurement.timestamp.timestamp()
-        log_record = logging.makeLogRecord({"created": timestamp})
-        formatted_time = self._formatter.formatTime(log_record)
+        formatted_time = self._format_time(measurement.timestamp)
 
         entry = {
             "timestamp": f"{formatted_time}",

@@ -5,17 +5,18 @@ import logging
 
 from app.usb_meter.data_logger import DataLogger
 from app.usb_meter.measurement import ElectricalMeasurement
+from .logger_base import LoggerBase
 
 
-class CSVElectricLogger(DataLogger):
+class CSVElectricLogger(LoggerBase, DataLogger):
     FIELD_NAMES = ["timestamp", "rel time", "voltage_V", "current_A"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):
+        super().__init__(formatter)
         self._stream = path.open(mode="w", encoding="utf-8")
         self._writer = csv.DictWriter(self._stream, fieldnames=self.FIELD_NAMES)
         self._start_time = None
         self._latest_only = latest_only
-        self._formatter = formatter
 
     def __enter__(self):
         self._init()
@@ -32,9 +33,7 @@ class CSVElectricLogger(DataLogger):
             self._start_time = data.timestamp
         rel_time = data.timestamp - self._start_time
 
-        timestamp = data.timestamp.timestamp()
-        log_record = logging.makeLogRecord({"created": timestamp})
-        formatted_time = self._formatter.formatTime(log_record)
+        formatted_time = self._format_time(data.timestamp)
 
         entry = {
             "timestamp": f"{formatted_time}",
