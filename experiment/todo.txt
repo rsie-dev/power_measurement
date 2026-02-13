@@ -1,3 +1,4 @@
+- unify log file timestams, use same format
 - copy experiment file to resource folder
 - add command timing support
 - add support for warmup step/time
