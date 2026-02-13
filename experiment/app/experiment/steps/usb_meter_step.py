@@ -1,6 +1,7 @@
 import logging
 from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
+from pathlib import Path
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
@@ -13,17 +14,22 @@ from .experiment_resources import ExperimentResources
 from .signal_stop_provider import SignalStopProvider
 
 
+class LogContext:
+    def __init__(self, formatter: logging.Formatter):
+        self.formatter = formatter
+        self.electrical_log = None
+
+
 class USBMeterStep(Step):
     def __init__(self, formatter: logging.Formatter, serial_number: str):
         super().__init__("USB meter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._serial_number = serial_number
         self._usb_meter = None
-        self._electrical_log = None
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
-        self._formatter = formatter
+        self._log_context = LogContext(formatter)
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -34,11 +40,11 @@ class USBMeterStep(Step):
             raise RuntimeError("Too many devices found with: %s" % self._serial_number)
         return device
 
-    def _electric_collector(self, usb_meter, electrical_log, event):
+    def _electric_collector(self, usb_meter: USBMeter, electrical_log: Path, event: Event) -> None:
         self._logger.info("USB meter start")
         event.set()
         try:
-            with CSVElectricLogger(electrical_log, self._formatter, latest_only=True) as data_logger:
+            with CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True) as data_logger:
                 usb_meter.run(data_logger)
         finally:
             self._logger.info("USB meter shut down")
@@ -50,11 +56,11 @@ class USBMeterStep(Step):
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
-        self._electrical_log = resources.electrical_resources_path() / "electrical.csv"
+        self._log_context.electrical_log = resources.electrical_resources_path() / "electrical.csv"
 
     def start(self, executor: Executor):
         event = Event()
-        future = executor.submit(self._electric_collector, self._usb_meter, self._electrical_log, event)
+        future = executor.submit(self._electric_collector, self._usb_meter, self._log_context.electrical_log, event)
         event.wait(self._start_timeout)
         self._future = future
 
