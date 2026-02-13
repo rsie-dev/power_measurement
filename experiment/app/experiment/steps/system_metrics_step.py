@@ -64,7 +64,8 @@ class StartSystemMetricsClientStep(HostCommandStep):
 
     def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
         metrics_resources_path = resources.metrics_resources_path()
-        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv", self._formatter)
+        self._system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv",
+                                               self._formatter)
         self._cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
         measurement.register_for_system_meter(self._host_name, self._system_logger)
         measurement.register_for_system_meter(self._host_name, self._cpu_logger)
