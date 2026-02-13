@@ -7,7 +7,6 @@
 - collect sensor temperature and SBC temperature, too
 - suppress systemd timers etc. during execution
 - add time adjustment to system log?
-- log timestamps with 3 decimal points -> milliseconds precsion
 - add support to retreive command execution time with time command
 - log used multimeter device
 - log DUT type/name
@@ -19,6 +18,7 @@
 done:
 - clarified API, put into separate package
 - unified log file timestamps, use same format
+- log timestamps with 3 decimal points -> milliseconds precsion
 - reduce telegraf batch timeout to 5s
 - add wait for initial metrics data transfer
 - split up system.csv file
