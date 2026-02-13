@@ -6,7 +6,7 @@ from typing import Self
 from app.api.api import Builder, CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, CommandExecutor
-from app.experiment.steps import HostnameValidationStep
+from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.experiment_executor import ExperimentExecutor
 
 
@@ -127,6 +127,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         ssh_user = ssh_user or "dietpi"
         self._init_steps.append(HostnameValidationStep(host_name, host, ssh_user))
+        self._init_steps.append(HostnameInfoStep(host_name, host, ssh_user))
         return HostConstructor(self, host_name, host, ssh_user)
 
     def build(self) -> ExperimentExecutor:
