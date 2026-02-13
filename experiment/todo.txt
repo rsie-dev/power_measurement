@@ -15,9 +15,9 @@
 - add pypi deployment
 - restructure log and resource files/folders
 - add support for ssh keys
-- clarify API, put into separate package
 
 done:
+- clarified API, put into separate package
 - unified log file timestamps, use same format
 - reduce telegraf batch timeout to 5s
 - add wait for initial metrics data transfer

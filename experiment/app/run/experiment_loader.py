@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from app.experiment.api import Experiment
+from app.api.builder import Experiment
 
 
 class ExperimentLoader:
