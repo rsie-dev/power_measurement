@@ -20,16 +20,19 @@ class LogContext:
         self.electrical_log = None
 
 
-class USBMeterStep(Step):
-    def __init__(self, formatter: logging.Formatter, serial_number: str):
-        super().__init__("USB meter")
+class DeviceManager:
+    def __init__(self, serial_number: str):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._serial_number = serial_number
-        self._usb_meter = None
-        self._stop_provider = None
-        self._start_timeout = 3
-        self._future = None
-        self._log_context = LogContext(formatter)
+        self._device = None
+
+    def get_device(self):
+        if not self._device:
+            device = self._find_device()
+            self._logger.info("Multimeter with serial number %s is an %s %s model %s", self._serial_number,
+                              device.manufacturer_name, device.product_name, device.device_info.model.name)
+            self._device = device
+        return self._device
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -39,6 +42,18 @@ class USBMeterStep(Step):
         if next(devices, None):
             raise RuntimeError("Too many devices found with: %s" % self._serial_number)
         return device
+
+
+class USBMeterStep(Step):
+    def __init__(self, formatter: logging.Formatter, serial_number: str):
+        super().__init__("USB meter")
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._device_manager = DeviceManager(serial_number)
+        self._usb_meter = None
+        self._stop_provider = None
+        self._start_timeout = 3
+        self._future = None
+        self._log_context = LogContext(formatter)
 
     def _electric_collector(self, usb_meter: USBMeter, electrical_log: Path, event: Event) -> None:
         self._logger.info("USB meter start")
@@ -51,9 +66,7 @@ class USBMeterStep(Step):
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
-        device = self._find_device()
-        self._logger.info("device with serial number %s is an %s %s model %s", self._serial_number,
-                          device.manufacturer_name, device.product_name, device.device_info.model.name)
+        device = self._device_manager.get_device()
         self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
