@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from contextlib import contextmanager
+import importlib
 
 from ruamel.yaml import YAML
 
@@ -26,16 +27,27 @@ class Runner:
 
     @contextmanager
     def _add_logfile(self, logfile: Path):
-        config = self._get_logging_config()
+        config = self._get_logging_config().copy()
         handler = logging.FileHandler(logfile, mode="w")
         handler.setLevel(logging.DEBUG)
         config_file_formatter = config["formatters"]["file"]
         config_file_formatter["fmt"] = config_file_formatter.pop("format")
-        formatter = logging.Formatter(**(dict(config_file_formatter)))
+        if "()" in config_file_formatter:
+            cls_path = config_file_formatter.pop("()")
+            formatter = self._create_formatter(cls_path, config_file_formatter)
+        else:
+            formatter = logging.Formatter(**(dict(config_file_formatter)))
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
         yield
         logging.getLogger().removeHandler(handler)
+
+    def _create_formatter(self, cls_path: str, config) -> logging.Formatter:
+        module_path, class_name = cls_path.rsplit(".", 1)
+        module = importlib.import_module(module_path)
+        formatter_class = getattr(module, class_name)
+        formatter = formatter_class(**config)
+        return formatter
 
     def run_experiment(self, args):
         experiment_loader = ExperimentLoader()
