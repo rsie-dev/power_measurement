@@ -32,22 +32,21 @@ class Runner:
         handler.setLevel(logging.DEBUG)
         config_file_formatter = config["formatters"]["file"]
         config_file_formatter["fmt"] = config_file_formatter.pop("format")
-        if "()" in config_file_formatter:
-            cls_path = config_file_formatter.pop("()")
-            formatter = self._create_formatter(cls_path, config_file_formatter)
-        else:
-            formatter = logging.Formatter(**(dict(config_file_formatter)))
+        formatter_class = self._get_formatter_class(config_file_formatter)
+        formatter = formatter_class(**config_file_formatter)
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
         yield
         logging.getLogger().removeHandler(handler)
 
-    def _create_formatter(self, cls_path: str, config) -> logging.Formatter:
-        module_path, class_name = cls_path.rsplit(".", 1)
-        module = importlib.import_module(module_path)
-        formatter_class = getattr(module, class_name)
-        formatter = formatter_class(**config)
-        return formatter
+    def _get_formatter_class(self, config: dict):
+        if "()" in config:
+            cls_path = config.pop("()")
+            module_path, class_name = cls_path.rsplit(".", 1)
+            module = importlib.import_module(module_path)
+            formatter_class = getattr(module, class_name)
+            return formatter_class
+        return logging.Formatter
 
     def run_experiment(self, args):
         experiment_loader = ExperimentLoader()
