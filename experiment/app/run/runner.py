@@ -12,7 +12,7 @@ class Runner:
         self._formatter_info = formatter_info
 
     def run_experiment(self, args):
-        experiment_loader = ExperimentLoader()
+        experiment_loader = ExperimentLoader(self._formatter_info)
         experiment_module = Path(args.experiment[0])
         experiment = experiment_loader.load_experiment_from_path(experiment_module)
         resources = self._resources / experiment_module.stem

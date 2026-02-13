@@ -11,8 +11,9 @@ from .constructor import ExperimentConstructor
 
 
 class ExperimentLoader:
-    def __init__(self):
+    def __init__(self, formatter_info: tuple[type, dict]):
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._formatter_info = formatter_info
 
     def load_experiment_from_path(self, path: Path, package_name: Optional[str] = None) -> ExperimentExecutor:
         """
@@ -24,7 +25,7 @@ class ExperimentLoader:
         if not path.exists():
             raise FileNotFoundError(path)
 
-        app.api.EXPERIMENT_CONSTRUCTOR = ExperimentConstructor()
+        app.api.EXPERIMENT_CONSTRUCTOR = ExperimentConstructor(self._formatter_info)
 
         unique_name = f"{package_name or ""}.{path.stem}"
         spec = importlib.util.spec_from_file_location(unique_name, path)

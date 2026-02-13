@@ -85,8 +85,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     def done(self) -> ExperimentBuilder:
         steps = []
+        formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
-            step = USBMeterStep(self._host, self._serial_number)
+            formatter = formatter_class(**formatter_config)
+            step = USBMeterStep(formatter, self._serial_number)
             steps.append(step)
         if self._parent.collect_metrics:
             step = StartSystemMetricsClientStep(self._host_name, self._host, self._ssh_user)
@@ -97,16 +99,21 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
-    def __init__(self):
+    def __init__(self, formatter_info: tuple[type, dict]):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._runs: Optional[int] = None
         self._with_metrics_collection: bool = False
         self._init_steps: List[InitStep] = []
+        self._formatter_info = formatter_info
 
     @property
     def collect_metrics(self) -> bool:
         return self._with_metrics_collection
+
+    @property
+    def formatter_info(self) -> tuple[type, dict]:
+        return self._formatter_info
 
     def with_runs(self, runs: int) -> Self:
         self._runs = runs

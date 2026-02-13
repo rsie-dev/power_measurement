@@ -14,7 +14,7 @@ from .signal_stop_provider import SignalStopProvider
 
 
 class USBMeterStep(Step):
-    def __init__(self, _host: str, serial_number: str):
+    def __init__(self, formatter: logging.Formatter, serial_number: str):
         super().__init__("USB meter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._serial_number = serial_number
@@ -23,6 +23,7 @@ class USBMeterStep(Step):
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
+        self._formatter = formatter
 
     def _find_device(self) -> Device:
         devices = devices_by_serial_number(self._serial_number)
@@ -37,7 +38,7 @@ class USBMeterStep(Step):
         self._logger.info("USB meter start")
         event.set()
         try:
-            with CSVElectricLogger(electrical_log, latest_only=True) as data_logger:
+            with CSVElectricLogger(electrical_log, self._formatter, latest_only=True) as data_logger:
                 usb_meter.run(data_logger)
         finally:
             self._logger.info("USB meter shut down")
