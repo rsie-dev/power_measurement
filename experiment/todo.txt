@@ -1,4 +1,3 @@
-- copy experiment file to resource folder
 - add command timing support
 - add support for warmup step/time
 - add support rest/sleep time
@@ -16,6 +15,7 @@
 - add support for ssh keys
 
 done:
+- copy experiment file to resource folder
 - clarified API, put into separate package
 - unified log file timestamps, use same format
 - log timestamps with 3 decimal points -> milliseconds precsion

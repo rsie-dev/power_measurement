@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from contextlib import contextmanager
+import shutil
 
 from .experiment_loader import ExperimentLoader
 
@@ -18,6 +19,8 @@ class Runner:
         resources = self._resources / experiment_module.stem
         self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
         resources.mkdir(parents=True, exist_ok=True)
+        self._logger.debug("copy experiment module to resource folder")
+        shutil.copy(experiment_module.resolve(), resources / experiment_module.name)
         with self._add_logfile(resources / "experiment.log"):
             self._logger.info("Experiment start: %s", experiment_module.stem)
             try:
