@@ -7,13 +7,14 @@ from app.experiment.steps import Step, InitStep
 from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
 from app.experiment.steps import HostnameValidationStep
 from app.experiment import Experiment
+from .api import Builder, CommandBuilder, HostCommandBuilder, HostBuilder, ExperimentBuilder
 
 
-class Builder:
+class Constructor(Builder):
     pass
 
 
-class CompositeBuilder(Builder):
+class CompositeConstructor(Constructor):
     def __init__(self):
         self._steps: List[Step] = []
 
@@ -21,8 +22,8 @@ class CompositeBuilder(Builder):
         self._steps.extend(steps)
 
 
-class CommandBuilder(Builder):
-    def __init__(self, parent: HostCommandBuilder, command: str):
+class CommandConstructor(Constructor, CommandBuilder):
+    def __init__(self, parent: HostCommandConstructor, command: str):
         self._parent = parent
         self._command = command
         self._work_dir = None
@@ -37,8 +38,8 @@ class CommandBuilder(Builder):
         return self._parent
 
 
-class HostCommandBuilder(Builder):
-    def __init__(self, parent: HostBuilder, host: str, ssh_user: str):
+class HostCommandConstructor(Constructor, HostCommandBuilder):
+    def __init__(self, parent: HostConstructor, host: str, ssh_user: str):
         self._parent = parent
         self._host = host
         self._ssh_user = ssh_user
@@ -49,7 +50,7 @@ class HostCommandBuilder(Builder):
         return self
 
     def execute_with(self, command: str) -> CommandBuilder:
-        return CommandBuilder(self, command)
+        return CommandConstructor(self, command)
 
     def add_command(self, command: Command) -> None:
         self._commands.append(command)
@@ -62,8 +63,8 @@ class HostCommandBuilder(Builder):
         return self._parent
 
 
-class HostBuilder(CompositeBuilder):
-    def __init__(self, parent: ExperimentBuilder, host_name: str, host: str, ssh_user: str):
+class HostConstructor(CompositeConstructor, HostBuilder):
+    def __init__(self, parent: ExperimentConstructor, host_name: str, host: str, ssh_user: str):
         super().__init__()
         self._parent = parent
         self._host_name = host_name
@@ -80,7 +81,7 @@ class HostBuilder(CompositeBuilder):
         return self
 
     def with_commands(self) -> HostCommandBuilder:
-        return HostCommandBuilder(self, self._host, self._ssh_user)
+        return HostCommandConstructor(self, self._host, self._ssh_user)
 
     def done(self) -> ExperimentBuilder:
         steps = []
@@ -95,7 +96,7 @@ class HostBuilder(CompositeBuilder):
         return self._parent
 
 
-class ExperimentBuilder(CompositeBuilder):
+class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def __init__(self):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -118,7 +119,7 @@ class ExperimentBuilder(CompositeBuilder):
     def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         ssh_user = ssh_user or "dietpi"
         self._init_steps.append(HostnameValidationStep(host_name, host, ssh_user))
-        return HostBuilder(self, host_name, host, ssh_user)
+        return HostConstructor(self, host_name, host, ssh_user)
 
     def build(self) -> Experiment:
         runs = self._runs or 1
