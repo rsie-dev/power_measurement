@@ -6,7 +6,7 @@ from typing import Self
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, Command
 from app.experiment.steps import HostnameValidationStep
-from app.experiment import Experiment
+from app.experiment import ExperimentExecutor
 from .api import Builder, CommandBuilder, HostCommandBuilder, HostBuilder, ExperimentBuilder
 
 
@@ -121,7 +121,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         self._init_steps.append(HostnameValidationStep(host_name, host, ssh_user))
         return HostConstructor(self, host_name, host, ssh_user)
 
-    def build(self) -> Experiment:
+    def build(self) -> ExperimentExecutor:
         runs = self._runs or 1
-        experiment = Experiment(self._init_steps, self._steps, runs, self._with_metrics_collection)
+        experiment = ExperimentExecutor(self._init_steps, self._steps, runs, self._with_metrics_collection)
         return experiment

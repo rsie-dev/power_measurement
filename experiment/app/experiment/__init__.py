@@ -1,5 +1,5 @@
-from .experiment import Experiment
+from .experiment_executor import ExperimentExecutor
 
 __all__ = [
-    "Experiment",
+    "ExperimentExecutor",
 ]
