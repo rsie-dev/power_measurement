@@ -52,8 +52,8 @@ class USBMeterStep(Step):
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
         device = self._find_device()
-        self._logger.info("device with serial number %s is an %s", self._serial_number, device.device_info.model.name)
-
+        self._logger.info("device with serial number %s is an %s %s model %s", self._serial_number,
+                          device.manufacturer_name, device.product_name, device.device_info.model.name)
         self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
