@@ -3,7 +3,7 @@
 - add support rest/sleep time
 - add support to add parameters
 - add support to somehow mix/randomize tools and parameters
-- collect sensor temperature and SBC temperature, too
+- collect SBC temperature, too
 - suppress systemd timers etc. during execution
 - add time adjustment to system log?
 - add support to retreive command execution time with time command
@@ -13,6 +13,7 @@
 - add support for ssh keys
 
 done:
+- collect sensor temperature, too
 - log DUT type/name
 - log used multimeter device
 - copy experiment file to resource folder
