@@ -5,7 +5,8 @@ from typing import Self
 
 from app.api.api import Builder, CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder
 from app.experiment.steps import Step, InitStep
-from app.experiment.steps import StartSystemMetricsClientStep, USBMeterStep, HostCommandStep, CommandExecutor
+from app.experiment.steps import StartSystemMetricsClientStep, TimeDeltaStep
+from app.experiment.steps import USBMeterStep, HostCommandStep, CommandExecutor
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.experiment_executor import ExperimentExecutor
 
@@ -92,6 +93,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(step)
         if self._parent.collect_metrics:
             formatter = formatter_class(**formatter_config)
+            steps.append(TimeDeltaStep(self._host_name, self._host))
             step = StartSystemMetricsClientStep(formatter, self._host_name, self._host, self._ssh_user)
             steps.append(step)
         steps.extend(self._steps)

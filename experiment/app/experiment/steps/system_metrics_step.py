@@ -1,9 +1,7 @@
 import logging
-import datetime
 from threading import Event
 
 from fabric import Connection
-import ntplib
 import humanize
 
 from app.system_meter.measurement_logger import MeasurementLogger
@@ -58,8 +56,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._register_loggers(resources, measurement)
         telegraf_server = environment.get_metrics_server()
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
-        # ToDo: log to resource folder?
-        self._get_ntp_delta()
 
     def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
         metrics_resources_path = resources.metrics_resources_path()
@@ -69,16 +65,6 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._metrics_logger[MetricType.CPU] = cpu_logger
         for logger in self._metrics_logger.values():
             measurement.register_for_system_meter(self._host_name, logger)
-
-    def _get_ntp_delta(self):
-        ntp_client = ntplib.NTPClient()
-        self._logger.debug("get time diff to: %s", self._host)
-        response = ntp_client.request(self._host, version=4)  # v4 is common
-        offset_delta = datetime.timedelta(seconds = response.offset)
-        status = "behind" if response.offset < 0 else "ahead"
-        delta_str = humanize.precisedelta(offset_delta, minimum_unit="microseconds")
-        self._logger.info("Host %s is %s %s", self._host, status, delta_str)
-        return offset_delta
 
     def _execute_commands(self, connection: Connection):
         startup_event = self._startup_monitor.startup_event
