@@ -5,14 +5,13 @@
 - add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
 - suppress systemd timers etc. during execution
-- add time adjustment to system log?
 - add support to retreive command execution time with time command
 - log git informations
 - add pypi deployment
-- restructure log and resource files/folders
 - add support for ssh keys
 
 done:
+- add time delta to DUT to resource/run folder
 - collect sensor temperature, too
 - log DUT type/name
 - log used multimeter device
