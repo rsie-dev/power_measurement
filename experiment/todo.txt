@@ -1,11 +1,11 @@
+ToDo:
+- add external temp. sensor
 - add command timing support
 - add support for warmup step/time
 - add support rest/sleep time
 - add support to add parameters
-- add support to somehow mix/randomize tools and parameters
+- optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
-- suppress systemd timers etc. during execution
-- add support to retreive command execution time with time command
 - log git informations
 - add pypi deployment
 - add support for ssh keys
