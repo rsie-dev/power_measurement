@@ -10,3 +10,7 @@ class ExperimentResources(ABC):
     @abstractmethod
     def metrics_resources_path(self) -> Path:
         pass
+
+    @abstractmethod
+    def timings_resources_path(self) -> Path:
+        pass

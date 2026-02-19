@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 from io import BytesIO, TextIOWrapper
+import csv
 
 from fabric import Connection
 
@@ -19,12 +20,12 @@ class CommandExecutor(Command):
         self._with_timing = with_timing
         self._work_dir = work_dir
 
-    def execute(self, connection: Connection):
+    def execute(self, connection: Connection, resources_path):
         command = self._command
         timing_output = None
         exec_info = ""
         if self._with_timing:
-            exec_info = " timed"
+            exec_info = " [timed]"
             result = connection.run("mktemp", hide=True)
             timing_output = result.stdout.strip()
             self._logger.debug("timing output: %s", timing_output)
@@ -36,11 +37,20 @@ class CommandExecutor(Command):
             if self._with_timing:
                 time_info = BytesIO()
                 connection.get(remote=timing_output, local=time_info)
-                timing_infos = self._extract_timing_infos(time_info)
-                timings = " ".join(f"{key}: {value}" for key, value in timing_infos.items())
+                timing_entries = self._extract_timing_entries(time_info)
+                timings = " ".join(f"{key}: {value}" for key, value in timing_entries.items())
                 self._logger.info("execution times: %s", timings)
+                self._write_timing_entries(resources_path, timing_entries)
 
-    def _extract_timing_infos(self, time_file: BytesIO) -> dict[str, float]:
+    def _write_timing_entries(self, resources_path, timing_entries):
+        field_names = ["entry", "time_S"]
+        with resources_path.open(mode="w", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=field_names)
+            writer.writeheader()
+            for key, value in timing_entries.items():
+                writer.writerow({"entry": key, "time_S": value})
+
+    def _extract_timing_entries(self, time_file: BytesIO) -> dict[str, float]:
         entries = {}
         time_file.seek(0)
         with TextIOWrapper(time_file, encoding="utf-8") as text_stream:
@@ -57,15 +67,17 @@ class HostCommandStep(Step):
         self._host = host
         self._ssh_user = ssh_user
         self._commands: list[Command] = commands
+        self._timings_resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
         environment.register_ssh_connection(self._ssh_user, self._host)
+        self._timings_resources_path = resources.timings_resources_path() / "timings.csv"
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("on host: %s execute %d command(s)", self._host, len(self._commands))
         for command in self._commands:
-            command.execute(connection)
+            command.execute(connection, self._timings_resources_path)
         self._logger.info("commands executed")
 
     def execute(self, runtime: ExperimentRuntime):

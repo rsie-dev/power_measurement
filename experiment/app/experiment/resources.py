@@ -12,3 +12,6 @@ class Resources(ExperimentResources):
 
     def metrics_resources_path(self) -> Path:
         return self._resources_path
+
+    def timings_resources_path(self) -> Path:
+        return self._resources_path
