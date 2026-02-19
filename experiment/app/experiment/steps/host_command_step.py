@@ -14,7 +14,7 @@ from .experiment_resources import ExperimentResources
 
 
 class CommandExecutor(Command):
-    def __init__(self, command: str, with_timing: bool, work_dir: Optional[str] = None):
+    def __init__(self, command: str, with_timing: bool = False, work_dir: Optional[str] = None):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
         self._with_timing = with_timing
