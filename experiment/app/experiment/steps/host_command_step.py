@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+from io import BytesIO, TextIOWrapper
 
 from fabric import Connection
 
@@ -12,16 +13,28 @@ from .experiment_resources import ExperimentResources
 
 
 class CommandExecutor(Command):
-    def __init__(self, command: str, work_dir: Optional[str] = None):
+    def __init__(self, command: str, with_timing: bool, work_dir: Optional[str] = None):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
+        self._with_timing = with_timing
         self._work_dir = work_dir
 
     def execute(self, connection: Connection):
         self._logger.info("execute: %s", self._command)
+        command = self._command
+        timing_output = "/tmp/time.txt"
+        if self._with_timing:
+            command = f"/usr/bin/time -p -o {timing_output} {self._command}"
         work_dir = self._work_dir if self._work_dir else "."
         with connection.cd(work_dir):
-            connection.run(self._command, hide=True)
+            connection.run(command, hide=True)
+            if self._with_timing:
+                time_info = BytesIO()
+                connection.get(remote=timing_output, local=time_info)
+                time_info.seek(0)
+                with TextIOWrapper(time_info, encoding="utf-8") as text_stream:
+                    for line in text_stream:
+                        self._logger.error("line: %s", line.rstrip())
 
 
 class HostCommandStep(Step):

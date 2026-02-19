@@ -28,13 +28,18 @@ class CommandConstructor(Constructor, CommandBuilder):
         self._parent = parent
         self._command = command
         self._work_dir = None
+        self._with_timing = False
 
     def with_work_dir(self, folder: str) -> Self:
         self._work_dir = folder
         return self
 
+    def with_timing(self) -> Self:
+        self._with_timing = True
+        return self
+
     def done(self) -> HostCommandBuilder:
-        command = CommandExecutor(self._command, self._work_dir)
+        command = CommandExecutor(self._command, self._with_timing, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 

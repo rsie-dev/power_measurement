@@ -17,6 +17,10 @@ class CommandBuilder(Builder):
         pass
 
     @abstractmethod
+    def with_timing(self) -> Self:
+        pass
+
+    @abstractmethod
     def done(self) -> HostCommandBuilder:
         pass
 
