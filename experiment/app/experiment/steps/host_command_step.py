@@ -31,10 +31,17 @@ class CommandExecutor(Command):
             if self._with_timing:
                 time_info = BytesIO()
                 connection.get(remote=timing_output, local=time_info)
-                time_info.seek(0)
-                with TextIOWrapper(time_info, encoding="utf-8") as text_stream:
-                    for line in text_stream:
-                        self._logger.error("line: %s", line.rstrip())
+                timing_infos = self._extract_timing_infos(time_info)
+                self._logger.error("execution times: %s", timing_infos)
+
+    def _extract_timing_infos(self, time_file: BytesIO) -> dict[str, float]:
+        entries = {}
+        time_file.seek(0)
+        with TextIOWrapper(time_file, encoding="utf-8") as text_stream:
+            for line in text_stream:
+                key, value = line.strip().split(maxsplit=1)
+                entries[key] = float(value)
+        return entries
 
 
 class HostCommandStep(Step):
