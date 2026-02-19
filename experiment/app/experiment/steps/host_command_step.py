@@ -20,12 +20,17 @@ class CommandExecutor(Command):
         self._work_dir = work_dir
 
     def execute(self, connection: Connection):
-        self._logger.info("execute: %s", self._command)
         command = self._command
-        timing_output = "/tmp/time.txt"
+        timing_output = None
+        exec_info = ""
         if self._with_timing:
+            exec_info = " timed"
+            result = connection.run("mktemp", hide=True)
+            timing_output = result.stdout.strip()
+            self._logger.debug("timing output: %s", timing_output)
             command = f"/usr/bin/time -p -o {timing_output} {self._command}"
         work_dir = self._work_dir if self._work_dir else "."
+        self._logger.info("execute%s: %s", exec_info, self._command)
         with connection.cd(work_dir):
             connection.run(command, hide=True)
             if self._with_timing:
