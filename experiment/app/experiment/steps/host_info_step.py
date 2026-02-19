@@ -4,22 +4,16 @@ from io import StringIO
 
 import dotenv
 
-from .step import InitStep
+from .hostname_validation_step import HostnameValidationStep
 
 from .experiment_runtime import ExperimentRuntime
-from .experiment_environment import InitEnvironment
 
 
-class HostnameInfoStep(InitStep):
+class HostnameInfoStep(HostnameValidationStep):
     def __init__(self, host_name: str, host: str, ssh_user: str):
-        super().__init__("host information")
+        super().__init__(host_name, host, ssh_user)
+        self._name = "host information"
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._host_name = host_name
-        self._host = host
-        self._ssh_user = ssh_user
-
-    def init(self, environment: InitEnvironment) -> None:
-        environment.register_ssh_connection(self._ssh_user, self._host)
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         connection = runtime.get_ssh_connection(self._ssh_user, self._host)
