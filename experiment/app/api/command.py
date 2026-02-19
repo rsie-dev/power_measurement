@@ -1,5 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class Command(ABC):
-    pass
+    @abstractmethod
+    def execute(self, connection) -> None:
+        pass
