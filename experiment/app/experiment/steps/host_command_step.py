@@ -37,7 +37,8 @@ class CommandExecutor(Command):
                 time_info = BytesIO()
                 connection.get(remote=timing_output, local=time_info)
                 timing_infos = self._extract_timing_infos(time_info)
-                self._logger.error("execution times: %s", timing_infos)
+                timings = " ".join(f"{key}: {value}" for key, value in timing_infos.items())
+                self._logger.info("execution times: %s", timings)
 
     def _extract_timing_infos(self, time_file: BytesIO) -> dict[str, float]:
         entries = {}
