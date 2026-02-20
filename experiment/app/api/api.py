@@ -53,21 +53,27 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def done(self) -> RunsBuilder:
+        pass
+
+
+class RunsBuilder(Builder):
+    @abstractmethod
+    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
+        pass
+
+    @abstractmethod
     def done(self) -> ExperimentBuilder:
         pass
 
 
 class ExperimentBuilder(Builder):
     @abstractmethod
-    def with_runs(self, runs: int) -> Self:
+    def with_runs(self, runs: int) -> RunsBuilder:
         pass
 
     @abstractmethod
     def with_metrics_collection(self) -> Self:
-        pass
-
-    @abstractmethod
-    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         pass
 
     @abstractmethod
