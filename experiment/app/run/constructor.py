@@ -87,7 +87,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._serial_number = serial_number
         return self
 
-    def with_commands(self) -> HostCommandBuilder:
+    def measure_commands(self) -> HostCommandBuilder:
         return HostCommandConstructor(self, self._host, self._ssh_user)
 
     def done(self) -> RunsBuilder:
@@ -153,7 +153,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def add_init_steps(self, init_steps: List[InitStep]):
         self._init_steps.extend(init_steps)
 
-    def with_runs(self, runs: int) -> RunsBuilder:
+    def execute_runs(self, runs: int) -> RunsBuilder:
         self._runs = runs
         return RunsConstructor(self)
 

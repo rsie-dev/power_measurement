@@ -49,7 +49,7 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def with_commands(self) -> HostCommandBuilder:
+    def measure_commands(self) -> HostCommandBuilder:
         pass
 
     @abstractmethod
@@ -69,7 +69,7 @@ class RunsBuilder(Builder):
 
 class ExperimentBuilder(Builder):
     @abstractmethod
-    def with_runs(self, runs: int) -> RunsBuilder:
+    def execute_runs(self, runs: int) -> RunsBuilder:
         pass
 
     @abstractmethod
