@@ -8,6 +8,7 @@ ToDo:
 - log git informations
 - add pypi deployment
 - add support for ssh keys
+- add API documsntation
 
 done:
 - add command timing support
