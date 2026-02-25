@@ -5,19 +5,20 @@ from io import StringIO
 import dotenv
 
 from .hostname_validation_step import HostnameValidationStep
+from .host import SSHHost
 
 from .experiment_runtime import ExperimentRuntime
 
 
 class HostnameInfoStep(HostnameValidationStep):
-    def __init__(self, host_name: str, host: str, ssh_user: str):
-        super().__init__(host_name, host, ssh_user)
+    def __init__(self, host: SSHHost):
+        super().__init__(host)
         self._name = "host information"
         self._logger = logging.getLogger(self.__class__.__name__)
 
     def execute(self, runtime: ExperimentRuntime) -> None:
-        connection = runtime.get_ssh_connection(self._ssh_user, self._host)
-        self._logger.info("Hostname: %s", self._host_name)
+        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
+        self._logger.info("Hostname: %s", self._host.host_name)
         self._report_cpu_info(connection)
         self._report_os_info(connection)
 

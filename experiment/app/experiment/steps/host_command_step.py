@@ -7,6 +7,7 @@ from fabric import Connection
 
 from app.api import Command
 from .step import Step
+from .host import SSHHost
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
@@ -61,25 +62,24 @@ class CommandExecutor(Command):
 
 
 class HostCommandStep(Step):
-    def __init__(self, host: str, ssh_user: str, commands: list[Command]):
+    def __init__(self, host: SSHHost, commands: list[Command]):
         super().__init__("host command")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
-        self._ssh_user = ssh_user
         self._commands: list[Command] = commands
         self._timings_resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
-        environment.register_ssh_connection(self._ssh_user, self._host)
+        environment.register_ssh_connection(self._host.ssh_user, self._host.host)
         self._timings_resources_path = resources.timings_resources_path() / "timings.csv"
 
     def _execute_commands(self, connection: Connection):
-        self._logger.info("on host: %s execute %d command(s)", self._host, len(self._commands))
+        self._logger.info("on host: %s execute %d command(s)", self._host.host, len(self._commands))
         for command in self._commands:
             command.execute(connection, self._timings_resources_path)
         self._logger.info("commands executed")
 
     def execute(self, runtime: ExperimentRuntime):
-        connection = runtime.get_ssh_connection(self._ssh_user, self._host)
+        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         self._execute_commands(connection)

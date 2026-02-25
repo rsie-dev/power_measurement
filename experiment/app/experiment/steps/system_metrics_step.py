@@ -12,6 +12,7 @@ from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .host_command_step import HostCommandStep
+from .host import SSHHost
 
 
 class StartupMonitor(MeasurementLogger):
@@ -38,11 +39,10 @@ class StartupMonitor(MeasurementLogger):
 
 
 class StartSystemMetricsClientStep(HostCommandStep):
-    def __init__(self, formatter: logging.Formatter, host_name: str, host: str, ssh_user: str):
-        super().__init__(host, ssh_user, [])
+    def __init__(self, formatter: logging.Formatter, host: SSHHost):
+        super().__init__(host, [])
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter = formatter
-        self._host_name = host_name
         self._telegraf_server_address = None
         self._metrics_logger : dict[MetricType, CSVMetricsLogger] = {}
         self._metrics_client_timeout: float = 5
@@ -52,7 +52,7 @@ class StartSystemMetricsClientStep(HostCommandStep):
                 resources: ExperimentResources):
         super().prepare(environment, measurement, resources)
 
-        self._startup_monitor = StartupMonitor(self._host_name, measurement)
+        self._startup_monitor = StartupMonitor(self._host.host_name, measurement)
         self._register_loggers(resources, measurement)
         telegraf_server = environment.get_metrics_server()
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
@@ -64,12 +64,12 @@ class StartSystemMetricsClientStep(HostCommandStep):
         self._metrics_logger[MetricType.SYSTEM] = system_logger
         self._metrics_logger[MetricType.CPU] = cpu_logger
         for logger in self._metrics_logger.values():
-            measurement.register_for_system_meter(self._host_name, logger)
+            measurement.register_for_system_meter(self._host.host_name, logger)
 
     def _execute_commands(self, connection: Connection):
         startup_event = self._startup_monitor.startup_event
         self._startup_monitor.start()
-        self._logger.info("Start telegraf on: %s", self._host)
+        self._logger.info("Start telegraf on: %s", self._host.host)
         connection.run("sudo systemctl start telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
         self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
         try:
@@ -78,14 +78,14 @@ class StartSystemMetricsClientStep(HostCommandStep):
             self._startup_monitor.close()
 
     def _execute_stop_command(self, connection: Connection):
-        self._logger.info("Stop telegraf on: %s", self._host)
+        self._logger.info("Stop telegraf on: %s", self._host.host)
         connection.run("sudo systemctl stop telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
-        connection = runtime.get_ssh_connection(self._ssh_user, self._host)
+        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         try:
             self._execute_stop_command(connection)
         finally:
             for logger in self._metrics_logger.values():
-                measurement.unregister_for_system_meter(self._host_name, logger)
+                measurement.unregister_for_system_meter(self._host.host_name, logger)
                 logger.close()
