@@ -9,6 +9,7 @@ ToDo:
 - add pypi deployment
 - add support for ssh keys
 - add API documsntation
+- fail experiment of resource folder exists
 
 done:
 - add command timing support
