@@ -8,7 +8,7 @@ from .steps import Step
 from .steps.experiment_environment import ExperimentEnvironment
 from .steps.experiment_runtime import ExperimentRuntime
 from .steps.experiment_measurement import ExperimentMeasurement
-from .steps.experiment_resources import ExperimentResources
+from .steps import RunResourceStep
 from .measurement import Measurement
 from .resources import Resources
 from .measurement_dispatcher import MeasurementDispatcher
@@ -29,11 +29,18 @@ class ExperimentRunner:
             run_resource = self._resource_path / ("run_%03d" % (run + 1))
             run_resource.mkdir(parents=True, exist_ok=True)
             measurement = Measurement(measurement_dispatcher)
-            resources = Resources(run_resource)
-            self._execute_run(environment, runtime, measurement, resources)
+            self._execute_run(environment, runtime, measurement, run_resource)
 
     def _execute_run(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                     measurement: ExperimentMeasurement, resources: ExperimentResources):
+                     measurement: ExperimentMeasurement, run_resource: Path):
+        resource_prefix = self._get_resource_prefix()
+        if resource_prefix:
+            resource_path = run_resource / resource_prefix
+            resource_path.mkdir(parents=True, exist_ok=True)
+        else:
+            resource_path = run_resource
+        resources = Resources(resource_path)
+
         self._logger.info("Prepare all steps")
         for step in self._steps:
             self._logger.debug("prepare step: %s", step.name)
@@ -59,3 +66,12 @@ class ExperimentRunner:
                 self._logger.debug("stop step: %s", step.name)
                 step.stop(runtime, measurement)
             self._logger.info("Stopped all steps")
+
+    def _get_resource_prefix(self):
+        prefixes = []
+        for step in self._steps:
+            self._logger.warning("prefix check: %s", step.__class__.__name__)
+            if isinstance(step, RunResourceStep):
+                self._logger.warning("found prefix: %s", step.get_run_prefix())
+                prefixes.append(step.get_run_prefix())
+        return "".join(prefixes)

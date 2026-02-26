@@ -13,6 +13,7 @@ from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
+from .run_resource_step import RunResourceStep
 
 
 class CommandExecutor(Command):
@@ -81,12 +82,15 @@ class BaseHostCommandStep(Step):
         self._execute_commands(connection)
 
 
-class HostCommandStep(BaseHostCommandStep):
+class HostCommandStep(BaseHostCommandStep, RunResourceStep):
     def __init__(self, host: SSHHost, commands: list[Command]):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._commands: list[Command] = commands
         self._timings_resources_path = None
+
+    def get_run_prefix(self) -> str:
+        return self._host.host_name
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
