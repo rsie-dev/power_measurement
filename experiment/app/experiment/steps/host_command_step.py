@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 from io import BytesIO, TextIOWrapper
 import csv
+from abc import abstractmethod
 
 from fabric import Connection
 
@@ -61,17 +62,35 @@ class CommandExecutor(Command):
         return entries
 
 
-class HostCommandStep(Step):
-    def __init__(self, host: SSHHost, commands: list[Command]):
-        super().__init__("host command")
+class BaseHostCommandStep(Step):
+    def __init__(self, name: str, host: SSHHost):
+        super().__init__(name)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
+
+    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
+                resources: ExperimentResources):
+        environment.register_ssh_connection(self._host.ssh_user, self._host.host)
+
+    @abstractmethod
+    def _execute_commands(self, connection: Connection) -> None:
+        pass
+
+    def execute(self, runtime: ExperimentRuntime):
+        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
+        self._execute_commands(connection)
+
+
+class HostCommandStep(BaseHostCommandStep):
+    def __init__(self, host: SSHHost, commands: list[Command]):
+        super().__init__("host command", host)
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._commands: list[Command] = commands
         self._timings_resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
-        environment.register_ssh_connection(self._host.ssh_user, self._host.host)
+        super().prepare(environment, measurement, resources)
         self._timings_resources_path = resources.timings_resources_path() / "timings.csv"
 
     def _execute_commands(self, connection: Connection):
@@ -79,7 +98,3 @@ class HostCommandStep(Step):
         for command in self._commands:
             command.execute(connection, self._timings_resources_path)
         self._logger.info("commands executed")
-
-    def execute(self, runtime: ExperimentRuntime):
-        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
-        self._execute_commands(connection)

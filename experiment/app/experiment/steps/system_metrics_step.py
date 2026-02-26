@@ -11,7 +11,7 @@ from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
-from .host_command_step import HostCommandStep
+from .host_command_step import BaseHostCommandStep
 from .host import SSHHost
 
 
@@ -38,9 +38,9 @@ class StartupMonitor(MeasurementLogger):
         self._startup_event.set()
 
 
-class StartSystemMetricsClientStep(HostCommandStep):
+class StartSystemMetricsClientStep(BaseHostCommandStep):
     def __init__(self, formatter: logging.Formatter, host: SSHHost):
-        super().__init__(host, [])
+        super().__init__("system metrics", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter = formatter
         self._telegraf_server_address = None
