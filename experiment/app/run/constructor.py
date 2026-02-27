@@ -7,7 +7,7 @@ from app.api.api import Builder
 from app.api.api import CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder, RunsBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
-from app.experiment.steps import StartSystemMetricsClientStep, TimeDeltaStep
+from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import USBMeterStep, HostCommandStep, CommandExecutor
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.experiment_executor import ExperimentExecutor
@@ -98,7 +98,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if self._parent.collect_metrics:
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
-            step = StartSystemMetricsClientStep(formatter, self._host)
+            step = SystemMetricsClientStep(formatter, self._host)
             steps.append(step)
         steps.extend(self._steps)
         self._parent.add_steps(steps)

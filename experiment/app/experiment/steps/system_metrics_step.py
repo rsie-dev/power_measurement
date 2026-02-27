@@ -38,7 +38,7 @@ class StartupMonitor(MeasurementLogger):
         self._startup_event.set()
 
 
-class StartSystemMetricsClientStep(BaseHostCommandStep):
+class SystemMetricsClientStep(BaseHostCommandStep):
     def __init__(self, formatter: logging.Formatter, host: SSHHost):
         super().__init__("system metrics", host)
         self._logger = logging.getLogger(self.__class__.__name__)
