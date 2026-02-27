@@ -58,7 +58,7 @@ class StartSystemMetricsClientStep(BaseHostCommandStep):
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
 
     def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
-        metrics_resources_path = resources.metrics_resources_path()
+        metrics_resources_path = resources.resources_path()
         system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv", self._formatter)
         cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
         self._metrics_logger[MetricType.SYSTEM] = system_logger

@@ -22,7 +22,7 @@ class TimeDeltaStep(Step):
 
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
-        self._time_delta_path = resources.metrics_resources_path() / "dut_time_delta.txt"
+        self._time_delta_path = resources.resources_path() / "dut_time_delta.txt"
 
     def execute(self, runtime: ExperimentRuntime):
         offset_delta = self._get_ntp_delta()

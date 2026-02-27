@@ -95,7 +95,7 @@ class HostCommandStep(BaseHostCommandStep, RunResourceStep):
     def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
                 resources: ExperimentResources):
         super().prepare(environment, measurement, resources)
-        self._timings_resources_path = resources.timings_resources_path() / "timings.csv"
+        self._timings_resources_path = resources.resources_path() / "timings.csv"
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("on host: %s execute %d command(s)", self._host.host, len(self._commands))
