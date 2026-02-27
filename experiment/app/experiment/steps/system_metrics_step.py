@@ -1,5 +1,6 @@
 import logging
 from threading import Event
+from concurrent.futures import Executor
 
 from fabric import Connection
 import humanize
@@ -44,23 +45,20 @@ class SystemMetricsClientStep(BaseHostCommandStep):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter = formatter
         self._telegraf_server_address = None
-        self._metrics_logger : dict[MetricType, CSVMetricsLogger] = {}
+        self._metrics_logger: dict[MetricType, CSVMetricsLogger] = {}
         self._metrics_client_timeout: float = 5
         self._startup_monitor = None
+        self._resources_path = None
 
-    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-                resources: ExperimentResources):
-        super().prepare(environment, measurement, resources)
-
-        self._startup_monitor = StartupMonitor(self._host.host_name, measurement)
-        self._register_loggers(resources, measurement)
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
+        super().prepare(environment, resources)
+        self._resources_path = resources.resources_path()
         telegraf_server = environment.get_metrics_server()
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
 
-    def _register_loggers(self, resources: ExperimentResources, measurement: ExperimentMeasurement):
-        metrics_resources_path = resources.resources_path()
-        system_logger = CSVMetricsLogger(MetricType.SYSTEM, metrics_resources_path / "system.csv", self._formatter)
-        cpu_logger = CSVMetricsLogger(MetricType.CPU, metrics_resources_path / "cpu.csv", self._formatter)
+    def _register_loggers(self, measurement: ExperimentMeasurement):
+        system_logger = CSVMetricsLogger(MetricType.SYSTEM, self._resources_path / "system.csv", self._formatter)
+        cpu_logger = CSVMetricsLogger(MetricType.CPU, self._resources_path / "cpu.csv", self._formatter)
         self._metrics_logger[MetricType.SYSTEM] = system_logger
         self._metrics_logger[MetricType.CPU] = cpu_logger
         for logger in self._metrics_logger.values():
@@ -80,6 +78,10 @@ class SystemMetricsClientStep(BaseHostCommandStep):
     def _execute_stop_command(self, connection: Connection):
         self._logger.info("Stop telegraf on: %s", self._host.host)
         connection.run("sudo systemctl stop telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
+
+    def start(self, executor: Executor, measurement: ExperimentMeasurement) -> None:
+        self._startup_monitor = StartupMonitor(self._host.host_name, measurement)
+        self._register_loggers(measurement)
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)

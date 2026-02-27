@@ -64,8 +64,7 @@ class USBMeterStep(Step):
         finally:
             self._logger.info("USB meter shut down")
 
-    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-                resources: ExperimentResources):
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         device = self._device_manager.get_device()
         self._stop_provider = SignalStopProvider()
         environment.add_shutdown_handler(self._stop_provider)
@@ -73,7 +72,7 @@ class USBMeterStep(Step):
         self._usb_meter.setup_device()
         self._log_context.electrical_log = resources.resources_path() / "electrical.csv"
 
-    def start(self, executor: Executor):
+    def start(self, executor: Executor, measurement: ExperimentMeasurement):
         event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, self._log_context.electrical_log, event)
         event.wait(self._start_timeout)

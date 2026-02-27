@@ -11,7 +11,6 @@ from .step import Step
 from .host import SSHHost
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
-from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .run_resource_step import RunResourceStep
 
@@ -69,8 +68,7 @@ class BaseHostCommandStep(Step):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
 
-    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-                resources: ExperimentResources):
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         environment.register_ssh_connection(self._host.ssh_user, self._host.host)
 
     @abstractmethod
@@ -92,9 +90,8 @@ class HostCommandStep(BaseHostCommandStep, RunResourceStep):
     def get_run_prefix(self) -> str:
         return self._host.host_name
 
-    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-                resources: ExperimentResources):
-        super().prepare(environment, measurement, resources)
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
+        super().prepare(environment, resources)
         self._timings_resources_path = resources.resources_path() / "timings.csv"
 
     def _execute_commands(self, connection: Connection):

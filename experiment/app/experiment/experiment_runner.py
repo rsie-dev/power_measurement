@@ -44,13 +44,13 @@ class ExperimentRunner:
         self._logger.info("Prepare all steps")
         for step in self._steps:
             self._logger.debug("prepare step: %s", step.name)
-            step.prepare(environment, measurement, resources)
+            step.prepare(environment, resources)
 
         try:
             self._logger.info("Starting all steps")
             for step in self._steps:
                 self._logger.debug("start step: %s", step.name)
-                step.start(self._executor)
+                step.start(self._executor, measurement)
 
             try:
                 with self._signal_handler.capture_signals():

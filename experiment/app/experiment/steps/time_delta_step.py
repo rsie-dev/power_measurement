@@ -6,7 +6,6 @@ import humanize
 import isodate
 
 from .experiment_environment import ExperimentEnvironment
-from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .experiment_runtime import ExperimentRuntime
 from .step import Step
@@ -20,8 +19,7 @@ class TimeDeltaStep(Step):
         self._host = host
         self._time_delta_path = None
 
-    def prepare(self, environment: ExperimentEnvironment, measurement: ExperimentMeasurement,
-                resources: ExperimentResources):
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         self._time_delta_path = resources.resources_path() / "dut_time_delta.txt"
 
     def execute(self, runtime: ExperimentRuntime):
