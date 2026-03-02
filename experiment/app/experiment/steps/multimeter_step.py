@@ -44,9 +44,9 @@ class DeviceManager:
         return device
 
 
-class USBMeterStep(Step):
+class MultimeterStep(Step):
     def __init__(self, formatter: logging.Formatter, serial_number: str):
-        super().__init__("USB meter")
+        super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._device_manager = DeviceManager(serial_number)
         self._usb_meter = None
@@ -56,13 +56,13 @@ class USBMeterStep(Step):
         self._log_context = LogContext(formatter)
 
     def _electric_collector(self, usb_meter: USBMeter, electrical_log: Path, event: Event) -> None:
-        self._logger.info("USB meter start")
+        self._logger.info("multimeter start")
         event.set()
         try:
             with CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True) as data_logger:
                 usb_meter.run(data_logger)
         finally:
-            self._logger.info("USB meter shut down")
+            self._logger.info("multimeter shut down")
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         device = self._device_manager.get_device()
@@ -70,7 +70,7 @@ class USBMeterStep(Step):
         environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
-        self._log_context.electrical_log = resources.resources_path() / "electrical.csv"
+        self._log_context.electrical_log = resources.resources_path() / "multimeter.csv"
 
     def start(self, executor: Executor, measurement: ExperimentMeasurement):
         event = Event()

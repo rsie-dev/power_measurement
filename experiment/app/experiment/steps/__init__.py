@@ -1,7 +1,7 @@
 from .step import Step, InitStep
 from .host import Host, SSHHost
 from .host_command_step import HostCommandStep, CommandExecutor
-from .usb_meter_step import USBMeterStep
+from .multimeter_step import MultimeterStep
 from .system_metrics_step import SystemMetricsClientStep
 from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
@@ -16,7 +16,7 @@ __all__ = ["Step", "InitStep",
            "Host", "SSHHost",
            "HostCommandStep",
            "CommandExecutor",
-           "USBMeterStep",
+           "MultimeterStep",
            "SystemMetricsClientStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
