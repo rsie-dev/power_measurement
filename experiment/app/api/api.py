@@ -45,7 +45,7 @@ class HostCommandBuilder(Builder):
 
 class HostBuilder(Builder):
     @abstractmethod
-    def with_usb_meter(self, serial_number: str) -> Self:
+    def with_multimeter(self, serial_number: str) -> Self:
         pass
 
     @abstractmethod

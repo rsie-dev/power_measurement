@@ -81,7 +81,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def host(self) -> str:
         return self._host.host_name
 
-    def with_usb_meter(self, serial_number: str) -> Self:
+    def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
         return self
 
