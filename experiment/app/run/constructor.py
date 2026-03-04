@@ -56,13 +56,18 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
         self._commands: list[Command] = []
         self._serial_number = None
         self._head_delay = None
+        self._tail_delay = None
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
         return self
 
-    def with_head_delay(self, head_delay: int) -> Self:
-        self._head_delay = head_delay
+    def with_head_delay(self, delay: int) -> Self:
+        self._head_delay = delay
+        return self
+
+    def with_tail_delay(self, delay: int) -> Self:
+        self._tail_delay = delay
         return self
 
     def execute(self, command: str) -> Self:
@@ -95,6 +100,8 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
         commands = self._commands[:]
         if self._head_delay:
             commands.insert(0, DelayCommand(self._head_delay, "head"))
+        if self._tail_delay:
+            commands.append(DelayCommand(self._tail_delay, "tail"))
 
         step = HostCommandStep(self._host, self._runs, commands, log_providers)
         steps.append(step)
