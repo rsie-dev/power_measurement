@@ -31,6 +31,10 @@ class HostCommandBuilder(Builder):
         pass
 
     @abstractmethod
+    def with_head_delay(self, head_delay: int) -> Self:
+        pass
+
+    @abstractmethod
     def execute(self, command: str) -> Self:
         pass
 

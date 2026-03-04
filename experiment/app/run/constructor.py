@@ -10,6 +10,7 @@ from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, HostCommandStep, CommandExecutor
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
+from app.experiment.steps import DelayStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 
@@ -54,9 +55,14 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
         self._runs = runs
         self._commands: list[Command] = []
         self._serial_number = None
+        self._head_delay = None
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
+        return self
+
+    def with_head_delay(self, head_delay: int) -> Self:
+        self._head_delay = head_delay
         return self
 
     def execute(self, command: str) -> Self:
@@ -87,6 +93,8 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
             steps.append(step)
 
         step = HostCommandStep(self._host, self._runs, self._commands, log_providers)
+        if self._head_delay:
+            step = DelayStep(self._head_delay, step)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
