@@ -13,7 +13,6 @@ from .host import SSHHost
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_resources import ExperimentResources
-from .run_resource_step import RunResourceStep
 
 
 class CommandExecutor(Command):

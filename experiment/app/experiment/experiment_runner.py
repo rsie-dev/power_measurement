@@ -7,8 +7,6 @@ from app.common import SignalHandler
 from .steps import Step
 from .steps.experiment_environment import ExperimentEnvironment
 from .steps.experiment_runtime import ExperimentRuntime
-from .steps.experiment_measurement import ExperimentMeasurement
-from .steps import RunResourceStep
 from .measurement import Measurement
 from .resources import Resources
 from .measurement_dispatcher import MeasurementDispatcher
@@ -52,12 +50,3 @@ class ExperimentRunner:
                 self._logger.debug("stop step: %s", step.name)
                 step.stop(runtime, measurement)
             self._logger.info("Stopped all steps")
-
-    def _get_resource_prefix(self):
-        prefixes = []
-        for step in self._steps:
-            self._logger.warning("prefix check: %s", step.__class__.__name__)
-            if isinstance(step, RunResourceStep):
-                self._logger.warning("found prefix: %s", step.get_run_prefix())
-                prefixes.append(step.get_run_prefix())
-        return "".join(prefixes)
