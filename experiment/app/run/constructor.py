@@ -10,10 +10,9 @@ from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
-from app.experiment.steps import DelayStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.run.commands import ExecutorCommand
+from app.run.commands import ExecutorCommand, DelayCommand
 
 
 class Constructor(Builder):
@@ -93,9 +92,11 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
             log_providers.append(step)
             steps.append(step)
 
-        step = HostCommandStep(self._host, self._runs, self._commands, log_providers)
+        commands = self._commands[:]
         if self._head_delay:
-            step = DelayStep(self._head_delay, step)
+            commands.insert(0, DelayCommand(self._head_delay, "head"))
+
+        step = HostCommandStep(self._host, self._runs, commands, log_providers)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
