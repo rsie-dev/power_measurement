@@ -1,4 +1,6 @@
 ToDo:
+- fix time log is not per command
+- fix multimeter log only logs latest
 - add time unit to rel timein logs
 - add external temp. sensor
 - add support for warmup step/time
