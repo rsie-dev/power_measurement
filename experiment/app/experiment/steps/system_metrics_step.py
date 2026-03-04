@@ -1,6 +1,7 @@
 import logging
 from threading import Event
 from concurrent.futures import Executor
+from pathlib import Path
 
 from fabric import Connection
 import humanize
@@ -13,6 +14,7 @@ from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .host_command_step import BaseHostCommandStep
+from .log_provider import LogProvider
 from .host import SSHHost
 
 
@@ -39,7 +41,7 @@ class StartupMonitor(MeasurementLogger):
         self._startup_event.set()
 
 
-class SystemMetricsClientStep(BaseHostCommandStep):
+class SystemMetricsClientStep(BaseHostCommandStep, LogProvider):
     def __init__(self, formatter: logging.Formatter, host: SSHHost):
         super().__init__("system metrics", host)
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -48,21 +50,28 @@ class SystemMetricsClientStep(BaseHostCommandStep):
         self._metrics_logger: dict[MetricType, CSVMetricsLogger] = {}
         self._metrics_client_timeout: float = 5
         self._startup_monitor = None
-        self._resources_path = None
+        self._measurement = None
 
-    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
-        super().prepare(environment, resources)
-        self._resources_path = resources.resources_path()
-        telegraf_server = environment.get_metrics_server()
-        self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
-
-    def _register_loggers(self, measurement: ExperimentMeasurement):
-        system_logger = CSVMetricsLogger(MetricType.SYSTEM, self._resources_path / "system.csv", self._formatter)
-        cpu_logger = CSVMetricsLogger(MetricType.CPU, self._resources_path / "cpu.csv", self._formatter)
+    def start_log(self, resource_path: Path):
+        system_logger = CSVMetricsLogger(MetricType.SYSTEM, resource_path / "system.csv", self._formatter)
+        cpu_logger = CSVMetricsLogger(MetricType.CPU, resource_path / "cpu.csv", self._formatter)
         self._metrics_logger[MetricType.SYSTEM] = system_logger
         self._metrics_logger[MetricType.CPU] = cpu_logger
         for logger in self._metrics_logger.values():
-            measurement.register_for_system_meter(self._host.host_name, logger)
+            self._measurement.register_for_system_meter(self._host.host_name, logger)
+
+    def stop_log(self):
+        try:
+            for logger in self._metrics_logger.values():
+                self._measurement.unregister_for_system_meter(self._host.host_name, logger)
+                logger.close()
+        finally:
+            self._metrics_logger.clear()
+
+    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
+        super().prepare(environment, resources)
+        telegraf_server = environment.get_metrics_server()
+        self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
 
     def _execute_commands(self, connection: Connection):
         startup_event = self._startup_monitor.startup_event
@@ -81,13 +90,8 @@ class SystemMetricsClientStep(BaseHostCommandStep):
 
     def start(self, executor: Executor, measurement: ExperimentMeasurement) -> None:
         self._startup_monitor = StartupMonitor(self._host.host_name, measurement)
-        self._register_loggers(measurement)
+        self._measurement = measurement
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
-        try:
-            self._execute_stop_command(connection)
-        finally:
-            for logger in self._metrics_logger.values():
-                measurement.unregister_for_system_meter(self._host.host_name, logger)
-                logger.close()
+        self._execute_stop_command(connection)

@@ -72,7 +72,6 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
     def done(self) -> HostBuilder:
         steps = []
 
-        # ToDo:
         log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
@@ -84,6 +83,7 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
             step = SystemMetricsClientStep(formatter, self._host)
+            log_providers.append(step)
             steps.append(step)
 
         step = HostCommandStep(self._host, self._runs, self._commands, log_providers)
