@@ -1,4 +1,5 @@
 ToDo:
+- fix electrical log is missing header
 - fix time log is not per command
 - fix multimeter log only logs latest
 - add time unit to rel timein logs
