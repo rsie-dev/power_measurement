@@ -1,6 +1,6 @@
 from .step import Step, InitStep
 from .host import Host, SSHHost
-from .host_command_step import HostCommandStep, CommandExecutor
+from .host_command_step import HostCommandStep
 from .multimeter_step import MultimeterStep
 from .system_metrics_step import SystemMetricsClientStep
 from .time_delta_step import TimeDeltaStep
@@ -15,7 +15,6 @@ __all__ = ["Step", "InitStep",
            "InitEnvironment", "ExperimentEnvironment",
            "Host", "SSHHost",
            "HostCommandStep",
-           "CommandExecutor",
            "MultimeterStep",
            "SystemMetricsClientStep",
            "TimeDeltaStep",

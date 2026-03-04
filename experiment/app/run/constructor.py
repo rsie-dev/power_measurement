@@ -8,11 +8,12 @@ from app.api.api import CommandBuilder, HostCommandBuilder, Command, HostBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
-from app.experiment.steps import MultimeterStep, HostCommandStep, CommandExecutor
+from app.experiment.steps import MultimeterStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import DelayStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
+from app.run.commands import ExecutorCommand
 
 
 class Constructor(Builder):
@@ -43,7 +44,7 @@ class CommandConstructor(Constructor, CommandBuilder):
         return self
 
     def done(self) -> HostCommandBuilder:
-        command = CommandExecutor(self._command, self._with_timing, self._work_dir)
+        command = ExecutorCommand(self._command, self._with_timing, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
@@ -66,7 +67,7 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
         return self
 
     def execute(self, command: str) -> Self:
-        self.add_command(CommandExecutor(command))
+        self.add_command(ExecutorCommand(command))
         return self
 
     def execute_with(self, command: str) -> CommandBuilder:
