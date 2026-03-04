@@ -20,6 +20,8 @@ from .signal_stop_provider import SignalStopProvider
 class LogContext:
     def __init__(self, formatter: logging.Formatter):
         self.formatter = formatter
+        self.log_dispatcher = LogDispatcher()
+        self.data_logger = None
 
 
 class DeviceManager:
@@ -71,22 +73,20 @@ class MultimeterStep(Step, LogProvider):
         self._start_timeout = 3
         self._future = None
         self._log_context = LogContext(formatter)
-        self._log_dispatcher = LogDispatcher()
-        self._data_logger = None
 
     def start_log(self, resource_path: Path):
         electrical_log = resource_path / "multimeter.csv"
-        self._data_logger = CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True)
-        self._log_dispatcher.register_logger(self._data_logger)
+        self._log_context.data_logger = CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True)
+        self._log_context.log_dispatcher.register_logger(self._log_context.data_logger)
 
     def stop_log(self):
-        self._log_dispatcher.unregister_logger(self._data_logger)
+        self._log_context.log_dispatcher.unregister_logger(self._log_context.data_logger)
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
         self._logger.info("multimeter start")
         event.set()
         try:
-            usb_meter.run(self._log_dispatcher)
+            usb_meter.run(self._log_context.log_dispatcher)
         finally:
             self._logger.info("multimeter shut down")
 
