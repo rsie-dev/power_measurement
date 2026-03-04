@@ -17,11 +17,10 @@ from .experiment_runner import ExperimentRunner
 
 
 class ExperimentExecutor(Experiment):
-    def __init__(self, init_steps: List[InitStep], steps: List[Step], runs: int, with_metrics_collection: bool):
+    def __init__(self, init_steps: List[InitStep], steps: List[Step], with_metrics_collection: bool):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_steps: List[InitStep] = init_steps
         self._steps: List[Step] = steps
-        self._runs: int = runs
         self._with_metrics_collection: bool = with_metrics_collection
         self._metrics_server_start_timeout: float = 3
 
@@ -31,8 +30,6 @@ class ExperimentExecutor(Experiment):
             self._initialize(runtime, self._init_steps)
 
             signal_handler = SignalHandler()
-            runs_resources = resources / "runs"
-            runs_resources.mkdir(parents=True, exist_ok=True)
 
             with ThreadPoolExecutor() as executor:
                 future = None
@@ -51,8 +48,8 @@ class ExperimentExecutor(Experiment):
                             event.wait(self._metrics_server_start_timeout)
 
                         environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                        runner = ExperimentRunner(executor, runs_resources, signal_handler, self._steps)
-                        runner.execute_runs(self._runs, md, runtime, environment)
+                        runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
+                        runner.execute_runs(md, runtime, environment)
                 finally:
                     if future:
                         metrics_server.shut_down(False)

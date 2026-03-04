@@ -4,12 +4,13 @@ from typing import List, Optional
 from typing import Self
 
 from app.api.api import Builder
-from app.api.api import CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder, RunsBuilder
+from app.api.api import CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, HostCommandStep, CommandExecutor
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
+from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 
 
@@ -47,10 +48,16 @@ class CommandConstructor(Constructor, CommandBuilder):
 
 
 class HostCommandConstructor(Constructor, HostCommandBuilder):
-    def __init__(self, parent: HostConstructor, host: SSHHost):
+    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int):
         self._parent = parent
         self._host = host
+        self._runs = runs
         self._commands: list[Command] = []
+        self._serial_number = None
+
+    def with_multimeter(self, serial_number: str) -> Self:
+        self._serial_number = serial_number
+        return self
 
     def execute(self, command: str) -> Self:
         self.add_command(CommandExecutor(command))
@@ -64,52 +71,32 @@ class HostCommandConstructor(Constructor, HostCommandBuilder):
 
     def done(self) -> HostBuilder:
         steps = []
-        step = HostCommandStep(self._host, self._commands)
-        steps.append(step)
-        self._parent.add_steps(steps)
-        return self._parent
 
-
-class HostConstructor(CompositeConstructor, HostBuilder):
-    def __init__(self, parent: RunsConstructor, host: SSHHost):
-        super().__init__()
-        self._parent = parent
-        self._host = host
-        self._serial_number = None
-
-    @property
-    def host(self) -> str:
-        return self._host.host_name
-
-    def with_multimeter(self, serial_number: str) -> Self:
-        self._serial_number = serial_number
-        return self
-
-    def measure_commands(self) -> HostCommandBuilder:
-        return HostCommandConstructor(self, self._host)
-
-    def done(self) -> RunsBuilder:
-        steps = []
+        # ToDo:
+        log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
             formatter = formatter_class(**formatter_config)
             step = MultimeterStep(formatter, self._serial_number)
+            log_providers.append(step)
             steps.append(step)
         if self._parent.collect_metrics:
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
             step = SystemMetricsClientStep(formatter, self._host)
             steps.append(step)
-        steps.extend(self._steps)
+
+        step = HostCommandStep(self._host, self._runs, self._commands, log_providers)
+        steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
 
 
-class RunsConstructor(CompositeConstructor, RunsBuilder):
-    def __init__(self, parent: ExperimentConstructor):
+class HostConstructor(CompositeConstructor, HostBuilder):
+    def __init__(self, parent: ExperimentConstructor, host: SSHHost):
         super().__init__()
         self._parent = parent
-        self._init_steps: List[InitStep] = []
+        self._host = host
 
     @property
     def collect_metrics(self) -> bool:
@@ -119,15 +106,10 @@ class RunsConstructor(CompositeConstructor, RunsBuilder):
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
 
-    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
-        ssh_user = ssh_user or "dietpi"
-        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=ssh_user)
-        self._init_steps.append(HostnameValidationStep(ssh_host))
-        self._init_steps.append(HostnameInfoStep(ssh_host))
-        return HostConstructor(self, ssh_host)
+    def measure_runs(self, runs: int) -> HostCommandBuilder:
+        return HostCommandConstructor(self, self._host, runs)
 
     def done(self) -> ExperimentBuilder:
-        self._parent.add_init_steps(self._init_steps)
         self._parent.add_steps(self._steps)
         return self._parent
 
@@ -136,7 +118,6 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def __init__(self, formatter_info: tuple[type, dict]):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._runs: Optional[int] = None
         self._with_metrics_collection: bool = False
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
@@ -152,15 +133,17 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def add_init_steps(self, init_steps: List[InitStep]):
         self._init_steps.extend(init_steps)
 
-    def execute_runs(self, runs: int) -> RunsBuilder:
-        self._runs = runs
-        return RunsConstructor(self)
+    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
+        ssh_user = ssh_user or "dietpi"
+        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=ssh_user)
+        self._init_steps.append(HostnameValidationStep(ssh_host))
+        self._init_steps.append(HostnameInfoStep(ssh_host))
+        return HostConstructor(self, ssh_host)
 
     def with_metrics_collection(self) -> Self:
         self._with_metrics_collection = True
         return self
 
     def build(self) -> ExperimentExecutor:
-        runs = self._runs or 1
-        experiment = ExperimentExecutor(self._init_steps, self._steps, runs, self._with_metrics_collection)
+        experiment = ExperimentExecutor(self._init_steps, self._steps, self._with_metrics_collection)
         return experiment

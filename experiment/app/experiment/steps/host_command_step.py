@@ -8,6 +8,7 @@ from fabric import Connection
 
 from app.api import Command
 from .step import Step
+from .log_provider import LogProvider
 from .host import SSHHost
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
@@ -80,22 +81,38 @@ class BaseHostCommandStep(Step):
         self._execute_commands(connection)
 
 
-class HostCommandStep(BaseHostCommandStep, RunResourceStep):
-    def __init__(self, host: SSHHost, commands: list[Command]):
+class HostCommandStep(BaseHostCommandStep):
+    def __init__(self, host: SSHHost, runs: int, commands: list[Command], log_providers: list[LogProvider]):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._runs = runs
         self._commands: list[Command] = commands
-        self._timings_resources_path = None
-
-    def get_run_prefix(self) -> str:
-        return self._host.host_name
+        self._log_providers = log_providers
+        self._resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         super().prepare(environment, resources)
-        self._timings_resources_path = resources.resources_path() / "timings.csv"
+        self._resources_path = resources.resources_path()
 
     def _execute_commands(self, connection: Connection):
         self._logger.info("on host: %s execute %d command(s)", self._host.host, len(self._commands))
-        for command in self._commands:
-            command.execute(connection, self._timings_resources_path)
+
+        resources_path = self._resources_path / self._host.host_name
+        resources_path.mkdir(parents=True, exist_ok=True)
+
+        for run in range(self._runs):
+            self._logger.info("Start run %d/%d", run + 1, self._runs)
+            run_resources_path = resources_path / ("run_%03d" % (run + 1))
+            run_resources_path.mkdir(parents=True, exist_ok=True)
+
+            for log_provider in self._log_providers:
+                log_provider.start_log(run_resources_path)
+
+            timings_resources_path = run_resources_path / "timings.csv"
+            for command in self._commands:
+                command.execute(connection, timings_resources_path)
+
+            for log_provider in self._log_providers:
+                log_provider.stop_log()
+
         self._logger.info("commands executed")

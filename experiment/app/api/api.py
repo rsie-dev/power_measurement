@@ -27,6 +27,10 @@ class CommandBuilder(Builder):
 
 class HostCommandBuilder(Builder):
     @abstractmethod
+    def with_multimeter(self, serial_number: str) -> Self:
+        pass
+
+    @abstractmethod
     def execute(self, command: str) -> Self:
         pass
 
@@ -45,21 +49,7 @@ class HostCommandBuilder(Builder):
 
 class HostBuilder(Builder):
     @abstractmethod
-    def with_multimeter(self, serial_number: str) -> Self:
-        pass
-
-    @abstractmethod
-    def measure_commands(self) -> HostCommandBuilder:
-        pass
-
-    @abstractmethod
-    def done(self) -> RunsBuilder:
-        pass
-
-
-class RunsBuilder(Builder):
-    @abstractmethod
-    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
+    def measure_runs(self, runs: int) -> HostCommandBuilder:
         pass
 
     @abstractmethod
@@ -68,12 +58,16 @@ class RunsBuilder(Builder):
 
 
 class ExperimentBuilder(Builder):
-    @abstractmethod
-    def execute_runs(self, runs: int) -> RunsBuilder:
-        pass
+    #@abstractmethod
+    #def execute_runs(self, runs: int) -> RunsBuilder:
+    #    pass
 
     @abstractmethod
     def with_metrics_collection(self) -> Self:
+        pass
+
+    @abstractmethod
+    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
         pass
 
     @abstractmethod

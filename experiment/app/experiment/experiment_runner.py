@@ -22,24 +22,10 @@ class ExperimentRunner:
         self._signal_handler = signal_handler
         self._steps = steps[:]
 
-    def execute_runs(self, run_count: int, measurement_dispatcher: MeasurementDispatcher,
+    def execute_runs(self, measurement_dispatcher: MeasurementDispatcher,
                      runtime: ExperimentRuntime, environment: ExperimentEnvironment):
-        for run in range(run_count):
-            self._logger.info("Start run %d/%d", run + 1, run_count)
-            run_resource = self._resource_path / ("run_%03d" % (run + 1))
-            run_resource.mkdir(parents=True, exist_ok=True)
-            measurement = Measurement(measurement_dispatcher)
-            self._execute_run(environment, runtime, measurement, run_resource)
-
-    def _execute_run(self, environment: ExperimentEnvironment, runtime: ExperimentRuntime,
-                     measurement: ExperimentMeasurement, run_resource: Path):
-        resource_prefix = self._get_resource_prefix()
-        if resource_prefix:
-            resource_path = run_resource / resource_prefix
-            resource_path.mkdir(parents=True, exist_ok=True)
-        else:
-            resource_path = run_resource
-        resources = Resources(resource_path)
+        measurement = Measurement(measurement_dispatcher)
+        resources = Resources(self._resource_path)
 
         self._logger.info("Prepare all steps")
         for step in self._steps:
