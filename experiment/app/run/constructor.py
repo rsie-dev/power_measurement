@@ -4,12 +4,13 @@ from typing import List, Optional
 from typing import Self
 
 from app.api import Builder
-from app.api import CommandBuilder, MeasurementExecutionBuilder, Command, HostBuilder, ExperimentBuilder
+from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
+from app.api import CommandBuilder, Command
 from app.api import ExecutionBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
-from app.experiment.steps import MultimeterStep, HostCommandStep
+from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
@@ -66,6 +67,20 @@ class ExecutionConstructor(Constructor, ExecutionBuilder):
 
     def add_command(self, command: Command) -> None:
         self._commands.append(command)
+
+
+class WarmupExecutionConstructor(ExecutionConstructor, WarmupExecutionBuilder):
+    def __init__(self, parent: HostConstructor, host: SSHHost):
+        super().__init__(host)
+        self._parent = parent
+
+    def done(self) -> HostBuilder:
+        steps = []
+        commands = self._commands[:]
+        step = WarmupCommandStep(self._host, commands)
+        steps.append(step)
+        self._parent.add_steps(steps)
+        return self._parent
 
 
 class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecutionBuilder):
@@ -131,6 +146,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     @property
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
+
+    def with_warmup(self) -> WarmupExecutionBuilder:
+        return WarmupExecutionConstructor(self, self._host)
 
     def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
         return MeasurementExecutionConstructor(self, self._host, runs)

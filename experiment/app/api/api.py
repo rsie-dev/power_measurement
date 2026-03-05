@@ -34,6 +34,12 @@ class ExecutionBuilder(Builder):
         pass
 
 
+class WarmupExecutionBuilder(ExecutionBuilder):
+    @abstractmethod
+    def done(self) -> HostBuilder:
+        pass
+
+
 class MeasurementExecutionBuilder(ExecutionBuilder):
     @abstractmethod
     def with_multimeter(self, serial_number: str) -> Self:
@@ -53,6 +59,10 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
 
 
 class HostBuilder(Builder):
+    @abstractmethod
+    def with_warmup(self) -> WarmupExecutionBuilder:
+        pass
+
     @abstractmethod
     def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
         pass

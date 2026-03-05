@@ -5,7 +5,6 @@ ToDo:
 - fix multimeter log only logs latest
 - add time unit to rel time in logs
 - add external temp. sensor
-- add support for warmup step
 - add support rest/sleep time
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
@@ -17,6 +16,7 @@ ToDo:
 - fail experiment of resource folder exists
 
 done:
+- add support for warmup step
 - add support for head/tail delay
 - add command timing support
 - add time delta to DUT to resource/run folder
