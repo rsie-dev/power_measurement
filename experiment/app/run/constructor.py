@@ -14,7 +14,7 @@ from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandS
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.run.commands import ExecutorCommand, DelayCommand
+from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand
 
 
 class Constructor(Builder):
@@ -36,18 +36,13 @@ class CommandConstructor(Constructor, CommandBuilder):
         self._parent = parent
         self._command = command
         self._work_dir = None
-        self._with_timing = False
 
     def with_work_dir(self, folder: str) -> Self:
         self._work_dir = folder
         return self
 
-    def with_timing(self) -> Self:
-        self._with_timing = True
-        return self
-
     def done(self) -> ExecutionBuilder:
-        command = ExecutorCommand(self._command, self._with_timing, self._work_dir)
+        command = ExecutorCommand(self._command, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
@@ -91,6 +86,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
+        self._with_timings = False
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
@@ -102,6 +98,10 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
     def with_tail_delay(self, delay: int) -> Self:
         self._tail_delay = delay
+        return self
+
+    def with_timings(self) -> Self:
+        self._with_timings = True
         return self
 
     def done(self) -> HostBuilder:
@@ -121,7 +121,16 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(step)
             steps.append(step)
 
-        commands = self._commands[:]
+        if self._with_timings:
+            commands = []
+            for command in self._commands:
+                if isinstance(command, ExecutorCommand):
+                    commands.append(TimedCommand(command))
+                else:
+                    commands.append(command)
+        else:
+            commands = self._commands[:]
+
         if self._head_delay:
             commands.insert(0, DelayCommand(self._head_delay, "head"))
         if self._tail_delay:

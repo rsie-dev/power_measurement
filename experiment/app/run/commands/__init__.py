@@ -1,7 +1,9 @@
 from .executor_command import ExecutorCommand
 from .delay_command import DelayCommand
+from .timed_command import TimedCommand
 
 __all__ = [
     "ExecutorCommand",
     "DelayCommand",
+    "TimedCommand",
 ]
