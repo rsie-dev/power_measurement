@@ -3,7 +3,6 @@ from typing import Optional
 from typing import Self
 from abc import ABC, abstractmethod
 
-from .command import Command
 from .experiment import Experiment
 
 
@@ -47,10 +46,6 @@ class HostCommandBuilder(Builder):
         pass
 
     @abstractmethod
-    def add_command(self, command: Command) -> None:
-        pass
-
-    @abstractmethod
     def done(self) -> HostBuilder:
         pass
 
@@ -66,10 +61,6 @@ class HostBuilder(Builder):
 
 
 class ExperimentBuilder(Builder):
-    #@abstractmethod
-    #def execute_runs(self, runs: int) -> RunsBuilder:
-    #    pass
-
     @abstractmethod
     def with_metrics_collection(self) -> Self:
         pass
