@@ -2,14 +2,13 @@ ToDo:
 - add download/upload step
 - fix time log is not per command
 - add external temp. sensor
-- add support rest/sleep time
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
 - log git informations
 - add pypi deployment
 - add support for ssh keys
-- add API documsntation
+- add API documentation
 - fail experiment of resource folder exists
 
 done:
