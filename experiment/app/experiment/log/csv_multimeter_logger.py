@@ -8,7 +8,7 @@ from app.usb_meter.measurement import ElectricalMeasurement
 from .logger_base import LoggerBase
 
 
-class CSVElectricLogger(LoggerBase, DataLogger):
+class CSVMultimeterLogger(LoggerBase, DataLogger):
     FIELD_NAMES = ["timestamp", "rel time", "temperature_C", "voltage_V", "current_A"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):
