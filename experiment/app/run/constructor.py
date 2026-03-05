@@ -4,7 +4,7 @@ from typing import List, Optional
 from typing import Self
 
 from app.api import Builder
-from app.api import CommandBuilder, HostCommandBuilder, Command, HostBuilder, ExperimentBuilder
+from app.api import CommandBuilder, MeasurementExecutionBuilder, Command, HostBuilder, ExperimentBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
@@ -28,7 +28,7 @@ class CompositeConstructor(Constructor):
 
 
 class CommandConstructor(Constructor, CommandBuilder):
-    def __init__(self, parent: HostCommandConstructor, command: str):
+    def __init__(self, parent: MeasurementExecutionConstructor, command: str):
         self._parent = parent
         self._command = command
         self._work_dir = None
@@ -42,13 +42,13 @@ class CommandConstructor(Constructor, CommandBuilder):
         self._with_timing = True
         return self
 
-    def done(self) -> HostCommandBuilder:
+    def done(self) -> MeasurementExecutionBuilder:
         command = ExecutorCommand(self._command, self._with_timing, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
 
-class HostCommandConstructor(Constructor, HostCommandBuilder):
+class MeasurementExecutionConstructor(Constructor, MeasurementExecutionBuilder):
     def __init__(self, parent: HostConstructor, host: SSHHost, runs: int):
         self._parent = parent
         self._host = host
@@ -123,8 +123,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
 
-    def measure_runs(self, runs: int) -> HostCommandBuilder:
-        return HostCommandConstructor(self, self._host, runs)
+    def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
+        return MeasurementExecutionConstructor(self, self._host, runs)
 
     def done(self) -> ExperimentBuilder:
         self._parent.add_steps(self._steps)

@@ -20,11 +20,11 @@ class CommandBuilder(Builder):
         pass
 
     @abstractmethod
-    def done(self) -> HostCommandBuilder:
+    def done(self) -> MeasurementExecutionBuilder:
         pass
 
 
-class HostCommandBuilder(Builder):
+class MeasurementExecutionBuilder(Builder):
     @abstractmethod
     def with_multimeter(self, serial_number: str) -> Self:
         pass
@@ -52,7 +52,7 @@ class HostCommandBuilder(Builder):
 
 class HostBuilder(Builder):
     @abstractmethod
-    def measure_runs(self, runs: int) -> HostCommandBuilder:
+    def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
         pass
 
     @abstractmethod
