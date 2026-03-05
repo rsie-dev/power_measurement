@@ -1,0 +1,48 @@
+from pathlib import Path
+from dataclasses import dataclass
+import csv
+import logging
+from abc import ABC, abstractmethod
+
+from .logger_base import LoggerBase
+
+
+@dataclass(frozen=True)
+class TimingEntry:
+    real: float
+    user: float
+    sys: float
+    command: str
+
+
+class TimingLogger(ABC):
+    @abstractmethod
+    def log(self, data: TimingEntry) -> None:
+        pass
+
+
+class CSVTimingLogger(LoggerBase, TimingLogger):
+    FIELD_NAMES = ["entry", "real", "user", "sys", "command"]
+
+    def __init__(self, path: Path, formatter: logging.Formatter):
+        super().__init__(formatter)
+        self._stream = path.open(mode="w", encoding="utf-8")
+        self._writer = csv.DictWriter(self._stream, fieldnames=self.FIELD_NAMES)
+        self._entry = 0
+
+    def init(self) -> None:
+        self._writer.writeheader()
+
+    def close(self) -> None:
+        self._stream.close()
+
+    def log(self, data: TimingEntry) -> None:
+        self._entry += 1
+        entry = {
+            "entry": f"{self._entry}",
+            "real": f"{data.real:.2f}",
+            "user": f"{data.user:.2f}",
+            "sys": f"{data.sys:.5f}",
+            "command": f"{data.command}",
+        }
+        self._writer.writerow(entry)

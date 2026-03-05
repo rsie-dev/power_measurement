@@ -16,6 +16,9 @@ from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand
 
+from .timing_dispatcher import TimingDispatcher
+from .timing_log_provider import TimingLogProvider
+
 
 class Constructor(Builder):
     pass
@@ -122,10 +125,16 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             steps.append(step)
 
         if self._with_timings:
+            timing_dispatcher = TimingDispatcher()
+
+            formatter = formatter_class(**formatter_config)
+            timing_log_provider = TimingLogProvider(timing_dispatcher, formatter)
+            log_providers.append(timing_log_provider)
+
             commands = []
             for command in self._commands:
                 if isinstance(command, ExecutorCommand):
-                    commands.append(TimedCommand(command))
+                    commands.append(TimedCommand(command, timing_dispatcher))
                 else:
                     commands.append(command)
         else:

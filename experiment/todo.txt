@@ -1,6 +1,5 @@
 ToDo:
 - add download/upload step
-- fix time log is not per command
 - add external temp. sensor
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
@@ -12,6 +11,7 @@ ToDo:
 - fail experiment of resource folder exists
 
 done:
+- fix timings log is now for all commands
 - add time unit to rel time in logs
 - fix multimeter log only logs latest
 - add ssh user argument
