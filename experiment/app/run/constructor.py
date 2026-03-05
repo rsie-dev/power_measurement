@@ -1,6 +1,6 @@
 from __future__ import annotations
 import logging
-from typing import List, Optional
+from typing import List
 from typing import Self
 
 from app.api import Builder
@@ -168,12 +168,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
-    def __init__(self, formatter_info: tuple[type, dict]):
+    def __init__(self, formatter_info: tuple[type, dict], ssh_user):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._with_metrics_collection: bool = False
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
+        self._ssh_user = ssh_user
 
     @property
     def collect_metrics(self) -> bool:
@@ -186,9 +187,8 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def add_init_steps(self, init_steps: List[InitStep]):
         self._init_steps.extend(init_steps)
 
-    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
-        ssh_user = ssh_user or "dietpi"
-        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=ssh_user)
+    def on_host(self, host_name: str, host: str) -> HostBuilder:
+        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=self._ssh_user)
         self._init_steps.append(HostnameValidationStep(ssh_host))
         self._init_steps.append(HostnameInfoStep(ssh_host))
         return HostConstructor(self, ssh_host)

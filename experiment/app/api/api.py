@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Optional
 from typing import Self
 from abc import ABC, abstractmethod
 
@@ -78,7 +77,7 @@ class ExperimentBuilder(Builder):
         pass
 
     @abstractmethod
-    def on_host(self, host_name: str, host: str, ssh_user: Optional[str] = None) -> HostBuilder:
+    def on_host(self, host_name: str, host: str) -> HostBuilder:
         pass
 
     @abstractmethod

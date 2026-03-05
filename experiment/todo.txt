@@ -1,6 +1,5 @@
 ToDo:
 - add download/upload step
-- add ssh user argument
 - fix time log is not per command
 - fix multimeter log only logs latest
 - add time unit to rel time in logs
@@ -16,6 +15,7 @@ ToDo:
 - fail experiment of resource folder exists
 
 done:
+- add ssh user argument
 - add support for warmup step
 - add support for head/tail delay
 - add command timing support

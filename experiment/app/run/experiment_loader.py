@@ -15,7 +15,8 @@ class ExperimentLoader:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter_info = formatter_info
 
-    def load_experiment_from_path(self, path: Path, package_name: Optional[str] = None) -> ExperimentExecutor:
+    def load_experiment_from_path(self, path: Path, ssh_user: str,
+                                  package_name: Optional[str] = None) -> ExperimentExecutor:
         """
         Import a .py file at `path` as a module and return the module object.
         - Uses a unique module name so you can load multiple different files or reload the same path.
@@ -25,7 +26,7 @@ class ExperimentLoader:
         if not path.exists():
             raise FileNotFoundError(path)
 
-        app.api.EXPERIMENT_CONSTRUCTOR = ExperimentConstructor(self._formatter_info)
+        app.api.EXPERIMENT_CONSTRUCTOR = ExperimentConstructor(self._formatter_info, ssh_user)
 
         unique_name = f"{package_name or ""}.{path.stem}"
         spec = importlib.util.spec_from_file_location(unique_name, path)
