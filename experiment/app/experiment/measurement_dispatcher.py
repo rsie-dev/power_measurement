@@ -16,8 +16,6 @@ class MeasurementDispatcher(MeasurementLogger):
         self.close()
 
     def add_logger(self, host: str, logger: MeasurementLogger) -> None:
-        if self._initialized:
-            logger.init()
         logger_list = self._logger_dict.get(host, [])
         logger_list.append(logger)
         self._logger_dict[host] = logger_list
@@ -32,14 +30,8 @@ class MeasurementDispatcher(MeasurementLogger):
         if self._initialized:
             return
         self._initialized = True
-        for logger_list in self._logger_dict.values():
-            for logger in logger_list:
-                logger.init()
 
     def close(self):
-        for logger_list in self._logger_dict.values():
-            for logger in logger_list:
-                logger.close()
         self._logger_dict.clear()
 
     def log(self, measurement: SystemMeasurement) -> None:

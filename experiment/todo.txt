@@ -1,8 +1,7 @@
 ToDo:
-- fix electrical log is missing header
 - fix time log is not per command
 - fix multimeter log only logs latest
-- add time unit to rel timein logs
+- add time unit to rel time in logs
 - add external temp. sensor
 - add support for warmup step
 - add support rest/sleep time

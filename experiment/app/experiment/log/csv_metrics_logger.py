@@ -40,15 +40,8 @@ class CSVMetricsLogger(LoggerBase, MeasurementLogger):
     def init(self) -> None:
         self._writer.writeheader()
 
-    def close(self):
+    def close(self) -> None:
         self._stream.close()
-
-    def __enter__(self):
-        self.init()
-        return self
-
-    def __exit__(self, _type, value, traceback):
-        self.close()
 
     def log(self, measurement: SystemMeasurement) -> None:
         if self._start_time is None:

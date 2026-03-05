@@ -1,10 +1,19 @@
+from abc import ABC, abstractmethod
 import logging
 import datetime
 
 
-class LoggerBase:
+class LoggerBase(ABC):
     def __init__(self, formatter: logging.Formatter):
         self._formatter = formatter
+
+    @abstractmethod
+    def init(self) -> None:
+        pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass
 
     def _format_time(self, time: datetime.datetime) -> str:
         timestamp = time.timestamp()

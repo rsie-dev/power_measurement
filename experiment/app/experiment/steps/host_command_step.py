@@ -1,5 +1,6 @@
 import logging
 from abc import abstractmethod
+from contextlib import ExitStack
 
 from fabric import Connection
 
@@ -54,14 +55,12 @@ class HostCommandStep(BaseHostCommandStep):
             run_resources_path = resources_path / ("run_%03d" % (run + 1))
             run_resources_path.mkdir(parents=True, exist_ok=True)
 
-            for log_provider in self._log_providers:
-                log_provider.start_log(run_resources_path)
+            with ExitStack() as stack:
+                for log_provider in self._log_providers:
+                    stack.enter_context(log_provider.start_log(run_resources_path))
 
-            timings_resources_path = run_resources_path / "timings.csv"
-            for command in self._commands:
-                command.execute(connection, timings_resources_path)
-
-            for log_provider in self._log_providers:
-                log_provider.stop_log()
+                timings_resources_path = run_resources_path / "timings.csv"
+                for command in self._commands:
+                    command.execute(connection, timings_resources_path)
 
         self._logger.info("commands executed")

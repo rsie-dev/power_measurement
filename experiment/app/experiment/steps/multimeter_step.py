@@ -2,12 +2,15 @@ import logging
 from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 from pathlib import Path
+from typing import ContextManager
+from contextlib import contextmanager
+
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
 from app.usb_meter.data_logger import DataLogger
 from app.usb_meter.measurement import ElectricalMeasurement
-from app.experiment.log import CSVElectricLogger
+from app.experiment.log import logger, CSVElectricLogger
 from .step import Step
 from .log_provider import LogProvider
 from .experiment_environment import ExperimentEnvironment
@@ -21,7 +24,6 @@ class LogContext:
     def __init__(self, formatter: logging.Formatter):
         self.formatter = formatter
         self.log_dispatcher = LogDispatcher()
-        self.data_logger = None
 
 
 class DeviceManager:
@@ -74,13 +76,16 @@ class MultimeterStep(Step, LogProvider):
         self._future = None
         self._log_context = LogContext(formatter)
 
-    def start_log(self, resource_path: Path):
+    @contextmanager
+    def start_log(self, resource_path: Path) -> ContextManager:
         electrical_log = resource_path / "multimeter.csv"
-        self._log_context.data_logger = CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True)
-        self._log_context.log_dispatcher.register_logger(self._log_context.data_logger)
 
-    def stop_log(self):
-        self._log_context.log_dispatcher.unregister_logger(self._log_context.data_logger)
+        with logger(CSVElectricLogger(electrical_log, self._log_context.formatter, latest_only=True)) as data_logger:
+            self._log_context.log_dispatcher.register_logger(data_logger)
+            try:
+                yield data_logger
+            finally:
+                self._log_context.log_dispatcher.unregister_logger(data_logger)
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
         self._logger.info("multimeter start")

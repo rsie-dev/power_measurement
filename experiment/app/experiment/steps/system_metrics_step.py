@@ -2,13 +2,16 @@ import logging
 from threading import Event
 from concurrent.futures import Executor
 from pathlib import Path
+from typing import ContextManager
+from contextlib import contextmanager
+from contextlib import ExitStack
 
 from fabric import Connection
 import humanize
 
 from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
-from app.experiment.log import CSVMetricsLogger, MetricType
+from app.experiment.log import CSVMetricsLogger, MetricType, logger
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
@@ -47,26 +50,29 @@ class SystemMetricsClientStep(BaseHostCommandStep, LogProvider):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter = formatter
         self._telegraf_server_address = None
-        self._metrics_logger: dict[MetricType, CSVMetricsLogger] = {}
         self._metrics_client_timeout: float = 5
         self._startup_monitor = None
         self._measurement = None
 
-    def start_log(self, resource_path: Path):
-        system_logger = CSVMetricsLogger(MetricType.SYSTEM, resource_path / "system.csv", self._formatter)
-        cpu_logger = CSVMetricsLogger(MetricType.CPU, resource_path / "cpu.csv", self._formatter)
-        self._metrics_logger[MetricType.SYSTEM] = system_logger
-        self._metrics_logger[MetricType.CPU] = cpu_logger
-        for logger in self._metrics_logger.values():
-            self._measurement.register_for_system_meter(self._host.host_name, logger)
+    @contextmanager
+    def start_log(self, resource_path: Path) -> ContextManager:
+        @contextmanager
+        def log_registrar(log):
+            with logger(log) as data_logger:
+                try:
+                    self._measurement.register_for_system_meter(self._host.host_name, data_logger)
+                    yield data_logger
+                finally:
+                    self._measurement.unregister_for_system_meter(self._host.host_name, data_logger)
 
-    def stop_log(self):
-        try:
-            for logger in self._metrics_logger.values():
-                self._measurement.unregister_for_system_meter(self._host.host_name, logger)
-                logger.close()
-        finally:
-            self._metrics_logger.clear()
+        with ExitStack() as stack:
+            system_logger = CSVMetricsLogger(MetricType.SYSTEM, resource_path / "system.csv", self._formatter)
+            stack.enter_context(log_registrar(system_logger))
+
+            cpu_logger = CSVMetricsLogger(MetricType.CPU, resource_path / "cpu.csv", self._formatter)
+            stack.enter_context(log_registrar(cpu_logger))
+
+            yield stack
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         super().prepare(environment, resources)

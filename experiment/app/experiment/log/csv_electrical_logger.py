@@ -18,15 +18,11 @@ class CSVElectricLogger(LoggerBase, DataLogger):
         self._start_time = None
         self._latest_only = latest_only
 
-    def __enter__(self):
-        self._init()
-        return self
-
-    def __exit__(self, _type, value, traceback):
-        self._stream.close()
-
-    def _init(self) -> None:
+    def init(self) -> None:
         self._writer.writeheader()
+
+    def close(self) -> None:
+        self._stream.close()
 
     def _log_measurement(self, data: ElectricalMeasurement) -> None:
         if self._start_time is None:
