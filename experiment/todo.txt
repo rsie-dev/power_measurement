@@ -1,4 +1,6 @@
 ToDo:
+- add download/upload step
+- add ssh user argument
 - fix time log is not per command
 - fix multimeter log only logs latest
 - add time unit to rel time in logs
