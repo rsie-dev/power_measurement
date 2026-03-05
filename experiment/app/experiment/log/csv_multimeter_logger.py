@@ -9,7 +9,7 @@ from .logger_base import LoggerBase
 
 
 class CSVMultimeterLogger(LoggerBase, DataLogger):
-    FIELD_NAMES = ["timestamp", "rel time", "temperature_C", "voltage_V", "current_A"]
+    FIELD_NAMES = ["timestamp", "rel_time_MS", "temperature_C", "voltage_V", "current_A"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):
         super().__init__(formatter)
@@ -33,7 +33,7 @@ class CSVMultimeterLogger(LoggerBase, DataLogger):
 
         entry = {
             "timestamp": f"{formatted_time}",
-            "rel time": f"{rel_time.total_seconds():7.2f}",
+            "rel_time_MS": f"{rel_time.total_seconds():8.3f}",
             "temperature_C": f"{data.temperature:2.2f}",
             "voltage_V": f"{data.voltage:7.5f}",
             "current_A": f"{data.current:7.5f}",

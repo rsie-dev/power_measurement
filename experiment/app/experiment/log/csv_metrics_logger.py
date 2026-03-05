@@ -22,7 +22,7 @@ def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
 
 
 class CSVMetricsLogger(LoggerBase, MeasurementLogger):
-    FIELD_NAMES = ["timestamp", "rel time", "host", "name"]
+    FIELD_NAMES = ["timestamp", "rel_time_MS", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
     CPU_FIELD_NAMES = FIELD_NAMES + ["entity",
                    "usage_idle", "usage_system", "usage_user", "usage_nice", "usage_iowait",
@@ -56,7 +56,7 @@ class CSVMetricsLogger(LoggerBase, MeasurementLogger):
 
         entry = {
             "timestamp": f"{formatted_time}",
-            "rel time": f"{rel_time.total_seconds():7.2f}",
+            "rel_time_MS": f"{rel_time.total_seconds():8.3f}",
             "host": f"{measurement.tags["host"]}",
             "name": f"{measurement.name}",
         }
