@@ -7,6 +7,12 @@ from app.api import Command
 from app.experiment.log import TimingEntry, TimingLogger
 from .executor_command import ExecutorCommand
 
+
+def _parse_time_line(line):
+    key, value = line.strip().split(maxsplit=1)
+    return key, float(value)
+
+
 class TimedCommand(Command):
     def __init__(self, timed_command: ExecutorCommand, timing_logger: TimingLogger):
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -35,6 +41,6 @@ class TimedCommand(Command):
         time_file.seek(0)
         with TextIOWrapper(time_file, encoding="utf-8") as text_stream:
             for line in text_stream:
-                key, value = line.strip().split(maxsplit=1)
-                entries[key] = float(value)
+                key, value = _parse_time_line(line)
+                entries[key] = value
         return TimingEntry(entries["real"], entries["user"], entries["sys"], self._timed_command.command)
