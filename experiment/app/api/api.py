@@ -20,11 +20,21 @@ class CommandBuilder(Builder):
         pass
 
     @abstractmethod
-    def done(self) -> MeasurementExecutionBuilder:
+    def done(self) -> ExecutionBuilder:
         pass
 
 
-class MeasurementExecutionBuilder(Builder):
+class ExecutionBuilder(Builder):
+    @abstractmethod
+    def execute(self, command: str) -> Self:
+        pass
+
+    @abstractmethod
+    def execute_with(self, command: str) -> CommandBuilder:
+        pass
+
+
+class MeasurementExecutionBuilder(ExecutionBuilder):
     @abstractmethod
     def with_multimeter(self, serial_number: str) -> Self:
         pass
@@ -35,14 +45,6 @@ class MeasurementExecutionBuilder(Builder):
 
     @abstractmethod
     def with_tail_delay(self, delay: int) -> Self:
-        pass
-
-    @abstractmethod
-    def execute(self, command: str) -> Self:
-        pass
-
-    @abstractmethod
-    def execute_with(self, command: str) -> CommandBuilder:
         pass
 
     @abstractmethod

@@ -1,14 +1,16 @@
 from .experiment import Experiment
 from .command import Command
 from .api import Builder
-from .api import ExperimentBuilder, HostBuilder, MeasurementExecutionBuilder, CommandBuilder
+from .api import CommandBuilder
+from .api import ExperimentBuilder, HostBuilder, MeasurementExecutionBuilder, ExecutionBuilder
 
 
 __all__ = [
     "Experiment", "Command",
     "Builder",
     "ExperimentBuilder",
-    "HostBuilder", "MeasurementExecutionBuilder", "CommandBuilder",
+    "CommandBuilder",
+    "HostBuilder", "MeasurementExecutionBuilder", "ExecutionBuilder",
     "get_experiment_builder",
 ]
 

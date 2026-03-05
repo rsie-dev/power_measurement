@@ -5,6 +5,7 @@ from typing import Self
 
 from app.api import Builder
 from app.api import CommandBuilder, MeasurementExecutionBuilder, Command, HostBuilder, ExperimentBuilder
+from app.api import ExecutionBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
@@ -21,6 +22,7 @@ class Constructor(Builder):
 
 class CompositeConstructor(Constructor):
     def __init__(self):
+        super().__init__()
         self._steps: List[Step] = []
 
     def add_steps(self, steps: List[Step]) -> None:
@@ -28,7 +30,8 @@ class CompositeConstructor(Constructor):
 
 
 class CommandConstructor(Constructor, CommandBuilder):
-    def __init__(self, parent: MeasurementExecutionConstructor, command: str):
+    def __init__(self, parent: ExecutionConstructor, command: str):
+        super().__init__()
         self._parent = parent
         self._command = command
         self._work_dir = None
@@ -42,18 +45,34 @@ class CommandConstructor(Constructor, CommandBuilder):
         self._with_timing = True
         return self
 
-    def done(self) -> MeasurementExecutionBuilder:
+    def done(self) -> ExecutionBuilder:
         command = ExecutorCommand(self._command, self._with_timing, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
 
-class MeasurementExecutionConstructor(Constructor, MeasurementExecutionBuilder):
-    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int):
-        self._parent = parent
+class ExecutionConstructor(Constructor, ExecutionBuilder):
+    def __init__(self, host: SSHHost):
+        super().__init__()
         self._host = host
-        self._runs = runs
         self._commands: list[Command] = []
+
+    def execute(self, command: str) -> Self:
+        self.add_command(ExecutorCommand(command))
+        return self
+
+    def execute_with(self, command: str) -> CommandBuilder:
+        return CommandConstructor(self, command)
+
+    def add_command(self, command: Command) -> None:
+        self._commands.append(command)
+
+
+class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecutionBuilder):
+    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int):
+        super().__init__(host)
+        self._parent = parent
+        self._runs = runs
         self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
@@ -69,16 +88,6 @@ class MeasurementExecutionConstructor(Constructor, MeasurementExecutionBuilder):
     def with_tail_delay(self, delay: int) -> Self:
         self._tail_delay = delay
         return self
-
-    def execute(self, command: str) -> Self:
-        self.add_command(ExecutorCommand(command))
-        return self
-
-    def execute_with(self, command: str) -> CommandBuilder:
-        return CommandConstructor(self, command)
-
-    def add_command(self, command: Command) -> None:
-        self._commands.append(command)
 
     def done(self) -> HostBuilder:
         steps = []
