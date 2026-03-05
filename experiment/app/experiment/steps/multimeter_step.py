@@ -80,7 +80,7 @@ class MultimeterStep(Step, LogProvider):
     def start_log(self, resource_path: Path) -> ContextManager:
         electrical_log = resource_path / "multimeter.csv"
 
-        with logger(CSVMultimeterLogger(electrical_log, self._log_context.formatter, latest_only=True)) as data_logger:
+        with logger(CSVMultimeterLogger(electrical_log, self._log_context.formatter, latest_only=False)) as data_logger:
             self._log_context.log_dispatcher.register_logger(data_logger)
             try:
                 yield data_logger
