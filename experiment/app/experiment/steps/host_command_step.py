@@ -47,7 +47,7 @@ class WarmupCommandStep(BaseHostCommandStep):
 
 
 class HostCommandStep(BaseHostCommandStep):
-    def __init__(self, host: SSHHost, runs: int, commands: list[Command], log_providers: list[LogProvider]):
+    def __init__(self, host: SSHHost, commands: list[Command], runs: int, log_providers: list[LogProvider]):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._runs = runs
