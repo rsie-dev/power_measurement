@@ -19,6 +19,10 @@ class CommandBuilder(Builder):
         pass
 
 
+class MeasuredCommandBuilder(CommandBuilder):
+    pass
+
+
 class ExecutionBuilder(Builder):
     @abstractmethod
     def execute(self, command: str) -> Self:
@@ -50,6 +54,10 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
 
     @abstractmethod
     def with_timings(self) -> Self:
+        pass
+
+    @abstractmethod
+    def execute_with(self, command: str) -> MeasuredCommandBuilder:
         pass
 
     @abstractmethod

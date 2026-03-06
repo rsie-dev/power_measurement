@@ -5,7 +5,7 @@ from typing import Self
 
 from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
-from app.api import CommandBuilder, Command
+from app.api import CommandBuilder, MeasuredCommandBuilder, Command
 from app.api import ExecutionBuilder
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
@@ -49,6 +49,11 @@ class CommandConstructor(Constructor, CommandBuilder):
         command = ExecutorCommand(self._command, self._work_dir)
         self._parent.add_command(command)
         return self._parent
+
+
+class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
+    def __init__(self, parent: ExecutionConstructor, command: str):
+        super().__init__(parent, command)
 
 
 class ExecutionConstructor(Constructor, ExecutionBuilder):
@@ -107,6 +112,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def with_timings(self) -> Self:
         self._with_timings = True
         return self
+
+    def execute_with(self, command: str) -> MeasuredCommandBuilder:
+        return MeasuredCommandConstructor(self, command)
 
     def done(self) -> HostBuilder:
         steps = []
