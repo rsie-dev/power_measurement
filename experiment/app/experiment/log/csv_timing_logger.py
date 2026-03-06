@@ -41,9 +41,9 @@ class CSVTimingLogger(LoggerBase, TimingLogger):
         self._entry += 1
         entry = {
             "entry": f"{self._entry}",
-            "real_S": f"{data.real.total_seconds():.3f}",
-            "user_S": f"{data.user.total_seconds():.3f}",
-            "sys_S": f"{data.sys.total_seconds():.3f}",
+            "real_S": f"{data.real.total_seconds():8.3f}",
+            "user_S": f"{data.user.total_seconds():8.3f}",
+            "sys_S": f"{data.sys.total_seconds():8.3f}",
             "command": f"{data.command}",
         }
         self._writer.writerow(entry)
