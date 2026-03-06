@@ -8,7 +8,7 @@ ToDo:
 - add pypi deployment
 - add support for ssh keys / rework ssh authentication
 - add API documentation
-- fail experiment of resource folder exists
+- fail experiment if resource folder exists
 
 done:
 - add upload step
