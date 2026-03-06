@@ -20,7 +20,9 @@ class CommandBuilder(Builder):
 
 
 class MeasuredCommandBuilder(CommandBuilder):
-    pass
+    @abstractmethod
+    def with_timings(self) -> Self:
+        pass
 
 
 class ExecutionBuilder(Builder):
@@ -50,10 +52,6 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
 
     @abstractmethod
     def with_tail_delay(self, delay: int) -> Self:
-        pass
-
-    @abstractmethod
-    def with_timings(self) -> Self:
         pass
 
     @abstractmethod

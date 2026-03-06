@@ -52,8 +52,22 @@ class CommandConstructor(Constructor, CommandBuilder):
 
 
 class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
-    def __init__(self, parent: ExecutionConstructor, command: str):
+    def __init__(self, parent: MeasurementExecutionConstructor, command: str):
         super().__init__(parent, command)
+        self._parent = parent
+        self._with_timings = False
+
+    def with_timings(self) -> Self:
+        self._with_timings = True
+        return self
+
+    def done(self) -> ExecutionBuilder:
+        command = ExecutorCommand(self._command, self._work_dir)
+        if self._with_timings:
+            timing_dispatcher = self._parent.allocate_timing_dispatcher()
+            command = TimedCommand(command, timing_dispatcher)
+        self._parent.add_command(command)
+        return self._parent
 
 
 class ExecutionConstructor(Constructor, ExecutionBuilder):
@@ -95,7 +109,12 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
-        self._with_timings = False
+        self._timing_dispatcher = None
+
+    def allocate_timing_dispatcher(self) -> TimingDispatcher:
+        if not self._timing_dispatcher:
+            self._timing_dispatcher = TimingDispatcher()
+        return self._timing_dispatcher
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
@@ -107,10 +126,6 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
     def with_tail_delay(self, delay: int) -> Self:
         self._tail_delay = delay
-        return self
-
-    def with_timings(self) -> Self:
-        self._with_timings = True
         return self
 
     def execute_with(self, command: str) -> MeasuredCommandBuilder:
@@ -133,22 +148,22 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(step)
             steps.append(step)
 
-        if self._with_timings:
-            timing_dispatcher = TimingDispatcher()
-
+        if self._timing_dispatcher:
             formatter = formatter_class(**formatter_config)
-            timing_log_provider = TimingLogProvider(timing_dispatcher, formatter)
+            timing_log_provider = TimingLogProvider(self._timing_dispatcher, formatter)
             log_providers.append(timing_log_provider)
 
-            commands = []
-            for command in self._commands:
-                if isinstance(command, ExecutorCommand):
-                    commands.append(TimedCommand(command, timing_dispatcher))
-                else:
-                    commands.append(command)
+            #commands = []
+            #for command in self._commands:
+            #    if isinstance(command, ExecutorCommand):
+            #        commands.append(TimedCommand(command, timing_dispatcher))
+            #    else:
+            #        commands.append(command)
         else:
-            commands = self._commands[:]
+            #commands = self._commands[:]
+            pass
 
+        commands = self._commands[:]
         if self._head_delay:
             commands.insert(0, DelayCommand(self._head_delay, "head"))
         if self._tail_delay:
