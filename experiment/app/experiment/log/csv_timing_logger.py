@@ -3,15 +3,16 @@ from dataclasses import dataclass
 import csv
 import logging
 from abc import ABC, abstractmethod
+import datetime
 
 from .logger_base import LoggerBase
 
 
 @dataclass(frozen=True)
 class TimingEntry:
-    real: float
-    user: float
-    sys: float
+    real: datetime.timedelta
+    user: datetime.timedelta
+    sys: datetime.timedelta
     command: str
 
 
@@ -40,9 +41,9 @@ class CSVTimingLogger(LoggerBase, TimingLogger):
         self._entry += 1
         entry = {
             "entry": f"{self._entry}",
-            "real": f"{data.real:.2f}",
-            "user": f"{data.user:.2f}",
-            "sys": f"{data.sys:.5f}",
+            "real": f"{data.real.total_seconds():.3f}",
+            "user": f"{data.user.total_seconds():.3f}",
+            "sys": f"{data.sys.total_seconds():.3f}",
             "command": f"{data.command}",
         }
         self._writer.writerow(entry)
