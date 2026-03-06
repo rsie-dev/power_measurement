@@ -8,9 +8,9 @@ ToDo:
 - add pypi deployment
 - add support for ssh keys / rework ssh authentication
 - add API documentation
-- fail experiment if resource folder exists
 
 done:
+- fail experiment if resource folder exists
 - add upload step
 - fix timings log is now for all commands
 - add time unit to rel time in logs
