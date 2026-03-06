@@ -1,5 +1,4 @@
 ToDo:
-- add download/upload step
 - add external temp. sensor
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
@@ -11,6 +10,7 @@ ToDo:
 - fail experiment of resource folder exists
 
 done:
+- add upload step
 - fix timings log is now for all commands
 - add time unit to rel time in logs
 - fix multimeter log only logs latest
