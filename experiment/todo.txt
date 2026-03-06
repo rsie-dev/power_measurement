@@ -1,11 +1,12 @@
 ToDo:
+- add command output collection
 - add external temp. sensor
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
 - log git informations
 - add pypi deployment
-- add support for ssh keys
+- add support for ssh keys / rework ssh authentication
 - add API documentation
 - fail experiment of resource folder exists
 
