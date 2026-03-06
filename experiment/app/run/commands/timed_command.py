@@ -40,6 +40,7 @@ class TimedCommand(Command):
             )
             self._logger.info("execution times: %s", timings)
             self._timing_logger.log(timing_entry)
+        connection.run(f"rm -f {timing_output}")
 
     def _extract_timing_entry(self, time_file: BytesIO) -> TimingEntry:
         entries: dict[str, datetime.timedelta] = {}
