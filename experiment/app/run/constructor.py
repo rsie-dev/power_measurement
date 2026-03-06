@@ -12,6 +12,7 @@ from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
+from app.experiment.steps import UploadStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand
@@ -164,6 +165,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     @property
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
+
+    def upload(self, local: str, remote: str) -> Self:
+        self._steps.append(UploadStep(self._host, local, remote))
+        return self
 
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._host)

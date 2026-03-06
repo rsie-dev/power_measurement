@@ -59,6 +59,10 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
 
 class HostBuilder(Builder):
     @abstractmethod
+    def upload(self, local: str, remote: str) -> Self:
+        pass
+
+    @abstractmethod
     def with_warmup(self) -> WarmupExecutionBuilder:
         pass
 
