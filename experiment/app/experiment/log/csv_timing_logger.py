@@ -23,7 +23,7 @@ class TimingLogger(ABC):
 
 
 class CSVTimingLogger(LoggerBase, TimingLogger):
-    FIELD_NAMES = ["entry", "real", "user", "sys", "command"]
+    FIELD_NAMES = ["entry", "real_S", "user_S", "sys_S", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter)
@@ -41,9 +41,9 @@ class CSVTimingLogger(LoggerBase, TimingLogger):
         self._entry += 1
         entry = {
             "entry": f"{self._entry}",
-            "real": f"{data.real.total_seconds():.3f}",
-            "user": f"{data.user.total_seconds():.3f}",
-            "sys": f"{data.sys.total_seconds():.3f}",
+            "real_S": f"{data.real.total_seconds():.3f}",
+            "user_S": f"{data.user.total_seconds():.3f}",
+            "sys_S": f"{data.sys.total_seconds():.3f}",
             "command": f"{data.command}",
         }
         self._writer.writerow(entry)
