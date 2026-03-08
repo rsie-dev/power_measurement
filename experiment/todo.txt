@@ -4,7 +4,7 @@ ToDo:
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
-- log git informations
+- log git describe informations (https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/git-describe.md)
 - add pypi deployment
 - add support for ssh keys / rework ssh authentication
 - add API documentation
