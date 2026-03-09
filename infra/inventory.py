@@ -20,10 +20,10 @@ controller = ([
 )
 
 dut = ([
-        ('raspi5', {'ssh_hostname': '192.168.1.202'}),
-        ('radxax4', {'ssh_hostname': '192.168.1.203'}),
-        ('visionfive2', {'ssh_hostname': '192.168.1.204'}),
-        ('visionfive2lite', {'ssh_hostname': '192.168.1.205', "install_cpupower": False}),
+        ('raspi5', {'ssh_hostname': '192.168.1.102'}),
+        ('radxax4', {'ssh_hostname': '192.168.1.103'}),
+        ('visionfive2', {'ssh_hostname': '192.168.1.104'}),
+        ('visionfive2lite', {'ssh_hostname': '192.168.1.105', "install_cpupower": False}),
         ],
         _ssh_config
 )
