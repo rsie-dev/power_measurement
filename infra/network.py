@@ -56,7 +56,7 @@ minsamples 8
 maxsamples 64
 maxupdateskew 20
 
-#hwtimestamp *
+hwtimestamp *
 
 makestep 0.1 3
 #rtcsync
