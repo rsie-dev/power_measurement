@@ -68,12 +68,21 @@ makestep 0.1 3
         _sudo=True,
     )
 
+    update_dhcp_config = files.line(
+        name="Update DHCP chrony script",
+        path="/etc/dhcp/dhclient-exit-hooks.d/chrony",
+        line='echo "server $server iburst" >> "$SERVERFILE"',
+        replace='echo "server $server iburst minpoll 2 maxpoll 4" >> "$SERVERFILE"',
+        _sudo=True,
+    )
+
     systemd.service(
         name="Restart chrony service",
         service="chrony.service",
         restarted=True,
         _sudo=True,
         _if=config_file.did_change or update_config.did_change() or add_config.did_change()
+            or update_dhcp_config.did_change()
     )
 
 
