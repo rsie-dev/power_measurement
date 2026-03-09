@@ -50,12 +50,30 @@ def ntp_client():
         replace="#pool 2.debian.pool.ntp.org iburst",
         _sudo=True,
     )
+
+    content = """
+minsamples 8
+maxsamples 64
+maxupdateskew 20
+
+#hwtimestamp *
+
+makestep 0.1 3
+#rtcsync
+"""
+    add_config = files.put(
+        name="Create extra chrony client configuration",
+        src=StringIO(content),
+        dest="/etc/chrony/conf.d/client.conf",
+        _sudo=True,
+    )
+
     systemd.service(
         name="Restart chrony service",
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=config_file.did_change or update_config.did_change()
+        _if=config_file.did_change or update_config.did_change() or add_config.did_change()
     )
 
 

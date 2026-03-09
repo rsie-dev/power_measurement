@@ -1,6 +1,7 @@
 - check systemd timers
 
 done:
+- reduced chrony update/synch time
 - parameterize telegraf service with server IP address
 - add brotli, zopfli, zstd, pigz, pbzip2
 - change to chrony for NTP
