@@ -59,7 +59,7 @@ maxupdateskew 20
 hwtimestamp *
 
 makestep 0.1 3
-#rtcsync
+rtcsync
 """
     add_config = files.put(
         name="Create extra chrony client configuration",
