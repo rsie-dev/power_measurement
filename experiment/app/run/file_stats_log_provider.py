@@ -3,13 +3,12 @@ from typing import ContextManager
 from contextlib import contextmanager
 
 from app.experiment.steps import LogProvider
-from app.experiment.log import logger, CSVFileStatLogger
-
-from .file_stats_dispatcher import FileStatsDispatcher
+from app.experiment.log import logger, LogDispatcher
+from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 
 
 class FileStatsLogProvider(LogProvider):
-    def __init__(self, log_dispatcher: FileStatsDispatcher, formatter):
+    def __init__(self, log_dispatcher: LogDispatcher[FileStatsEntry], formatter):
         self._log_dispatcher = log_dispatcher
         self._formatter = formatter
 
