@@ -47,7 +47,7 @@ class ExperimentExecutor(Experiment):
 
                     environment = Environment(ssh_manager, signal_handler, metrics_server_address)
                     runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
-                    runner.execute_runs(self._metrics_dispatcher, runtime, environment)
+                    runner.execute_runs(runtime, environment)
                 finally:
                     if future:
                         metrics_server.shut_down(False)
