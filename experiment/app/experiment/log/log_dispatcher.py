@@ -15,6 +15,6 @@ class LogDispatcher(Logger[T]):
     def unregister_logger(self, logger: Logger[T]):
         self._loggers.remove(logger)
 
-    def log(self, data: T) -> None:
+    def log(self, data: T | list[T]) -> None:
         for logger in self._loggers:
             logger.log(data)

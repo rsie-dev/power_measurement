@@ -6,5 +6,5 @@ T = TypeVar('T')
 
 class Logger(Generic[T]):
     @abstractmethod
-    def log(self, data: T) -> None:
+    def log(self, data: T | list[T]) -> None:
         pass

@@ -17,13 +17,16 @@ class CSVFileStatLogger(CSVBaseLogger, Logger[FileStatsEntry]):
 
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter, path, self.FIELD_NAMES)
-        self._entry = 0
+        self._index = 0
 
-    def log(self, data: FileStatsEntry) -> None:
-        self._entry += 1
-        log_entry = {
-            "entry": f"{self._entry}",
-            "size": f"{data.size}",
-            "path": f"{data.path}",
-        }
-        self._writer.writerow(log_entry)
+    def log(self, data: FileStatsEntry | list[FileStatsEntry]) -> None:
+        if not isinstance(data, list):
+            data = [data]
+        for entry in data:
+            self._index += 1
+            log_entry = {
+                "entry": f"{self._index}",
+                "size": f"{entry.size}",
+                "path": f"{entry.path}",
+            }
+            self._writer.writerow(log_entry)
