@@ -73,6 +73,10 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def delete(self, remote: str) -> Self:
+        pass
+
+    @abstractmethod
     def with_warmup(self) -> WarmupExecutionBuilder:
         pass
 

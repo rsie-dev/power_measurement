@@ -12,7 +12,7 @@ from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
-from app.experiment.steps import UploadStep
+from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
@@ -205,6 +205,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     def upload(self, local: str, remote: str) -> Self:
         self._steps.append(UploadStep(self._host, local, remote))
+        return self
+
+    def delete(self, remote: str) -> Self:
+        self._steps.append(DeleteStep(self._host, remote))
         return self
 
     def with_warmup(self) -> WarmupExecutionBuilder:

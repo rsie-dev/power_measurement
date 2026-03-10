@@ -7,6 +7,7 @@ from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
 from .host_info_step import HostnameInfoStep
 from .upload_step import UploadStep
+from .delete_step import DeleteStep
 from .log_provider import LogProvider
 
 from .experiment_environment import ExperimentEnvironment, InitEnvironment
@@ -19,6 +20,6 @@ __all__ = ["Step", "InitStep",
            "SystemMetricsClientStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
-           "UploadStep",
+           "UploadStep", "DeleteStep",
            "LogProvider",
            ]
