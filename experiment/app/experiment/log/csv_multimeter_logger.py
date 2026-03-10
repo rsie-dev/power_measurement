@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import List
 import logging
 
-from app.usb_meter.data_logger import DataLogger
 from app.usb_meter.measurement import ElectricalMeasurement
 from .csv_base_logger import CSVBaseLogger
+from .logger import Logger
 
 
-class CSVMultimeterLogger(CSVBaseLogger, DataLogger):
+class CSVMultimeterLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
     FIELD_NAMES = ["timestamp", "rel_time_S", "temperature_C", "voltage_V", "current_A"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):

@@ -8,9 +8,8 @@ from contextlib import contextmanager
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
-from app.usb_meter.data_logger import DataLogger
 from app.usb_meter.measurement import ElectricalMeasurement
-from app.experiment.log import logger, CSVMultimeterLogger
+from app.experiment.log import logger, LogDispatcher, CSVMultimeterLogger
 from .step import Step
 from .log_provider import LogProvider
 from .experiment_environment import ExperimentEnvironment
@@ -23,7 +22,7 @@ from .signal_stop_provider import SignalStopProvider
 class LogContext:
     def __init__(self, formatter: logging.Formatter):
         self.formatter = formatter
-        self.log_dispatcher = LogDispatcher()
+        self.log_dispatcher = LogDispatcher[ElectricalMeasurement]()
 
 
 class DeviceManager:
@@ -48,21 +47,6 @@ class DeviceManager:
         if next(devices, None):
             raise RuntimeError("Too many devices found with: %s" % self._serial_number)
         return device
-
-
-class LogDispatcher(DataLogger):
-    def __init__(self):
-        self._data_logger: list[DataLogger] = []
-
-    def register_logger(self, data_logger: DataLogger):
-        self._data_logger.append(data_logger)
-
-    def unregister_logger(self, data_logger: DataLogger):
-        self._data_logger.remove(data_logger)
-
-    def log(self, data: list[ElectricalMeasurement]) -> None:
-        for data_logger in self._data_logger:
-            data_logger.log(data)
 
 
 class MultimeterStep(Step, LogProvider):
