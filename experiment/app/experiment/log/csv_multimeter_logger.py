@@ -5,10 +5,10 @@ import logging
 
 from app.usb_meter.data_logger import DataLogger
 from app.usb_meter.measurement import ElectricalMeasurement
-from .logger_base import LoggerBase
+from .base_logger import BaseLogger
 
 
-class CSVMultimeterLogger(LoggerBase, DataLogger):
+class CSVMultimeterLogger(BaseLogger, DataLogger):
     FIELD_NAMES = ["timestamp", "rel_time_S", "temperature_C", "voltage_V", "current_A"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):

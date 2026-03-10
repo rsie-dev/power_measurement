@@ -5,7 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 import datetime
 
-from .logger_base import LoggerBase
+from .base_logger import BaseLogger
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class TimingLogger(ABC):
         pass
 
 
-class CSVTimingLogger(LoggerBase, TimingLogger):
+class CSVTimingLogger(BaseLogger, TimingLogger):
     FIELD_NAMES = ["entry", "real_S", "user_S", "sys_S", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):

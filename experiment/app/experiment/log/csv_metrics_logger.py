@@ -5,7 +5,7 @@ import logging
 
 from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
-from .logger_base import LoggerBase
+from .base_logger import BaseLogger
 
 
 class MetricType(Enum):
@@ -21,7 +21,7 @@ def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
     raise RuntimeError("unknown measurement name: %s" % measurement.name)
 
 
-class CSVMetricsLogger(LoggerBase, MeasurementLogger):
+class CSVMetricsLogger(BaseLogger, MeasurementLogger):
     FIELD_NAMES = ["timestamp", "rel_time_S", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
     CPU_FIELD_NAMES = FIELD_NAMES + ["entity",

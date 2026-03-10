@@ -4,7 +4,7 @@ import csv
 import logging
 from abc import ABC, abstractmethod
 
-from .logger_base import LoggerBase
+from .base_logger import BaseLogger
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class FileStatsLogger(ABC):
         pass
 
 
-class CSVFileStatLogger(LoggerBase, FileStatsLogger):
+class CSVFileStatLogger(BaseLogger, FileStatsLogger):
     FIELD_NAMES = ["entry", "size", "path"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):

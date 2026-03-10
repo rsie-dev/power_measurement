@@ -3,7 +3,7 @@ import logging
 import datetime
 
 
-class LoggerBase(ABC):
+class BaseLogger(ABC):
     def __init__(self, formatter: logging.Formatter):
         self._formatter = formatter
 
