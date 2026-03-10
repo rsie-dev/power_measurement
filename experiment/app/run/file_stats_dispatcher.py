@@ -1,14 +1,14 @@
-from app.experiment.log import FileStatsEntry, FileStatsLogger
+from app.experiment.log import FileStatsEntry, Logger
 
 
-class FileStatsDispatcher(FileStatsLogger):
+class FileStatsDispatcher(Logger[FileStatsEntry]):
     def __init__(self):
-        self._loggers: list[FileStatsLogger] = []
+        self._loggers: list[Logger[FileStatsEntry]] = []
 
-    def register_logger(self, logger: FileStatsLogger):
+    def register_logger(self, logger: Logger[FileStatsEntry]):
         self._loggers.append(logger)
 
-    def unregister_logger(self, logger: FileStatsLogger):
+    def unregister_logger(self, logger: Logger[FileStatsEntry]):
         self._loggers.remove(logger)
 
     def log(self, data: FileStatsEntry) -> None:

@@ -1,11 +1,11 @@
 import logging
 
 from app.api import Command
-from app.experiment.log import FileStatsEntry, FileStatsLogger
+from app.experiment.log import FileStatsEntry, Logger
 
 
 class FileStatCommand(Command):
-    def __init__(self, path: str, logger: FileStatsLogger):
+    def __init__(self, path: str, logger: Logger[FileStatsEntry]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._path = path
         self._logger = logger

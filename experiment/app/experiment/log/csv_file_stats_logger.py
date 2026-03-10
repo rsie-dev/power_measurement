@@ -1,8 +1,8 @@
 from pathlib import Path
 from dataclasses import dataclass
 import logging
-from abc import ABC, abstractmethod
 
+from .logger import Logger
 from .csv_base_logger import CSVBaseLogger
 
 
@@ -12,13 +12,7 @@ class FileStatsEntry:
     path: str
 
 
-class FileStatsLogger(ABC):
-    @abstractmethod
-    def log(self, data: FileStatsEntry) -> None:
-        pass
-
-
-class CSVFileStatLogger(CSVBaseLogger, FileStatsLogger):
+class CSVFileStatLogger(CSVBaseLogger, Logger[FileStatsEntry]):
     FIELD_NAMES = ["entry", "size", "path"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):

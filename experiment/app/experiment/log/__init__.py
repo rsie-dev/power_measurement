@@ -4,7 +4,7 @@ from .logger import Logger
 from .csv_multimeter_logger import CSVMultimeterLogger
 from .csv_metrics_logger import MetricType, CSVMetricsLogger
 from .csv_timing_logger import TimingEntry, CSVTimingLogger
-from .csv_file_stats_logger import FileStatsEntry, FileStatsLogger, CSVFileStatLogger
+from .csv_file_stats_logger import FileStatsEntry, CSVFileStatLogger
 from .base_logger import BaseLogger
 
 __all__ = [
@@ -13,7 +13,7 @@ __all__ = [
     "CSVMultimeterLogger",
     "MetricType", "CSVMetricsLogger",
     "CSVTimingLogger", "TimingEntry",
-    "FileStatsEntry", "FileStatsLogger", "CSVFileStatLogger",
+    "FileStatsEntry", "CSVFileStatLogger",
     "logger",
 ]
 
