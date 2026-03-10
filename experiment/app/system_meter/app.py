@@ -26,8 +26,7 @@ def create_app(measurement_logger: Logger[SystemMeasurement], startup_call_back:
 
     @app.post("/measurement/batch/")
     def add_batch(metrics: Metrics) -> Metrics:
-        for measurement in metrics.metrics:
-            measurement_logger.log(measurement)
+        measurement_logger.log(metrics.metrics)
         return metrics
 
     return app

@@ -1,4 +1,3 @@
-from typing import Dict, List, Union
 import datetime
 
 from pydantic import BaseModel
@@ -25,10 +24,10 @@ class System(BaseModel):
 
 class SystemMeasurement(BaseModel):
     name: str
-    tags: Dict[str, str]
+    tags: dict[str, str]
     timestamp: datetime.datetime
-    fields: Union[CpuField, System]
+    fields: CpuField | System
 
 
 class Metrics(BaseModel):
-    metrics: List[SystemMeasurement]
+    metrics: list[SystemMeasurement]
