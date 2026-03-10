@@ -1,11 +1,10 @@
 from pathlib import Path
 from dataclasses import dataclass
-import csv
 import logging
 from abc import ABC, abstractmethod
 import datetime
 
-from .base_logger import BaseLogger
+from .csv_base_logger import CSVBaseLogger
 
 
 @dataclass(frozen=True)
@@ -22,20 +21,12 @@ class TimingLogger(ABC):
         pass
 
 
-class CSVTimingLogger(BaseLogger, TimingLogger):
+class CSVTimingLogger(CSVBaseLogger, TimingLogger):
     FIELD_NAMES = ["entry", "real_S", "user_S", "sys_S", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):
-        super().__init__(formatter)
-        self._stream = path.open(mode="w", encoding="utf-8")
-        self._writer = csv.DictWriter(self._stream, fieldnames=self.FIELD_NAMES)
+        super().__init__(formatter, path, self.FIELD_NAMES)
         self._entry = 0
-
-    def init(self) -> None:
-        self._writer.writeheader()
-
-    def close(self) -> None:
-        self._stream.close()
 
     def log(self, data: TimingEntry) -> None:
         self._entry += 1
