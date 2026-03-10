@@ -4,12 +4,13 @@ from concurrent.futures import Executor
 from typing import List
 
 from app.common import SignalHandler
+from app.system_meter import SystemMeasurement
 from .steps import Step
 from .steps.experiment_environment import ExperimentEnvironment
 from .steps.experiment_runtime import ExperimentRuntime
 from .measurement import Measurement
 from .resources import Resources
-from .measurement_dispatcher import MeasurementDispatcher
+from .log import LogDispatcher
 
 
 class ExperimentRunner:
@@ -20,7 +21,7 @@ class ExperimentRunner:
         self._signal_handler = signal_handler
         self._steps = steps[:]
 
-    def execute_runs(self, measurement_dispatcher: MeasurementDispatcher,
+    def execute_runs(self, measurement_dispatcher: LogDispatcher[SystemMeasurement],
                      runtime: ExperimentRuntime, environment: ExperimentEnvironment):
         measurement = Measurement(measurement_dispatcher)
         resources = Resources(self._resource_path)

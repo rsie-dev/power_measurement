@@ -3,14 +3,13 @@ from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 from threading import Event
-import contextlib
 
 from app.api import Experiment
 from app.common import SignalHandler
-from app.system_meter import MetricsServer
+from app.system_meter import MetricsServer, SystemMeasurement
 from .steps import Step, InitStep
 from .ssh_manager import SSHManager
-from .measurement_dispatcher import MeasurementDispatcher
+from .log import LogDispatcher
 from .environment import Environment, InitialEnvironment
 from .runtime import Runtime
 from .experiment_runner import ExperimentRunner
@@ -36,20 +35,19 @@ class ExperimentExecutor(Experiment):
                 if self._with_metrics_collection:
                     metrics_server = MetricsServer(metrics_server_address)
                     signal_handler.add_shutdown_handler(metrics_server)
-                    measurement_dispatcher = MeasurementDispatcher()
+                    measurement_dispatcher = LogDispatcher[SystemMeasurement]()
                 else:
                     metrics_server = None
-                    measurement_dispatcher = contextlib.nullcontext()
+                    measurement_dispatcher = None
                 try:
-                    with measurement_dispatcher as md:
-                        if md:
-                            event = Event()
-                            future = executor.submit(self._system_collector, metrics_server, md, event)
-                            event.wait(self._metrics_server_start_timeout)
+                    if measurement_dispatcher:
+                        event = Event()
+                        future = executor.submit(self._system_collector, metrics_server, measurement_dispatcher, event)
+                        event.wait(self._metrics_server_start_timeout)
 
-                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                        runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
-                        runner.execute_runs(md, runtime, environment)
+                    environment = Environment(ssh_manager, signal_handler, metrics_server_address)
+                    runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
+                    runner.execute_runs(measurement_dispatcher, runtime, environment)
                 finally:
                     if future:
                         metrics_server.shut_down(False)
@@ -69,7 +67,7 @@ class ExperimentExecutor(Experiment):
             step.init(initial_environment)
             step.execute(runtime)
 
-    def _system_collector(self, metrics_server: MetricsServer, measurement_dispatcher: MeasurementDispatcher,
+    def _system_collector(self, metrics_server: MetricsServer, measurement_dispatcher: LogDispatcher[SystemMeasurement],
                           event: Event) -> None:
         def on_startup():
             self._logger.debug("REST system_meter running")
