@@ -15,9 +15,9 @@ from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
+from app.experiment.log import LogDispatcher, TimingEntry
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 
-from .timing_dispatcher import TimingDispatcher
 from .timing_log_provider import TimingLogProvider
 from .file_stats_dispatcher import FileStatsDispatcher
 from .file_stats_log_provider import FileStatsLogProvider
@@ -125,9 +125,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._timing_dispatcher = None
         self._file_stats_dispatcher = None
 
-    def allocate_timing_dispatcher(self) -> TimingDispatcher:
+    def allocate_timing_dispatcher(self) -> LogDispatcher[TimingEntry]:
         if not self._timing_dispatcher:
-            self._timing_dispatcher = TimingDispatcher()
+            self._timing_dispatcher = LogDispatcher[TimingEntry]()
         return self._timing_dispatcher
 
     def allocate_file_stats_dispatcher(self) -> FileStatsDispatcher:

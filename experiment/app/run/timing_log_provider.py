@@ -3,12 +3,12 @@ from typing import ContextManager
 from contextlib import contextmanager
 
 from app.experiment.steps import LogProvider
-from app.experiment.log import logger, CSVTimingLogger
+from app.experiment.log import logger, LogDispatcher
+from app.experiment.log import TimingEntry, CSVTimingLogger
 
-from .timing_dispatcher import TimingDispatcher
 
 class TimingLogProvider(LogProvider):
-    def __init__(self, timing_dispatcher: TimingDispatcher, formatter):
+    def __init__(self, timing_dispatcher: LogDispatcher[TimingEntry], formatter):
         self._timing_dispatcher = timing_dispatcher
         self._formatter = formatter
 
