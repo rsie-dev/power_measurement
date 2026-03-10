@@ -34,8 +34,11 @@ class MeasurementDispatcher(Logger[SystemMeasurement]):
     def close(self):
         self._logger_dict.clear()
 
-    def log(self, measurement: SystemMeasurement | list[SystemMeasurement]) -> None:
-        host = measurement.tags["host"]
-        logger_list = self._logger_dict.get(host, [])
-        for logger in logger_list[:]:
-            logger.log(measurement)
+    def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
+        if not isinstance(data, list):
+            data = [data]
+        for measurement in data:
+            host = measurement.tags["host"]
+            logger_list = self._logger_dict.get(host, [])
+            for logger in logger_list[:]:
+                logger.log(measurement)

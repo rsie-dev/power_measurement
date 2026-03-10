@@ -39,7 +39,7 @@ class StartupMonitor(Logger[SystemMeasurement]):
     def close(self):
         self._measurement.unregister_for_system_meter(self._host_name, self)
 
-    def log(self, measurement: SystemMeasurement | list[SystemMeasurement]) -> None:
+    def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
         self._startup_event.set()
 
 
