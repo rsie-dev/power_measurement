@@ -1,6 +1,5 @@
 import logging
 from threading import Event
-from concurrent.futures import Executor
 
 from fabric import Connection
 import humanize
@@ -46,7 +45,6 @@ class SystemMetricsClientStep(BaseHostCommandStep):
         self._formatter = formatter
         self._telegraf_server_address = None
         self._metrics_client_timeout: float = 5
-        self._startup_monitor = None
         self._metrics_dispatcher = metrics_dispatcher
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
@@ -55,23 +53,24 @@ class SystemMetricsClientStep(BaseHostCommandStep):
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
 
     def _execute_commands(self, connection: Connection):
-        startup_event = self._startup_monitor.startup_event
-        self._startup_monitor.start()
-        self._logger.info("Start telegraf on: %s", self._host.host)
-        connection.run("sudo systemctl start telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
+        startup_monitor = StartupMonitor(self._host.host_name, self._metrics_dispatcher)
+        startup_event = startup_monitor.startup_event
+        startup_monitor.start()
+        self._execute_start_command(connection)
         self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
         try:
             startup_event.wait(self._metrics_client_timeout)
         finally:
-            self._startup_monitor.close()
-
-    def _execute_stop_command(self, connection: Connection):
-        self._logger.info("Stop telegraf on: %s", self._host.host)
-        connection.run("sudo systemctl stop telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
-
-    def start(self, executor: Executor, measurement: ExperimentMeasurement) -> None:
-        self._startup_monitor = StartupMonitor(self._host.host_name, self._metrics_dispatcher)
+            startup_monitor.close()
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         self._execute_stop_command(connection)
+
+    def _execute_start_command(self, connection: Connection):
+        self._logger.info("Start telegraf on: %s", self._host.host)
+        connection.run("sudo systemctl start telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
+
+    def _execute_stop_command(self, connection: Connection):
+        self._logger.info("Stop telegraf on: %s", self._host.host)
+        connection.run("sudo systemctl stop telegraf@%s" % self._telegraf_server_address, hide=True, pty=True)
