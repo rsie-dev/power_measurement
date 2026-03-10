@@ -24,6 +24,10 @@ class MeasuredCommandBuilder(CommandBuilder):
     def with_timings(self) -> Self:
         pass
 
+    @abstractmethod
+    def collect_file_stats(self, path: str) -> Self:
+        pass
+
 
 class ExecutionBuilder(Builder):
     @abstractmethod

@@ -1,5 +1,5 @@
-
 from app.experiment.log import TimingEntry, TimingLogger
+
 
 class TimingDispatcher(TimingLogger):
     def __init__(self):

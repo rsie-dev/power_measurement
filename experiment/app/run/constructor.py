@@ -15,10 +15,12 @@ from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand
+from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 
 from .timing_dispatcher import TimingDispatcher
 from .timing_log_provider import TimingLogProvider
+from .file_stats_dispatcher import FileStatsDispatcher
+from .file_stats_log_provider import FileStatsLogProvider
 
 
 class Constructor(Builder):
@@ -56,9 +58,14 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         super().__init__(parent, command)
         self._parent = parent
         self._with_timings = False
+        self._file_stats: set[str] = set()
 
     def with_timings(self) -> Self:
         self._with_timings = True
+        return self
+
+    def collect_file_stats(self, path: str) -> Self:
+        self._file_stats.add(path)
         return self
 
     def done(self) -> ExecutionBuilder:
@@ -66,6 +73,12 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         if self._with_timings:
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
             command = TimedCommand(command, timing_dispatcher)
+        if self._file_stats:
+            commands = [command]
+            file_stats_dispatcher = self._parent.allocate_file_stats_dispatcher()
+            for path in self._file_stats:
+                commands.append(FileStatCommand(path, file_stats_dispatcher))
+            command = CompositeCommand(commands)
         self._parent.add_command(command)
         return self._parent
 
@@ -110,11 +123,17 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._head_delay = None
         self._tail_delay = None
         self._timing_dispatcher = None
+        self._file_stats_dispatcher = None
 
     def allocate_timing_dispatcher(self) -> TimingDispatcher:
         if not self._timing_dispatcher:
             self._timing_dispatcher = TimingDispatcher()
         return self._timing_dispatcher
+
+    def allocate_file_stats_dispatcher(self) -> FileStatsDispatcher:
+        if not self._file_stats_dispatcher:
+            self._file_stats_dispatcher = FileStatsDispatcher()
+        return self._file_stats_dispatcher
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
@@ -153,15 +172,10 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             timing_log_provider = TimingLogProvider(self._timing_dispatcher, formatter)
             log_providers.append(timing_log_provider)
 
-            #commands = []
-            #for command in self._commands:
-            #    if isinstance(command, ExecutorCommand):
-            #        commands.append(TimedCommand(command, timing_dispatcher))
-            #    else:
-            #        commands.append(command)
-        else:
-            #commands = self._commands[:]
-            pass
+        if self._file_stats_dispatcher:
+            formatter = formatter_class(**formatter_config)
+            file_stats_log_provider = FileStatsLogProvider(self._file_stats_dispatcher, formatter)
+            log_providers.append(file_stats_log_provider)
 
         commands = self._commands[:]
         if self._head_delay:

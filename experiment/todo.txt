@@ -1,5 +1,4 @@
 ToDo:
-- add command output collection
 - add distinct runs per host
 - add external temp. sensor
 - add support to add parameters
@@ -11,6 +10,7 @@ ToDo:
 - add API documentation
 
 done:
+- add file stats collection
 - fail experiment if resource folder exists
 - add upload step
 - fix timings log is now for all commands
