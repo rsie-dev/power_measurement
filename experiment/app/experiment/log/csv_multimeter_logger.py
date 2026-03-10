@@ -10,7 +10,7 @@ from .logger import Logger
 class CSVMultimeterLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
     FIELD_NAMES = ["timestamp", "rel_time_S", "temperature_C", "voltage_V", "current_A"]
 
-    def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool):
+    def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool = False):
         super().__init__(formatter, path, self.FIELD_NAMES)
         self._start_time = None
         self._latest_only = latest_only

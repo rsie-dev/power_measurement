@@ -17,9 +17,11 @@ from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.experiment.log import LogDispatcher, TimingEntry, FileStatsEntry
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
+from app.usb_meter.measurement import ElectricalMeasurement
 
 from .timing_log_provider import TimingLogProvider
 from .file_stats_log_provider import FileStatsLogProvider
+from .multimeter_log_provider import MultimeterLogProvider
 
 
 class Constructor(Builder):
@@ -123,6 +125,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._tail_delay = None
         self._timing_dispatcher = None
         self._file_stats_dispatcher = None
+        self._multimeter_dispatcher = None
 
     def allocate_timing_dispatcher(self) -> LogDispatcher[TimingEntry]:
         if not self._timing_dispatcher:
@@ -136,6 +139,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
+        if self._multimeter_dispatcher is None:
+            self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
         return self
 
     def with_head_delay(self, delay: int) -> Self:
@@ -156,9 +161,11 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
             formatter = formatter_class(**formatter_config)
-            step = MultimeterStep(formatter, self._serial_number)
-            log_providers.append(step)
+            multimeter_log_provider = MultimeterLogProvider(self._multimeter_dispatcher, formatter)
+            step = MultimeterStep(formatter, self._serial_number, self._multimeter_dispatcher)
+            log_providers.append(multimeter_log_provider)
             steps.append(step)
+
         if self._parent.collect_metrics:
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))

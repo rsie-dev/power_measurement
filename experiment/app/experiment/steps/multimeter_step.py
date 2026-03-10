@@ -1,17 +1,13 @@
 import logging
 from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
-from pathlib import Path
-from typing import ContextManager
-from contextlib import contextmanager
 
 
 from app.usb_meter import devices_by_serial_number, USBMeter
 from app.usb_meter.device import Device
 from app.usb_meter.measurement import ElectricalMeasurement
-from app.experiment.log import logger, LogDispatcher, CSVMultimeterLogger
+from app.experiment.log import LogDispatcher
 from .step import Step
-from .log_provider import LogProvider
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
@@ -20,9 +16,9 @@ from .signal_stop_provider import SignalStopProvider
 
 
 class LogContext:
-    def __init__(self, formatter: logging.Formatter):
+    def __init__(self, formatter: logging.Formatter, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
         self.formatter = formatter
-        self.log_dispatcher = LogDispatcher[ElectricalMeasurement]()
+        self.log_dispatcher = log_dispatcher
 
 
 class DeviceManager:
@@ -49,8 +45,9 @@ class DeviceManager:
         return device
 
 
-class MultimeterStep(Step, LogProvider):
-    def __init__(self, formatter: logging.Formatter, serial_number: str):
+class MultimeterStep(Step):
+    def __init__(self, formatter: logging.Formatter, serial_number: str,
+                 log_dispatcher: LogDispatcher[ElectricalMeasurement]):
         super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._device_manager = DeviceManager(serial_number)
@@ -58,18 +55,7 @@ class MultimeterStep(Step, LogProvider):
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
-        self._log_context = LogContext(formatter)
-
-    @contextmanager
-    def start_log(self, resource_path: Path) -> ContextManager:
-        electrical_log = resource_path / "multimeter.csv"
-
-        with logger(CSVMultimeterLogger(electrical_log, self._log_context.formatter, latest_only=False)) as data_logger:
-            self._log_context.log_dispatcher.register_logger(data_logger)
-            try:
-                yield data_logger
-            finally:
-                self._log_context.log_dispatcher.unregister_logger(data_logger)
+        self._log_context = LogContext(formatter, log_dispatcher)
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
         self._logger.info("multimeter start")
