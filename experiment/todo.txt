@@ -1,5 +1,6 @@
 ToDo:
 - add command output collection
+- add distinct runs per host
 - add external temp. sensor
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
