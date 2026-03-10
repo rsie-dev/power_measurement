@@ -29,7 +29,7 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
                    "usage_guest", "usage_guest_nice", "usage_irq", "usage_softirq", "usage_steal",
                    ]
 
-    def __init__(self, metric_type: MetricType, path: Path, formatter: logging.Formatter):
+    def __init__(self, path: Path, formatter: logging.Formatter, metric_type: MetricType):
         super().__init__(formatter)
         self._type = metric_type
         self._stream = path.open(mode="w", encoding="utf-8")

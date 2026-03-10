@@ -18,7 +18,7 @@ class MetricsLogProvider(LogProvider):
     def start_log(self, resource_path: Path) -> ContextManager:
         metrics_log = self._get_logfile_name(resource_path)
 
-        with logger(CSVMetricsLogger(self._metric_type, metrics_log, self._formatter)) as data_logger:
+        with logger(CSVMetricsLogger(metrics_log, self._formatter, self._metric_type)) as data_logger:
             self._log_dispatcher.register_logger(data_logger)
             try:
                 yield data_logger
