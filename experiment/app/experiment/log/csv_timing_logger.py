@@ -1,9 +1,9 @@
 from pathlib import Path
 from dataclasses import dataclass
 import logging
-from abc import ABC, abstractmethod
 import datetime
 
+from .logger import Logger
 from .csv_base_logger import CSVBaseLogger
 
 
@@ -15,13 +15,7 @@ class TimingEntry:
     command: str
 
 
-class TimingLogger(ABC):
-    @abstractmethod
-    def log(self, data: TimingEntry) -> None:
-        pass
-
-
-class CSVTimingLogger(CSVBaseLogger, TimingLogger):
+class CSVTimingLogger(CSVBaseLogger, Logger[TimingEntry]):
     FIELD_NAMES = ["entry", "real_S", "user_S", "sys_S", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):

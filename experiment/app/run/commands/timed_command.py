@@ -5,7 +5,7 @@ import datetime
 from fabric import Connection
 
 from app.api import Command
-from app.experiment.log import TimingEntry, TimingLogger
+from app.experiment.log import TimingEntry, Logger
 from .executor_command import ExecutorCommand
 
 
@@ -15,7 +15,7 @@ def _parse_time_line(line) -> tuple[str, datetime.timedelta]:
 
 
 class TimedCommand(Command):
-    def __init__(self, timed_command: ExecutorCommand, timing_logger: TimingLogger):
+    def __init__(self, timed_command: ExecutorCommand, timing_logger: Logger[TimingEntry]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._timed_command = timed_command
         self._timing_logger = timing_logger

@@ -1,16 +1,18 @@
 from contextlib import contextmanager
 
+from .logger import Logger
 from .csv_multimeter_logger import CSVMultimeterLogger
 from .csv_metrics_logger import MetricType, CSVMetricsLogger
-from .csv_timing_logger import TimingEntry, TimingLogger, CSVTimingLogger
+from .csv_timing_logger import TimingEntry, CSVTimingLogger
 from .csv_file_stats_logger import FileStatsEntry, FileStatsLogger, CSVFileStatLogger
 from .base_logger import BaseLogger
 
 __all__ = [
+    "Logger",
     "BaseLogger",
     "CSVMultimeterLogger",
     "MetricType", "CSVMetricsLogger",
-    "CSVTimingLogger", "TimingEntry", "TimingLogger",
+    "CSVTimingLogger", "TimingEntry",
     "FileStatsEntry", "FileStatsLogger", "CSVFileStatLogger",
     "logger",
 ]
