@@ -4,13 +4,14 @@ from typing import Callable
 
 from fastapi import FastAPI
 
+from app.experiment.log import Logger
 from .metrics import SystemMeasurement, Metrics
-from .measurement_logger import MeasurementLogger
+
 
 logger = logging.getLogger('system_meter.main')
 
 
-def create_app(measurement_logger: MeasurementLogger, startup_call_back: Callable):
+def create_app(measurement_logger: Logger[SystemMeasurement], startup_call_back: Callable):
     @asynccontextmanager
     async def lifespan(app: FastAPI):  # pylint: disable=unused-argument
         startup_call_back()

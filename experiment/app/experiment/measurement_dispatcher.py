@@ -1,11 +1,11 @@
 from app.system_meter.metrics import SystemMeasurement
-from app.system_meter.measurement_logger import MeasurementLogger
+from app.experiment.log import Logger
 
 
-class MeasurementDispatcher(MeasurementLogger):
+class MeasurementDispatcher(Logger[SystemMeasurement]):
     def __init__(self):
         super().__init__()
-        self._logger_dict: dict[str, list[MeasurementLogger]] = {}
+        self._logger_dict: dict[str, list[Logger[SystemMeasurement]]] = {}
         self._initialized = False
 
     def __enter__(self):
@@ -15,12 +15,12 @@ class MeasurementDispatcher(MeasurementLogger):
     def __exit__(self, type, value, traceback):  # pylint: disable=redefined-builtin
         self.close()
 
-    def add_logger(self, host: str, logger: MeasurementLogger) -> None:
+    def add_logger(self, host: str, logger: Logger[SystemMeasurement]) -> None:
         logger_list = self._logger_dict.get(host, [])
         logger_list.append(logger)
         self._logger_dict[host] = logger_list
 
-    def remove_logger(self, host: str, logger: MeasurementLogger):
+    def remove_logger(self, host: str, logger: Logger[SystemMeasurement]):
         logger_list = self._logger_dict.get(host, [])
         logger_list.remove(logger)
         self._logger_dict[host] = logger_list
@@ -34,7 +34,7 @@ class MeasurementDispatcher(MeasurementLogger):
     def close(self):
         self._logger_dict.clear()
 
-    def log(self, measurement: SystemMeasurement) -> None:
+    def log(self, measurement: SystemMeasurement | list[SystemMeasurement]) -> None:
         host = measurement.tags["host"]
         logger_list = self._logger_dict.get(host, [])
         for logger in logger_list[:]:

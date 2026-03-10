@@ -3,9 +3,9 @@ from pathlib import Path
 from enum import Enum
 import logging
 
-from app.system_meter.measurement_logger import MeasurementLogger
 from app.system_meter.metrics import SystemMeasurement
 from .base_logger import BaseLogger
+from .logger import Logger
 
 
 class MetricType(Enum):
@@ -21,7 +21,7 @@ def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
     raise RuntimeError("unknown measurement name: %s" % measurement.name)
 
 
-class CSVMetricsLogger(BaseLogger, MeasurementLogger):
+class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
     FIELD_NAMES = ["timestamp", "rel_time_S", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
     CPU_FIELD_NAMES = FIELD_NAMES + ["entity",
@@ -43,7 +43,7 @@ class CSVMetricsLogger(BaseLogger, MeasurementLogger):
     def close(self) -> None:
         self._stream.close()
 
-    def log(self, measurement: SystemMeasurement) -> None:
+    def _log(self, measurement: SystemMeasurement) -> None:
         if self._start_time is None:
             self._start_time = measurement.timestamp
         rel_time = measurement.timestamp - self._start_time
@@ -82,3 +82,10 @@ class CSVMetricsLogger(BaseLogger, MeasurementLogger):
             }
 
         self._writer.writerow(entry)
+
+    def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
+        if not isinstance(data, list):
+            data = [data]
+
+        for measurement in data:
+            self._log(measurement)

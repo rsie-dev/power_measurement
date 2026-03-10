@@ -9,9 +9,8 @@ from contextlib import ExitStack
 from fabric import Connection
 import humanize
 
-from app.system_meter.measurement_logger import MeasurementLogger
-from app.system_meter.metrics import SystemMeasurement
-from app.experiment.log import CSVMetricsLogger, MetricType, logger
+from app.system_meter import SystemMeasurement
+from app.experiment.log import CSVMetricsLogger, MetricType, logger, Logger
 from .experiment_environment import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
@@ -21,7 +20,7 @@ from .log_provider import LogProvider
 from .host import SSHHost
 
 
-class StartupMonitor(MeasurementLogger):
+class StartupMonitor(Logger[SystemMeasurement]):
     def __init__(self, host_name: str, measurement: ExperimentMeasurement):
         self._host_name = host_name
         self._measurement = measurement
@@ -40,7 +39,7 @@ class StartupMonitor(MeasurementLogger):
     def close(self):
         self._measurement.unregister_for_system_meter(self._host_name, self)
 
-    def log(self, measurement: SystemMeasurement) -> None:
+    def log(self, measurement: SystemMeasurement | list[SystemMeasurement]) -> None:
         self._startup_event.set()
 
 
