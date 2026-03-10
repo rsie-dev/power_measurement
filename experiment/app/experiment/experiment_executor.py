@@ -16,11 +16,12 @@ from .experiment_runner import ExperimentRunner
 
 
 class ExperimentExecutor(Experiment):
-    def __init__(self, init_steps: List[InitStep], steps: List[Step], with_metrics_collection: bool):
+    def __init__(self, init_steps: List[InitStep], steps: List[Step],
+                 metrics_dispatcher: LogDispatcher[SystemMeasurement]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_steps: List[InitStep] = init_steps
         self._steps: List[Step] = steps
-        self._with_metrics_collection: bool = with_metrics_collection
+        self._metrics_dispatcher = metrics_dispatcher
         self._metrics_server_start_timeout: float = 3
 
     def run(self, resources: Path, metrics_server_address: tuple[str, int]):
@@ -32,22 +33,21 @@ class ExperimentExecutor(Experiment):
 
             with ThreadPoolExecutor() as executor:
                 future = None
-                if self._with_metrics_collection:
+                if self._metrics_dispatcher:
                     metrics_server = MetricsServer(metrics_server_address)
                     signal_handler.add_shutdown_handler(metrics_server)
-                    measurement_dispatcher = LogDispatcher[SystemMeasurement]()
                 else:
                     metrics_server = None
-                    measurement_dispatcher = None
                 try:
-                    if measurement_dispatcher:
+                    if self._metrics_dispatcher:
                         event = Event()
-                        future = executor.submit(self._system_collector, metrics_server, measurement_dispatcher, event)
+                        future = executor.submit(self._system_collector, metrics_server,
+                                                 self._metrics_dispatcher, event)
                         event.wait(self._metrics_server_start_timeout)
 
                     environment = Environment(ssh_manager, signal_handler, metrics_server_address)
                     runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
-                    runner.execute_runs(measurement_dispatcher, runtime, environment)
+                    runner.execute_runs(self._metrics_dispatcher, runtime, environment)
                 finally:
                     if future:
                         metrics_server.shut_down(False)

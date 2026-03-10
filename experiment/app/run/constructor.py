@@ -15,13 +15,15 @@ from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.experiment.log import LogDispatcher, TimingEntry, FileStatsEntry
+from app.experiment.log import LogDispatcher, TimingEntry, FileStatsEntry, MetricType
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
+from app.system_meter import SystemMeasurement
 
 from .timing_log_provider import TimingLogProvider
 from .file_stats_log_provider import FileStatsLogProvider
 from .multimeter_log_provider import MultimeterLogProvider
+from .metrics_log_provider import MetricsLogProvider
 
 
 class Constructor(Builder):
@@ -166,11 +168,18 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(multimeter_log_provider)
             steps.append(step)
 
-        if self._parent.collect_metrics:
+        metrics_dispatcher = self._parent.collect_metrics
+        if metrics_dispatcher:
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
-            step = SystemMetricsClientStep(formatter, self._host)
-            log_providers.append(step)
+
+            step = SystemMetricsClientStep(formatter, self._host, metrics_dispatcher)
+
+            system_log_provider = MetricsLogProvider(metrics_dispatcher, formatter, MetricType.SYSTEM)
+            log_providers.append(system_log_provider)
+            cpu_log_provider = MetricsLogProvider(metrics_dispatcher, formatter, MetricType.CPU)
+            log_providers.append(cpu_log_provider)
+
             steps.append(step)
 
         if self._timing_dispatcher:
@@ -202,7 +211,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._host = host
 
     @property
-    def collect_metrics(self) -> bool:
+    def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
         return self._parent.collect_metrics
 
     @property
@@ -232,14 +241,16 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def __init__(self, formatter_info: tuple[type, dict], ssh_user):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._with_metrics_collection: bool = False
+        #self._with_metrics_collection: bool = False
+        self._metrics_dispatcher = None
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
         self._ssh_user = ssh_user
 
     @property
-    def collect_metrics(self) -> bool:
-        return self._with_metrics_collection
+    def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
+        #return self._with_metrics_collection
+        return self._metrics_dispatcher
 
     @property
     def formatter_info(self) -> tuple[type, dict]:
@@ -255,9 +266,10 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         return HostConstructor(self, ssh_host)
 
     def with_metrics_collection(self) -> Self:
-        self._with_metrics_collection = True
+        #self._with_metrics_collection = True
+        self._metrics_dispatcher = LogDispatcher[SystemMeasurement]()
         return self
 
     def build(self) -> ExperimentExecutor:
-        experiment = ExperimentExecutor(self._init_steps, self._steps, self._with_metrics_collection)
+        experiment = ExperimentExecutor(self._init_steps, self._steps, self._metrics_dispatcher)
         return experiment
