@@ -23,3 +23,6 @@ class Environment(InitialEnvironment, ExperimentEnvironment):
 
     def add_shutdown_handler(self, handler: ShutdownHandler) -> None:
         self._signal_handler.add_shutdown_handler(handler)
+
+    def remove_shutdown_handler(self, handler: ShutdownHandler) -> None:
+        self._signal_handler.remove_shutdown_handler(handler)

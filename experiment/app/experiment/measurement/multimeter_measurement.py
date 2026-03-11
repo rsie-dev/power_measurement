@@ -48,8 +48,7 @@ class MultimeterMeasurement(Measurement):
     def stop(self, environment: ExperimentEnvironment):
         self._logger.info("Stop multimeter")
         if self._stop_provider:
-            # FIXME:
-            #self._environment.remove_shutdown_handler(self._stop_provider)
+            environment.remove_shutdown_handler(self._stop_provider)
             self._stop_provider.shut_down(False)
 
         wait([self._future], return_when=FIRST_EXCEPTION)

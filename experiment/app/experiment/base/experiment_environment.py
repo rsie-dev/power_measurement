@@ -17,3 +17,7 @@ class ExperimentEnvironment(InitEnvironment):
     @abstractmethod
     def add_shutdown_handler(self, handler: ShutdownHandler) -> None:
         pass
+
+    @abstractmethod
+    def remove_shutdown_handler(self, handler: ShutdownHandler) -> None:
+        pass
