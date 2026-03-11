@@ -8,7 +8,7 @@ from .hostname_validation_step import HostnameValidationStep
 from .host_info_step import HostnameInfoStep
 from .upload_step import UploadStep
 from .delete_step import DeleteStep
-from .log_provider import LogProvider
+from .log_provider import LogProvider, LoggerFactory, GenericLogProvider
 
 from .experiment_environment import ExperimentEnvironment, InitEnvironment
 
@@ -21,5 +21,5 @@ __all__ = ["Step", "InitStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
            "UploadStep", "DeleteStep",
-           "LogProvider",
+           "LogProvider", "LoggerFactory", "GenericLogProvider",
            ]

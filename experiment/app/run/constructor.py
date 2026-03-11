@@ -1,7 +1,6 @@
 from __future__ import annotations
 import logging
-from typing import List
-from typing import Self
+from typing import List, Self
 
 from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
@@ -13,14 +12,14 @@ from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
-from app.experiment.steps import LogProvider
+from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.experiment.log import LogDispatcher, TimingEntry, FileStatsEntry, MetricType
+from app.experiment.log import LogDispatcher, FileStatsEntry, MetricType
+from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
-from .timing_log_provider import TimingLogProvider
 from .file_stats_log_provider import FileStatsLogProvider
 from .multimeter_log_provider import MultimeterLogProvider
 from .metrics_log_provider import MetricsLogProvider
@@ -184,7 +183,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         if self._timing_dispatcher:
             formatter = formatter_class(**formatter_config)
-            timing_log_provider = TimingLogProvider(self._timing_dispatcher, formatter)
+            log_factory: LoggerFactory = lambda resource_path: CSVTimingLogger(resource_path / "timings.csv", formatter)
+            timing_log_provider = GenericLogProvider(self._timing_dispatcher, log_factory)
             log_providers.append(timing_log_provider)
 
         if self._file_stats_dispatcher:
