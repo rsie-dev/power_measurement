@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import ContextManager, TypeVar, Generic, Callable
 from contextlib import contextmanager
 
-from app.experiment.log import logger, BaseLogger, LogDispatcher
+from .base_logger import BaseLogger, logger
+from .log_dispatcher import LogDispatcher
 
 
 class LogProvider(ABC):

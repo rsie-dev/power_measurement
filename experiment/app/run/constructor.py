@@ -13,9 +13,8 @@ from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
-from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.experiment.log import LogDispatcher
+from app.experiment.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
 from app.experiment.log import MetricType, CSVMetricsLogger
 from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger

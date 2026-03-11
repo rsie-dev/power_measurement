@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 import datetime
+from contextlib import contextmanager
 
 
 class BaseLogger(ABC):
@@ -20,3 +21,12 @@ class BaseLogger(ABC):
         log_record = logging.makeLogRecord({"created": timestamp})
         formatted_time = self._formatter.formatTime(log_record)
         return formatted_time
+
+
+@contextmanager
+def logger(logger_base: BaseLogger):
+    logger_base.init()
+    try:
+        yield logger_base
+    finally:
+        logger_base.close()

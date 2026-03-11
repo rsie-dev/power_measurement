@@ -9,8 +9,8 @@ from fabric import Connection
 from app.api import Command
 from app.experiment.measurement import measure, Measurement
 from app.experiment.base import ExperimentEnvironment
+from app.experiment.log import LogProvider
 from .step import Step
-from .log_provider import LogProvider
 from .host import SSHHost
 from .experiment_runtime import ExperimentRuntime
 from .experiment_resources import ExperimentResources
