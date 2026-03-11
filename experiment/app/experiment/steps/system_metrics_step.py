@@ -38,11 +38,9 @@ class StartupMonitor(Logger[SystemMeasurement]):
 
 
 class SystemMetricsClientStep(BaseHostCommandStep):
-    def __init__(self, formatter: logging.Formatter, host: SSHHost,
-                 metrics_dispatcher: LogDispatcher[SystemMeasurement]):
+    def __init__(self, host: SSHHost, metrics_dispatcher: LogDispatcher[SystemMeasurement]):
         super().__init__("system metrics", host)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._formatter = formatter
         self._telegraf_server_address = None
         self._metrics_client_timeout: float = 5
         self._metrics_dispatcher = metrics_dispatcher

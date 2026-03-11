@@ -173,8 +173,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if metrics_dispatcher:
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
-
-            step = SystemMetricsClientStep(formatter, self._host, metrics_dispatcher)
+            step = SystemMetricsClientStep(self._host, metrics_dispatcher)
 
             system_log_provider = MetricsLogProvider(metrics_dispatcher, formatter, MetricType.SYSTEM)
             log_providers.append(system_log_provider)
