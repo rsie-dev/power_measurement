@@ -8,7 +8,6 @@ from app.system_meter import SystemMeasurement
 from app.experiment.log import Logger, LogDispatcher
 from app.experiment.base import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
-from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 from .host_command_step import BaseHostCommandStep
 from .host import SSHHost
@@ -56,7 +55,7 @@ class SystemMetricsClientStep(BaseHostCommandStep):
             startup_event.wait(self._metrics_client_timeout)
             self._logger.info("Telegraf client connected")
 
-    def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
+    def stop(self, runtime: ExperimentRuntime):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         self._execute_stop_command(connection)
 

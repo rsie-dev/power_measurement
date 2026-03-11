@@ -14,7 +14,6 @@ from .log_provider import LogProvider
 from .host import SSHHost
 from .experiment_runtime import ExperimentRuntime
 from .experiment_resources import ExperimentResources
-from .experiment_measurement import ExperimentMeasurement
 
 
 class BaseHostCommandStep(Step):
@@ -68,8 +67,8 @@ class HostCommandStep(BaseHostCommandStep):
         self._resources_path = resources.resources_path()
         self._environment = environment
 
-    def start(self, executor: Executor, measurement: ExperimentMeasurement) -> None:
-        super().start(executor, measurement)
+    def start(self, executor: Executor) -> None:
+        super().start(executor)
         self._executor = executor
 
     def _execute_commands(self, connection: Connection):

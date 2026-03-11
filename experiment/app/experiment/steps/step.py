@@ -3,7 +3,6 @@ from concurrent.futures import Executor
 
 from app.experiment.base import ExperimentEnvironment, InitEnvironment
 from .experiment_runtime import ExperimentRuntime
-from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
 
 
@@ -29,8 +28,8 @@ class Step(BaseStep):
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         pass
 
-    def start(self, executor: Executor, measurement: ExperimentMeasurement) -> None:
+    def start(self, executor: Executor) -> None:
         pass
 
-    def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement) -> None:
+    def stop(self, runtime: ExperimentRuntime) -> None:
         pass

@@ -7,8 +7,6 @@ from app.common import SignalHandler
 from app.experiment.base import ExperimentEnvironment
 from .steps import Step
 from .steps import ExperimentRuntime
-# FIXME
-#from .measurement import Measurement
 from .resources import Resources
 
 
@@ -21,7 +19,6 @@ class ExperimentRunner:
         self._steps = steps[:]
 
     def execute_runs(self, runtime: ExperimentRuntime, environment: ExperimentEnvironment):
-        #measurement = Measurement()
         resources = Resources(self._resource_path)
 
         self._logger.info("Prepare all steps")
@@ -33,7 +30,7 @@ class ExperimentRunner:
             self._logger.info("Starting all steps")
             for step in self._steps:
                 self._logger.debug("start step: %s", step.name)
-                step.start(self._executor, None)
+                step.start(self._executor)
 
             try:
                 with self._signal_handler.capture_signals():
@@ -47,5 +44,5 @@ class ExperimentRunner:
             self._logger.info("Stopping all steps")
             for step in list(reversed(self._steps)):
                 self._logger.debug("stop step: %s", step.name)
-                step.stop(runtime, None)
+                step.stop(runtime)
             self._logger.info("Stopped all steps")
