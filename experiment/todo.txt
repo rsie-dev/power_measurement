@@ -1,4 +1,5 @@
 ToDo:
+- add verbose flag
 - add forced tail delay of metrics_client_timeout when using metrics collection
 - add support for pathlib.Path
 - add distinct runs per host
