@@ -15,12 +15,6 @@ from .experiment_resources import ExperimentResources
 from .signal_stop_provider import SignalStopProvider
 
 
-class LogContext:
-    def __init__(self, formatter: logging.Formatter, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
-        self.formatter = formatter
-        self.log_dispatcher = log_dispatcher
-
-
 class DeviceManager:
     def __init__(self, serial_number: str):
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -46,8 +40,7 @@ class DeviceManager:
 
 
 class MultimeterStep(Step):
-    def __init__(self, formatter: logging.Formatter, serial_number: str,
-                 log_dispatcher: LogDispatcher[ElectricalMeasurement]):
+    def __init__(self, serial_number: str, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
         super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._device_manager = DeviceManager(serial_number)
@@ -55,13 +48,13 @@ class MultimeterStep(Step):
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
-        self._log_context = LogContext(formatter, log_dispatcher)
+        self._log_dispatcher = log_dispatcher
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
         self._logger.info("multimeter start")
         event.set()
         try:
-            usb_meter.run(self._log_context.log_dispatcher)
+            usb_meter.run(self._log_dispatcher)
         finally:
             self._logger.info("multimeter shut down")
 

@@ -163,7 +163,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._serial_number:
             formatter = formatter_class(**formatter_config)
             multimeter_log_provider = MultimeterLogProvider(self._multimeter_dispatcher, formatter)
-            step = MultimeterStep(formatter, self._serial_number, self._multimeter_dispatcher)
+            step = MultimeterStep(self._serial_number, self._multimeter_dispatcher)
             log_providers.append(multimeter_log_provider)
             steps.append(step)
 
