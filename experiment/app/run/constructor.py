@@ -23,6 +23,8 @@ from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, Compos
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
+from .multimeter_device_manager import MultimeterDeviceManager
+
 
 class Constructor(Builder):
     pass
@@ -164,7 +166,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
                                                                                    formatter)
             multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
-            step = MultimeterStep(self._serial_number, self._multimeter_dispatcher)
+            device_manager = MultimeterDeviceManager(self._serial_number)
+            device = device_manager.get_device()
+            step = MultimeterStep(device, self._multimeter_dispatcher)
             log_providers.append(multimeter_log_provider)
             steps.append(step)
 
