@@ -24,13 +24,11 @@ class StartupMonitor(Logger[SystemMeasurement]):
     def startup_event(self):
         return self._startup_event
 
-    def init(self) -> None:
-        pass
-
-    def start(self) -> None:
+    def __enter__(self):
         self._metrics_dispatcher.register_logger(self)
+        return self
 
-    def close(self):
+    def __exit__(self, type, value, traceback):
         self._metrics_dispatcher.unregister_logger(self)
 
     def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
@@ -51,15 +49,12 @@ class SystemMetricsClientStep(BaseHostCommandStep):
         self._telegraf_server_address = "%s:%d" % (telegraf_server[0], telegraf_server[1])
 
     def _execute_commands(self, connection: Connection):
-        startup_monitor = StartupMonitor(self._host.host_name, self._metrics_dispatcher)
-        startup_event = startup_monitor.startup_event
-        startup_monitor.start()
-        self._execute_start_command(connection)
-        self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
-        try:
+        with StartupMonitor(self._host.host_name, self._metrics_dispatcher) as startup_monitor:
+            startup_event = startup_monitor.startup_event
+            self._execute_start_command(connection)
+            self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
             startup_event.wait(self._metrics_client_timeout)
-        finally:
-            startup_monitor.close()
+            self._logger.info("Telegraf client connected")
 
     def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
