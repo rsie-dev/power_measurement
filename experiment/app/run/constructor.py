@@ -15,13 +15,13 @@ from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.experiment.log import LogDispatcher, MetricType
+from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
-from .multimeter_log_provider import MultimeterLogProvider
 from .metrics_log_provider import MetricsLogProvider
 
 
@@ -162,7 +162,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
             formatter = formatter_class(**formatter_config)
-            multimeter_log_provider = MultimeterLogProvider(self._multimeter_dispatcher, formatter)
+            log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
+                                                                                   formatter)
+            multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
             step = MultimeterStep(self._serial_number, self._multimeter_dispatcher)
             log_providers.append(multimeter_log_provider)
             steps.append(step)
