@@ -28,7 +28,7 @@ class StartupMonitor(Logger[SystemMeasurement]):
         self._metrics_dispatcher.register_logger(self)
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         self._metrics_dispatcher.unregister_logger(self)
 
     def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
