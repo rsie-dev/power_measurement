@@ -14,13 +14,13 @@ from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.experiment.log import LogDispatcher, FileStatsEntry, MetricType
+from app.experiment.log import LogDispatcher, MetricType
+from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
-from .file_stats_log_provider import FileStatsLogProvider
 from .multimeter_log_provider import MultimeterLogProvider
 from .metrics_log_provider import MetricsLogProvider
 
@@ -189,7 +189,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         if self._file_stats_dispatcher:
             formatter = formatter_class(**formatter_config)
-            file_stats_log_provider = FileStatsLogProvider(self._file_stats_dispatcher, formatter)
+            log_factory: LoggerFactory = lambda resource_path: CSVFileStatLogger(resource_path / "file_stats.csv",
+                                                                                 formatter)
+            file_stats_log_provider = GenericLogProvider(self._file_stats_dispatcher, log_factory)
             log_providers.append(file_stats_log_provider)
 
         commands = self._commands[:]
