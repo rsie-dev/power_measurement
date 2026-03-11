@@ -24,7 +24,6 @@ class MultimeterMeasurement(Measurement):
         self._log_dispatcher = log_dispatcher
 
     def start(self, environment: ExperimentEnvironment, executor: Executor):
-        self._logger.info("Start multimeter")
         self._prepare(environment)
         event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, event)
@@ -38,15 +37,14 @@ class MultimeterMeasurement(Measurement):
         self._usb_meter.setup_device()
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
-        self._logger.info("multimeter running")
+        self._logger.debug("multimeter thread running")
         event.set()
         try:
             usb_meter.run(self._log_dispatcher)
         finally:
-            self._logger.info("multimeter stopped")
+            self._logger.debug("multimeter thread stopped")
 
     def stop(self, environment: ExperimentEnvironment):
-        self._logger.info("Stop multimeter")
         if self._stop_provider:
             environment.remove_shutdown_handler(self._stop_provider)
             self._stop_provider.shut_down(False)
