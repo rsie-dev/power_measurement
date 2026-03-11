@@ -184,17 +184,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             steps.append(step)
 
         if self._timing_dispatcher:
-            formatter = formatter_class(**formatter_config)
-            log_factory: LoggerFactory = lambda resource_path: CSVTimingLogger(resource_path / "timings.csv", formatter)
-            timing_log_provider = GenericLogProvider(self._timing_dispatcher, log_factory)
-            log_providers.append(timing_log_provider)
-
+            log_providers.append(self._create_timing_log_provider())
         if self._file_stats_dispatcher:
-            formatter = formatter_class(**formatter_config)
-            log_factory: LoggerFactory = lambda resource_path: CSVFileStatLogger(resource_path / "file_stats.csv",
-                                                                                 formatter)
-            file_stats_log_provider = GenericLogProvider(self._file_stats_dispatcher, log_factory)
-            log_providers.append(file_stats_log_provider)
+            log_providers.append(self._create_file_stats_log_provider())
 
         commands = self._commands[:]
         if self._head_delay:
@@ -206,6 +198,21 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
+
+    def _create_timing_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVTimingLogger(resource_path / "timings.csv", formatter)
+        timing_log_provider = GenericLogProvider(self._timing_dispatcher, log_factory)
+        return timing_log_provider
+
+    def _create_file_stats_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVFileStatLogger(resource_path / "file_stats.csv",
+                                                                             formatter)
+        file_stats_log_provider = GenericLogProvider(self._file_stats_dispatcher, log_factory)
+        return file_stats_log_provider
 
 
 class HostConstructor(CompositeConstructor, HostBuilder):
