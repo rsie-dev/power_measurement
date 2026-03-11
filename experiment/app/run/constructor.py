@@ -162,13 +162,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         if self._serial_number:
-            formatter = formatter_class(**formatter_config)
-            log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
-                                                                                   formatter)
-            multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
-            device_manager = MultimeterDeviceManager(self._serial_number)
-            device = device_manager.get_device()
-            step = MultimeterStep(device, self._multimeter_dispatcher)
+            step, multimeter_log_provider = self._create_multimeter()
             log_providers.append(multimeter_log_provider)
             steps.append(step)
 
@@ -202,6 +196,17 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
+
+    def _create_multimeter(self) -> tuple[Step, LogProvider]:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
+                                                                               formatter)
+        multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
+        device_manager = MultimeterDeviceManager(self._serial_number)
+        device = device_manager.get_device()
+        step = MultimeterStep(device, self._multimeter_dispatcher)
+        return step, multimeter_log_provider
 
     def _create_timing_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
