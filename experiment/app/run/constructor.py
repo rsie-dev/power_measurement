@@ -6,10 +6,11 @@ from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
 from app.api import CommandBuilder, MeasuredCommandBuilder, Command
 from app.api import ExecutionBuilder
+from app.experiment.measurement import Measurement
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
-from app.experiment.steps import MultimeterStep, WarmupCommandStep, HostCommandStep
+from app.experiment.steps import WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
@@ -19,6 +20,7 @@ from app.experiment.log import MetricType, CSVMetricsLogger
 from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
+from app.experiment.measurement import MultimeterMeasurement
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
@@ -160,14 +162,15 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         steps = []
 
         log_providers: list[LogProvider] = []
-        formatter_class, formatter_config = self._parent.formatter_info
+        measurements: list[Measurement] = []
         if self._serial_number:
-            step, multimeter_log_provider = self._create_multimeter()
+            measurement, multimeter_log_provider = self._create_multimeter()
             log_providers.append(multimeter_log_provider)
-            steps.append(step)
+            measurements.append(measurement)
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
+            formatter_class, formatter_config = self._parent.formatter_info
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
             step = SystemMetricsClientStep(self._host, metrics_dispatcher)
@@ -192,12 +195,12 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._tail_delay:
             commands.append(DelayCommand(self._tail_delay, "tail"))
 
-        step = HostCommandStep(self._host, commands, self._runs, log_providers)
+        step = HostCommandStep(self._host, commands, self._runs, log_providers, measurements)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
 
-    def _create_multimeter(self) -> tuple[Step, LogProvider]:
+    def _create_multimeter(self) -> tuple[Measurement, LogProvider]:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
         log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
@@ -205,8 +208,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
         device_manager = MultimeterDeviceManager(self._serial_number)
         device = device_manager.get_device()
-        step = MultimeterStep(device, self._multimeter_dispatcher)
-        return step, multimeter_log_provider
+        measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
+        return measurement, multimeter_log_provider
 
     def _create_timing_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info

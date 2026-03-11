@@ -2,8 +2,8 @@ import logging
 from .step import InitStep
 from .host import SSHHost
 
+from app.experiment.base import InitEnvironment
 from .experiment_runtime import ExperimentRuntime
-from .experiment_environment import InitEnvironment
 
 
 class HostnameValidationStep(InitStep):

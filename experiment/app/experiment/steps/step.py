@@ -1,7 +1,7 @@
 from abc import ABC
 from concurrent.futures import Executor
 
-from .experiment_environment import ExperimentEnvironment, InitEnvironment
+from app.experiment.base import ExperimentEnvironment, InitEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources

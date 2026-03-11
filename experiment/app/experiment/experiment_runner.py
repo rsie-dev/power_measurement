@@ -4,10 +4,11 @@ from concurrent.futures import Executor
 from typing import List
 
 from app.common import SignalHandler
+from app.experiment.base import ExperimentEnvironment
 from .steps import Step
-from .steps.experiment_environment import ExperimentEnvironment
-from .steps.experiment_runtime import ExperimentRuntime
-from .measurement import Measurement
+from .steps import ExperimentRuntime
+# FIXME
+#from .measurement import Measurement
 from .resources import Resources
 
 
@@ -20,7 +21,7 @@ class ExperimentRunner:
         self._steps = steps[:]
 
     def execute_runs(self, runtime: ExperimentRuntime, environment: ExperimentEnvironment):
-        measurement = Measurement()
+        #measurement = Measurement()
         resources = Resources(self._resource_path)
 
         self._logger.info("Prepare all steps")
@@ -32,7 +33,7 @@ class ExperimentRunner:
             self._logger.info("Starting all steps")
             for step in self._steps:
                 self._logger.debug("start step: %s", step.name)
-                step.start(self._executor, measurement)
+                step.start(self._executor, None)
 
             try:
                 with self._signal_handler.capture_signals():
@@ -46,5 +47,5 @@ class ExperimentRunner:
             self._logger.info("Stopping all steps")
             for step in list(reversed(self._steps)):
                 self._logger.debug("stop step: %s", step.name)
-                step.stop(runtime, measurement)
+                step.stop(runtime, None)
             self._logger.info("Stopped all steps")

@@ -5,7 +5,7 @@ import ntplib
 import humanize
 import isodate
 
-from .experiment_environment import ExperimentEnvironment
+from app.experiment.base import ExperimentEnvironment
 from .experiment_resources import ExperimentResources
 from .experiment_runtime import ExperimentRuntime
 from .step import Step

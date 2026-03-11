@@ -7,15 +7,12 @@ from app.usb_meter import USBMeter
 from app.usb_meter.device import Device
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.experiment.log import LogDispatcher
-from .step import Step
-from .experiment_environment import ExperimentEnvironment
-from .experiment_runtime import ExperimentRuntime
-from .experiment_measurement import ExperimentMeasurement
-from .experiment_resources import ExperimentResources
+from app.experiment.base import ExperimentEnvironment
+from .measurement import Measurement
 from .signal_stop_provider import SignalStopProvider
 
 
-class MultimeterStep(Step):
+class MultimeterMeasurement(Measurement):
     def __init__(self, device: Device, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
         super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -26,28 +23,33 @@ class MultimeterStep(Step):
         self._future = None
         self._log_dispatcher = log_dispatcher
 
-    def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
-        self._logger.info("multimeter start")
-        event.set()
-        try:
-            usb_meter.run(self._log_dispatcher)
-        finally:
-            self._logger.info("multimeter shut down")
-
-    def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
-        self._stop_provider = SignalStopProvider()
-        environment.add_shutdown_handler(self._stop_provider)
-        self._usb_meter = USBMeter(device=self._device, stop_provider=self._stop_provider, use_crc=True)
-        self._usb_meter.setup_device()
-
-    def start(self, executor: Executor, measurement: ExperimentMeasurement):
+    def start(self, environment: ExperimentEnvironment, executor: Executor):
+        self._logger.info("Start multimeter")
+        self._prepare(environment)
         event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, event)
         event.wait(self._start_timeout)
         self._future = future
 
-    def stop(self, runtime: ExperimentRuntime, measurement: ExperimentMeasurement):
+    def _prepare(self, environment: ExperimentEnvironment):
+        self._stop_provider = SignalStopProvider()
+        environment.add_shutdown_handler(self._stop_provider)
+        self._usb_meter = USBMeter(device=self._device, stop_provider=self._stop_provider, use_crc=True)
+        self._usb_meter.setup_device()
+
+    def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
+        self._logger.info("multimeter running")
+        event.set()
+        try:
+            usb_meter.run(self._log_dispatcher)
+        finally:
+            self._logger.info("multimeter stopped")
+
+    def stop(self, environment: ExperimentEnvironment):
+        self._logger.info("Stop multimeter")
         if self._stop_provider:
+            # FIXME:
+            #self._environment.remove_shutdown_handler(self._stop_provider)
             self._stop_provider.shut_down(False)
 
         wait([self._future], return_when=FIRST_EXCEPTION)

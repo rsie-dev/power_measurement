@@ -6,7 +6,7 @@ import humanize
 
 from app.system_meter import SystemMeasurement
 from app.experiment.log import Logger, LogDispatcher
-from .experiment_environment import ExperimentEnvironment
+from app.experiment.base import ExperimentEnvironment
 from .experiment_runtime import ExperimentRuntime
 from .experiment_measurement import ExperimentMeasurement
 from .experiment_resources import ExperimentResources
