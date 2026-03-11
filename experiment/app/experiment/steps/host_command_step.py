@@ -7,7 +7,7 @@ from concurrent.futures import Executor
 from fabric import Connection
 
 from app.api import Command
-from app.experiment.measurement import Measurement
+from app.experiment.measurement import measure, Measurement
 from app.experiment.base import ExperimentEnvironment
 from .step import Step
 from .log_provider import LogProvider
@@ -77,16 +77,11 @@ class HostCommandStep(BaseHostCommandStep):
 
         self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._commands))
 
-        for measurement in self._measurements:
-            self._logger.info("Start measurement: %s", measurement.name)
-            measurement.start(self._environment, self._executor)
-        try:
+        with ExitStack() as stack:
+            for measurement in self._measurements:
+                stack.enter_context(measure(measurement, self._environment, self._executor))
             for run in range(self._runs):
                 self._execute_run(run, resources_path, connection)
-        finally:
-            for measurement in self._measurements:
-                self._logger.info("Stop measurement: %s", measurement.name)
-                measurement.stop(self._environment)
 
         self._logger.info("All commands executed")
 
