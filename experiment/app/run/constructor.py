@@ -14,15 +14,14 @@ from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps import LogProvider, LoggerFactory, GenericLogProvider
 from app.experiment.experiment_executor import ExperimentExecutor
-from app.experiment.log import LogDispatcher, MetricType
+from app.experiment.log import LogDispatcher
+from app.experiment.log import MetricType, CSVMetricsLogger
 from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
-
-from .metrics_log_provider import MetricsLogProvider
 
 
 class Constructor(Builder):
@@ -174,12 +173,14 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             formatter = formatter_class(**formatter_config)
             steps.append(TimeDeltaStep(self._host))
             step = SystemMetricsClientStep(self._host, metrics_dispatcher)
-
-            system_log_provider = MetricsLogProvider(metrics_dispatcher, formatter, MetricType.SYSTEM)
+            system_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "system.csv",
+                                                                                       formatter, MetricType.SYSTEM)
+            system_log_provider = GenericLogProvider(metrics_dispatcher, system_log_factory)
             log_providers.append(system_log_provider)
-            cpu_log_provider = MetricsLogProvider(metrics_dispatcher, formatter, MetricType.CPU)
+            cpu_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "cpu.csv",
+                                                                                    formatter, MetricType.CPU)
+            cpu_log_provider = GenericLogProvider(metrics_dispatcher, cpu_log_factory)
             log_providers.append(cpu_log_provider)
-
             steps.append(step)
 
         if self._timing_dispatcher:
