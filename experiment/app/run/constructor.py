@@ -169,19 +169,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
-            formatter_class, formatter_config = self._parent.formatter_info
-            formatter = formatter_class(**formatter_config)
-            steps.append(TimeDeltaStep(self._host))
-            step = SystemMetricsClientStep(self._host, metrics_dispatcher)
-            system_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "system.csv",
-                                                                                       formatter, MetricType.SYSTEM)
-            system_log_provider = GenericLogProvider(metrics_dispatcher, system_log_factory)
-            log_providers.append(system_log_provider)
-            cpu_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "cpu.csv",
-                                                                                    formatter, MetricType.CPU)
-            cpu_log_provider = GenericLogProvider(metrics_dispatcher, cpu_log_factory)
-            log_providers.append(cpu_log_provider)
-            steps.append(step)
+            metrics = self._create_metrics(metrics_dispatcher)
+            log_providers.extend(metrics[0])
+            steps.extend(metrics[1])
 
         if self._timing_dispatcher:
             log_providers.append(self._create_timing_log_provider())
@@ -198,6 +188,28 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
+
+    def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> (
+            tuple)[list[LogProvider], list[Step]]:
+        steps: list[Step] = []
+        log_providers: list[LogProvider] = []
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        steps.append(TimeDeltaStep(self._host))
+        step = SystemMetricsClientStep(self._host, metrics_dispatcher)
+        steps.append(step)
+
+        system_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "system.csv",
+                                                                                   formatter, MetricType.SYSTEM)
+        system_log_provider = GenericLogProvider(metrics_dispatcher, system_log_factory)
+        log_providers.append(system_log_provider)
+
+        cpu_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "cpu.csv",
+                                                                                formatter, MetricType.CPU)
+        cpu_log_provider = GenericLogProvider(metrics_dispatcher, cpu_log_factory)
+        log_providers.append(cpu_log_provider)
+
+        return log_providers, steps
 
     def _create_multimeter(self) -> tuple[Measurement, LogProvider]:
         formatter_class, formatter_config = self._parent.formatter_info
