@@ -194,9 +194,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
-        steps.append(TimeDeltaStep(self._host))
-        step = SystemMetricsClientStep(self._host, metrics_dispatcher)
-        steps.append(step)
+        #steps.append(TimeDeltaStep(self._host))
+        #step = SystemMetricsClientStep(self._host, metrics_dispatcher)
+        #steps.append(step)
 
         system_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "system.csv",
                                                                                    formatter, MetricType.SYSTEM)
@@ -269,7 +269,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return MeasurementExecutionConstructor(self, self._host, runs)
 
     def done(self) -> ExperimentBuilder:
-        self._parent.add_steps(self._steps)
+        steps = []
+        metrics_dispatcher = self._parent.collect_metrics
+        if metrics_dispatcher:
+            steps.append(TimeDeltaStep(self._host))
+            steps.append(SystemMetricsClientStep(self._host, metrics_dispatcher))
+        steps.extend(self._steps)
+        self._parent.add_steps(steps)
         return self._parent
 
 
@@ -277,7 +283,6 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     def __init__(self, formatter_info: tuple[type, dict], ssh_user):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
-        #self._with_metrics_collection: bool = False
         self._metrics_dispatcher = None
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
@@ -285,7 +290,6 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
 
     @property
     def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
-        #return self._with_metrics_collection
         return self._metrics_dispatcher
 
     @property
@@ -302,7 +306,6 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         return HostConstructor(self, ssh_host)
 
     def with_metrics_collection(self) -> Self:
-        #self._with_metrics_collection = True
         self._metrics_dispatcher = LogDispatcher[SystemMeasurement]()
         return self
 
