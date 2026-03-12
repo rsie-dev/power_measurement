@@ -15,7 +15,7 @@ from app.experiment.log import LogProvider
 from .host_command_step import BaseHostCommandStep
 
 
-class HostCommandStep(BaseHostCommandStep):
+class MeasurementStep(BaseHostCommandStep):
     @dataclass(frozen=True)
     class CommandConfig:
         runs: int
@@ -32,9 +32,9 @@ class HostCommandStep(BaseHostCommandStep):
 
     def __init__(self, host: SSHHost, command_config: CommandConfig, log_providers: list[LogProvider],
                  measurements: list[Measurement]):
-        super().__init__("host command", host)
+        super().__init__("measurement", host)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._context = HostCommandStep.Context(runs=command_config.runs, commands=command_config.commands,
+        self._context = MeasurementStep.Context(runs=command_config.runs, commands=command_config.commands,
                                                 tag=command_config.tag,
                                                 log_providers=log_providers, measurements=measurements)
         self._resources_path = None
@@ -54,7 +54,7 @@ class HostCommandStep(BaseHostCommandStep):
         resources_path = self._resources_path / self._host.host_name / self._context.tag
         resources_path.mkdir(parents=True, exist_ok=True)
 
-        self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._context.commands))
+        self._logger.info("Measure on host: %s %d command(s)", self._host.host, len(self._context.commands))
 
         with ExitStack() as step_stack:
             for measurement in self._context.measurements:
@@ -62,10 +62,10 @@ class HostCommandStep(BaseHostCommandStep):
             for run in range(self._context.runs):
                 self._execute_run(run, resources_path, connection)
 
-        self._logger.info("All commands executed")
+        self._logger.info("All commands measured")
 
     def _execute_run(self, run: int, resources_path: Path, connection: Connection):
-        self._logger.info("Start run %d/%d", run + 1, self._context.runs)
+        self._logger.info("Run %d/%d", run + 1, self._context.runs)
         run_resources_path = resources_path / ("run_%03d" % (run + 1))
         run_resources_path.mkdir(parents=True, exist_ok=True)
 

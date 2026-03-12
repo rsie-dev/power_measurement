@@ -10,7 +10,7 @@ from app.api import ExecutionBuilder
 from app.common import SSHHost
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
-from app.experiment.steps import WarmupCommandStep, HostCommandStep
+from app.experiment.steps import WarmupCommandStep, MeasurementStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
 from app.experiment.steps.measurement import Measurement
@@ -200,8 +200,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._tail_delay:
             commands.append(DelayCommand(self._tail_delay, "tail"))
 
-        command_config = HostCommandStep.CommandConfig(runs=self._config.runs, commands=commands, tag=self._config.tag)
-        step = HostCommandStep(self._host, command_config, log_providers, measurements)
+        command_config = MeasurementStep.CommandConfig(runs=self._config.runs, commands=commands, tag=self._config.tag)
+        step = MeasurementStep(self._host, command_config, log_providers, measurements)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
