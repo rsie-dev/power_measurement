@@ -6,20 +6,20 @@ from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
 from app.api import CommandBuilder, MeasuredCommandBuilder, Command
 from app.api import ExecutionBuilder
-from app.experiment.measurement import Measurement
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep
 from app.experiment.steps import UploadStep, DeleteStep
+from app.experiment.steps.measurement import Measurement
+from app.experiment.steps.measurement import MultimeterMeasurement
 from app.experiment.experiment_executor import ExperimentExecutor
 from app.experiment.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
 from app.experiment.log import MetricType, CSVMetricsLogger
 from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
-from app.experiment.measurement import MultimeterMeasurement
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
