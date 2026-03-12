@@ -23,6 +23,11 @@ handlers:
         class: logging.StreamHandler
         formatter: console_color
         stream: ext://sys.stderr
+    console_warn:
+        class: logging.StreamHandler
+        formatter: console_color
+        stream: ext://sys.stderr
+        level: WARN
     file:
         class: logging.FileHandler
         mode: w
@@ -32,7 +37,7 @@ handlers:
 loggers:
     "":
         level: DEBUG
-        handlers: [console]
+        handlers: [console, file]
     uvicorn.access:
         propagate: False
         handlers: []
@@ -40,3 +45,7 @@ loggers:
         level: INFO
     paramiko:
         level: INFO
+    paramiko.transport.sftp:
+        propagate: false
+        level: INFO
+        handlers: [console_warn, file]
