@@ -195,9 +195,6 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
-        #steps.append(TimeDeltaStep(self._host))
-        #step = SystemMetricsClientStep(self._host, metrics_dispatcher)
-        #steps.append(step)
 
         system_log_factory: LoggerFactory = lambda resource_path: CSVMetricsLogger(resource_path / "system.csv",
                                                                                    formatter, MetricType.SYSTEM)
