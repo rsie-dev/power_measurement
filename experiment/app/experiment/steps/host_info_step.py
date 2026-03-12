@@ -1,6 +1,6 @@
 import logging
 import json
-from io import StringIO
+from io import StringIO, BytesIO
 
 import dotenv
 
@@ -19,8 +19,31 @@ class HostnameInfoStep(HostnameValidationStep):
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         self._logger.info("Hostname: %s", self._host.host_name)
         self._logger.info("IP:       %s", self._host.host)
+        self._report_board_info(connection)
         self._report_cpu_info(connection)
         self._report_os_info(connection)
+
+    def _report_board_info(self, connection):
+        board_info = self._get_board_info(connection)
+        self._logger.info("Board:    %s", board_info)
+
+    def _get_board_info(self, connection):
+        result = connection.run("test -f /proc/device-tree/model", hide=True, warn=True)
+        if result.ok:
+            buffer = BytesIO()
+            connection.get("/proc/device-tree/model", buffer)
+            buffer.seek(0)
+            content_bytes = buffer.read()
+            # It's a null-terminated string
+            board_info = content_bytes.replace(b'\x00', b'').decode('utf-8')
+            return board_info.rstrip()
+        # Fallback
+        buffer = BytesIO()
+        connection.get(remote="/sys/class/dmi/id/product_name", local=buffer)
+        buffer.seek(0)
+        content_bytes = buffer.read()
+        board_info = content_bytes.decode('utf-8')
+        return board_info.rstrip()
 
     def _report_cpu_info(self, connection):
         result = connection.run('/usr/bin/lscpu -J', hide=True)
