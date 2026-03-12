@@ -27,7 +27,7 @@ class TimedCommand(Command):
         self._logger.debug("timing output: %s", timing_output)
         command = f"/usr/bin/time -p -o {timing_output} {self._timed_command.command}"
         work_dir = self._timed_command.work_dir if self._timed_command.work_dir else "."
-        self._logger.info("execute%s: %s", exec_info, self._timed_command.command)
+        self._logger.info("Execute%s: %s", exec_info, self._timed_command.command)
         with ((connection.cd(work_dir))):
             connection.run(command, hide=True)
             time_info = BytesIO()
@@ -38,7 +38,7 @@ class TimedCommand(Command):
                 f"user: {timing_entry.user.total_seconds():.2f} "
                 f"sys: {timing_entry.sys.total_seconds():.2f} "
             )
-            self._logger.info("execution times: %s", timings)
+            self._logger.info("Execution times: %s", timings)
             self._timing_logger.log(timing_entry)
         connection.run(f"rm -f {timing_output}", hide=True, warn=True)
 

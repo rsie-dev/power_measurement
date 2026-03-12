@@ -22,6 +22,6 @@ class ExecutorCommand(Command):
 
     def execute(self, connection: Connection, resources_path):
         work_dir = self._work_dir if self._work_dir else "."
-        self._logger.info("execute: %s", self._command)
+        self._logger.info("Execute: %s", self._command)
         with connection.cd(work_dir):
             connection.run(self._command, hide=True)

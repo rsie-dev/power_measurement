@@ -17,12 +17,12 @@ class Runner:
         experiment_module = Path(args.experiment[0])
         experiment = experiment_loader.load_experiment_from_path(experiment_module, args.ssh_user)
         resources = self._resources / experiment_module.stem
-        self._logger.info("experiment resources: %s", resources.relative_to(Path.cwd()))
+        self._logger.info("Experiment resource path: %s", resources.relative_to(Path.cwd()))
         resources.mkdir(parents=True)
         self._logger.debug("copy experiment module to resource folder")
         shutil.copy(experiment_module.resolve(), resources / experiment_module.name)
         with self._add_logfile(resources / "experiment.log"):
-            self._logger.info("Experiment start: %s", experiment_module.stem)
+            self._logger.info("Start experiment: %s", experiment_module.stem)
             try:
                 metrics_server_address = (args.host, args.port)
                 experiment.run(resources, metrics_server_address)

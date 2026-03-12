@@ -22,7 +22,7 @@ class ExperimentLoader:
         - Uses a unique module name so you can load multiple different files or reload the same path.
         - The module itself should import pipeline_core.P to register steps, as in my_steps.py.
         """
-        self._logger.info("load experiment module: %s", path)
+        self._logger.info("Load experiment: %s", path.stem)
         if not path.exists():
             raise FileNotFoundError(path)
 
