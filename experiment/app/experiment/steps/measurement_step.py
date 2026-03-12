@@ -54,7 +54,8 @@ class MeasurementStep(BaseHostCommandStep):
         resources_path = self._resources_path / self._host.host_name / self._context.tag
         resources_path.mkdir(parents=True, exist_ok=True)
 
-        self._logger.info("Measure on host: %s %d command(s)", self._host.host, len(self._context.commands))
+        tag = f"{self._context.tag} " if self._context.tag else ""
+        self._logger.info("Measure %son host: %s", tag, self._host.host)
 
         with ExitStack() as step_stack:
             for measurement in self._context.measurements:
