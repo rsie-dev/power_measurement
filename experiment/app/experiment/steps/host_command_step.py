@@ -52,18 +52,23 @@ class WarmupCommandStep(BaseHostCommandStep):
 
 class HostCommandStep(BaseHostCommandStep):
     @dataclass(frozen=True)
+    class CommandConfig:
+        runs: int
+        commands: list[Command]
+
+    @dataclass(frozen=True)
     class Context:
         runs: int
         commands: list[Command]
         log_providers: list[LogProvider]
         measurements: list[Measurement]
 
-    def __init__(self, host: SSHHost, commands: list[Command], runs: int, log_providers: list[LogProvider],
+    def __init__(self, host: SSHHost, command_config: CommandConfig, log_providers: list[LogProvider],
                  measurements: list[Measurement]):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._context = HostCommandStep.Context(runs=runs, commands=commands, log_providers=log_providers,
-                                                measurements=measurements)
+        self._context = HostCommandStep.Context(runs=command_config.runs, commands=command_config.commands,
+                                                log_providers=log_providers, measurements=measurements)
         self._resources_path = None
         self._environment = None
         self._executor = None

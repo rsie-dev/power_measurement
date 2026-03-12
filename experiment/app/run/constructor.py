@@ -182,7 +182,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._tail_delay:
             commands.append(DelayCommand(self._tail_delay, "tail"))
 
-        step = HostCommandStep(self._host, commands, self._runs, log_providers, measurements)
+        command_config = HostCommandStep.CommandConfig(runs=self._runs, commands=commands)
+        step = HostCommandStep(self._host, command_config, log_providers, measurements)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
