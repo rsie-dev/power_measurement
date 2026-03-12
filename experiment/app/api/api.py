@@ -81,7 +81,7 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
+    def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         pass
 
     @abstractmethod

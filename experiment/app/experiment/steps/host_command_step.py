@@ -55,11 +55,13 @@ class HostCommandStep(BaseHostCommandStep):
     class CommandConfig:
         runs: int
         commands: list[Command]
+        tag: str
 
     @dataclass(frozen=True)
     class Context:
         runs: int
         commands: list[Command]
+        tag: str
         log_providers: list[LogProvider]
         measurements: list[Measurement]
 
@@ -68,6 +70,7 @@ class HostCommandStep(BaseHostCommandStep):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._context = HostCommandStep.Context(runs=command_config.runs, commands=command_config.commands,
+                                                tag=command_config.tag,
                                                 log_providers=log_providers, measurements=measurements)
         self._resources_path = None
         self._environment = None
@@ -83,7 +86,7 @@ class HostCommandStep(BaseHostCommandStep):
         self._executor = executor
 
     def _execute_commands(self, connection: Connection):
-        resources_path = self._resources_path / self._host.host_name
+        resources_path = self._resources_path / self._host.host_name / self._context.tag
         resources_path.mkdir(parents=True, exist_ok=True)
 
         self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._context.commands))

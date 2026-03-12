@@ -119,10 +119,11 @@ class WarmupExecutionConstructor(ExecutionConstructor, WarmupExecutionBuilder):
 
 
 class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecutionBuilder):
-    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int):
+    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int, tag: str):
         super().__init__(host)
         self._parent = parent
         self._runs = runs
+        self._tag = tag
         self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
@@ -182,7 +183,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._tail_delay:
             commands.append(DelayCommand(self._tail_delay, "tail"))
 
-        command_config = HostCommandStep.CommandConfig(runs=self._runs, commands=commands)
+        command_config = HostCommandStep.CommandConfig(runs=self._runs, commands=commands, tag=self._tag)
         step = HostCommandStep(self._host, command_config, log_providers, measurements)
         steps.append(step)
         self._parent.add_steps(steps)
@@ -245,6 +246,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         super().__init__()
         self._parent = parent
         self._host = host
+        self._tags: set[str] = set()
 
     @property
     def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
@@ -265,8 +267,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._host)
 
-    def measure_runs(self, runs: int) -> MeasurementExecutionBuilder:
-        return MeasurementExecutionConstructor(self, self._host, runs)
+    def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
+        if tag is None:
+            tag = ""
+        if tag in self._tags:
+            raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
+        self._tags.add(tag)
+        return MeasurementExecutionConstructor(self, self._host, runs, tag)
 
     def done(self) -> ExperimentBuilder:
         steps = []
