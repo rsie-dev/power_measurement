@@ -1,5 +1,4 @@
 ToDo:
-- fix multiple multimeter lookups per host
 - add verbose flag
 - add forced tail delay of metrics_client_timeout when using metrics collection
 - add support for pathlib.Path
@@ -13,6 +12,7 @@ ToDo:
 - add API documentation
 
 done:
+- fix multiple multimeter lookups per host
 - support distinct runs per host
 - add file stats collection
 - fail experiment if resource folder exists

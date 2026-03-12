@@ -118,10 +118,22 @@ class WarmupExecutionConstructor(ExecutionConstructor, WarmupExecutionBuilder):
         return self._parent
 
 
+class MultimeterDeviceManagerCoordinator:
+    def __init__(self):
+        self._device_managers: dict[str, MultimeterDeviceManager] = {}
+
+    def get_device_manager(self, serial_number: str) -> MultimeterDeviceManager:
+        if serial_number not in self._device_managers:
+            self._device_managers[serial_number] = MultimeterDeviceManager(serial_number)
+        return self._device_managers[serial_number]
+
+
 class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecutionBuilder):
-    def __init__(self, parent: HostConstructor, host: SSHHost, runs: int, tag: str):
+    def __init__(self, parent: HostConstructor, host: SSHHost,
+                 multimeter_device_manager_coordinator: MultimeterDeviceManagerCoordinator, runs: int, tag: str):
         super().__init__(host)
         self._parent = parent
+        self._multimeter_device_manager_coordinator = multimeter_device_manager_coordinator
         self._runs = runs
         self._tag = tag
         self._serial_number = None
@@ -215,7 +227,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
                                                                                formatter)
         multimeter_log_provider = GenericLogProvider(multimeter_dispatcher, log_factory)
-        device_manager = MultimeterDeviceManager(self._serial_number)
+        device_manager = self._multimeter_device_manager_coordinator.get_device_manager(self._serial_number)
         device = device_manager.get_device()
         measurement = MultimeterMeasurement(device, multimeter_dispatcher)
         return measurement, multimeter_log_provider
@@ -239,10 +251,12 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
 
 class HostConstructor(CompositeConstructor, HostBuilder):
-    def __init__(self, parent: ExperimentConstructor, host: SSHHost):
+    def __init__(self, parent: ExperimentConstructor, host: SSHHost,
+                 multimeter_device_manager_coordinator: MultimeterDeviceManagerCoordinator):
         super().__init__()
         self._parent = parent
         self._host = host
+        self._multimeter_device_manager_coordinator = multimeter_device_manager_coordinator
         self._tags: set[str] = set()
 
     @property
@@ -270,7 +284,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if tag in self._tags:
             raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
         self._tags.add(tag)
-        return MeasurementExecutionConstructor(self, self._host, runs, tag)
+        return MeasurementExecutionConstructor(self, self._host, self._multimeter_device_manager_coordinator, runs, tag)
 
     def done(self) -> ExperimentBuilder:
         if "" in self._tags and len(self._tags) > 1:
@@ -294,6 +308,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
         self._ssh_user = ssh_user
+        self._multimeter_device_manager_coordinator = MultimeterDeviceManagerCoordinator()
 
     @property
     def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
@@ -310,7 +325,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=self._ssh_user)
         self._init_steps.append(HostnameValidationStep(ssh_host))
         self._init_steps.append(HostnameInfoStep(ssh_host))
-        return HostConstructor(self, ssh_host)
+        return HostConstructor(self, ssh_host, self._multimeter_device_manager_coordinator)
 
     def with_metrics_collection(self) -> Self:
         self._metrics_dispatcher = LogDispatcher[SystemMeasurement]()
