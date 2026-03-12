@@ -18,6 +18,7 @@ class HostnameInfoStep(HostnameValidationStep):
     def execute(self, runtime: ExperimentRuntime) -> None:
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
         self._logger.info("Hostname: %s", self._host.host_name)
+        self._logger.info("IP:       %s", self._host.host)
         self._report_cpu_info(connection)
         self._report_os_info(connection)
 
