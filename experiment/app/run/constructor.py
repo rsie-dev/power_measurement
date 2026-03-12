@@ -273,6 +273,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return MeasurementExecutionConstructor(self, self._host, runs, tag)
 
     def done(self) -> ExperimentBuilder:
+        if "" in self._tags and len(self._tags) > 1:
+            raise ValueError("each measurement must have an distinctive tag")
+
         steps = []
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
