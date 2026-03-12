@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from app.common import SSHHost
 from app.experiment.base import ExperimentEnvironment
@@ -9,7 +10,7 @@ from .step import Step
 
 
 class UploadStep(Step):
-    def __init__(self, host: SSHHost, local: str, remote: str):
+    def __init__(self, host: SSHHost, local: Path, remote: Path):
         super().__init__("upload")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
@@ -22,4 +23,4 @@ class UploadStep(Step):
     def execute(self, runtime: ExperimentRuntime):
         self._logger.info("Upload local file: %s to remote: %s", self._local, self._remote)
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
-        connection.put(local=self._local, remote=self._remote)
+        connection.put(local=str(self._local), remote=str(self._remote))

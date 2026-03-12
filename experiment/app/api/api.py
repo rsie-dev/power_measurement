@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Self
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from .experiment import Experiment
 
@@ -69,11 +70,11 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
 
 class HostBuilder(Builder):
     @abstractmethod
-    def upload(self, local: str, remote: str) -> Self:
+    def upload(self, local: str | Path, remote: str | Path) -> Self:
         pass
 
     @abstractmethod
-    def delete(self, remote: str) -> Self:
+    def delete(self, remote: str | Path) -> Self:
         pass
 
     @abstractmethod

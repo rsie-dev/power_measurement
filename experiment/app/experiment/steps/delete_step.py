@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from app.common import SSHHost
 from app.experiment.base import ExperimentEnvironment
@@ -9,7 +10,7 @@ from .step import Step
 
 
 class DeleteStep(Step):
-    def __init__(self, host: SSHHost, remote: str):
+    def __init__(self, host: SSHHost, remote: Path):
         super().__init__("delete")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host

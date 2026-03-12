@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 from typing import List, Self
 from dataclasses import dataclass
+from pathlib import Path
 
 from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
@@ -272,12 +273,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
 
-    def upload(self, local: str, remote: str) -> Self:
-        self._steps.append(UploadStep(self._host, local, remote))
+    def upload(self, local: str | Path, remote: str | Path) -> Self:
+        self._steps.append(UploadStep(self._host, Path(local), Path(remote)))
         return self
 
-    def delete(self, remote: str) -> Self:
-        self._steps.append(DeleteStep(self._host, remote))
+    def delete(self, remote: str | Path) -> Self:
+        self._steps.append(DeleteStep(self._host, Path(remote)))
         return self
 
     def with_warmup(self) -> WarmupExecutionBuilder:
