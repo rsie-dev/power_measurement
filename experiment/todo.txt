@@ -1,5 +1,4 @@
 ToDo:
-- add verbose flag
 - add forced tail delay of metrics_client_timeout when using metrics collection
 - add external temp. sensor
 - add support to add parameters
