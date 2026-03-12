@@ -1,8 +1,8 @@
 import logging
 
 from app.experiment.base import ExperimentEnvironment
-from .experiment_runtime import ExperimentRuntime
-from .experiment_resources import ExperimentResources
+from app.experiment.base import ExperimentRuntime
+from app.experiment.base import ExperimentResources
 
 from .step import Step
 from .host import SSHHost

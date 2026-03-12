@@ -5,8 +5,8 @@ from typing import List
 
 from app.common import SignalHandler
 from app.experiment.base import ExperimentEnvironment
+from app.experiment.base import ExperimentRuntime
 from .steps import Step
-from .steps import ExperimentRuntime
 from .resources import Resources
 
 

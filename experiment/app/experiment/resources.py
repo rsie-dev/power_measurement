@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .steps.experiment_resources import ExperimentResources
+from app.experiment.base import ExperimentResources
 
 
 class Resources(ExperimentResources):

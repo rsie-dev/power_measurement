@@ -7,8 +7,8 @@ import humanize
 from app.system_meter import SystemMeasurement
 from app.experiment.log import Logger, LogDispatcher
 from app.experiment.base import ExperimentEnvironment
-from .experiment_runtime import ExperimentRuntime
-from .experiment_resources import ExperimentResources
+from app.experiment.base import ExperimentRuntime
+from app.experiment.base import ExperimentResources
 from .host_command_step import BaseHostCommandStep
 from .host import SSHHost
 
