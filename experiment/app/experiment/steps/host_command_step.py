@@ -8,13 +8,13 @@ from dataclasses import dataclass
 from fabric import Connection
 
 from app.api import Command
+from app.common import SSHHost
 from app.experiment.steps.measurement import measure, Measurement
 from app.experiment.base import ExperimentEnvironment
 from app.experiment.base import ExperimentRuntime
 from app.experiment.base import ExperimentResources
 from app.experiment.log import LogProvider
 from .step import Step
-from .host import SSHHost
 
 
 class BaseHostCommandStep(Step):

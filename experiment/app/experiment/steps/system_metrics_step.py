@@ -4,13 +4,13 @@ from threading import Event
 from fabric import Connection
 import humanize
 
+from app.common import SSHHost
 from app.system_meter import SystemMeasurement
 from app.experiment.log import Logger, LogDispatcher
 from app.experiment.base import ExperimentEnvironment
 from app.experiment.base import ExperimentRuntime
 from app.experiment.base import ExperimentResources
 from .host_command_step import BaseHostCommandStep
-from .host import SSHHost
 
 
 class StartupMonitor(Logger[SystemMeasurement]):

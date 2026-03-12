@@ -4,9 +4,9 @@ from io import StringIO
 
 import dotenv
 
+from app.common import SSHHost
 from app.experiment.base import ExperimentRuntime
 from .hostname_validation_step import HostnameValidationStep
-from .host import SSHHost
 
 
 class HostnameInfoStep(HostnameValidationStep):

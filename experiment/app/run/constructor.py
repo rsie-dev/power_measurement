@@ -6,8 +6,8 @@ from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
 from app.api import CommandBuilder, MeasuredCommandBuilder, Command
 from app.api import ExecutionBuilder
+from app.common import SSHHost
 from app.experiment.steps import Step, InitStep
-from app.experiment.steps import SSHHost
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import WarmupCommandStep, HostCommandStep
 from app.experiment.steps import HostnameValidationStep, HostnameInfoStep

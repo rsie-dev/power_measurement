@@ -5,11 +5,11 @@ import ntplib
 import humanize
 import isodate
 
+from app.common import Host
 from app.experiment.base import ExperimentEnvironment
 from app.experiment.base import ExperimentRuntime
 from app.experiment.base import ExperimentResources
 from .step import Step
-from .host import Host
 
 
 class TimeDeltaStep(Step):

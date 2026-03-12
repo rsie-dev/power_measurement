@@ -1,11 +1,11 @@
 import logging
 
+from app.common import SSHHost
 from app.experiment.base import ExperimentEnvironment
 from app.experiment.base import ExperimentRuntime
 from app.experiment.base import ExperimentResources
 
 from .step import Step
-from .host import SSHHost
 
 
 class DeleteStep(Step):
