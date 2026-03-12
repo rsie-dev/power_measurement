@@ -126,24 +126,22 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
-        self._timing_dispatcher = None
-        self._file_stats_dispatcher = None
-        self._multimeter_dispatcher = None
+        self._log_dispatcher: dict[object, LogDispatcher] = {}
 
     def allocate_timing_dispatcher(self) -> LogDispatcher[TimingEntry]:
-        if not self._timing_dispatcher:
-            self._timing_dispatcher = LogDispatcher[TimingEntry]()
-        return self._timing_dispatcher
+        if TimingEntry not in self._log_dispatcher:
+            self._log_dispatcher[TimingEntry] = LogDispatcher[TimingEntry]()
+        return self._log_dispatcher[TimingEntry]
 
     def allocate_file_stats_dispatcher(self) -> LogDispatcher[FileStatsEntry]:
-        if not self._file_stats_dispatcher:
-            self._file_stats_dispatcher = LogDispatcher[FileStatsEntry]()
-        return self._file_stats_dispatcher
+        if FileStatsEntry not in self._log_dispatcher:
+            self._log_dispatcher[FileStatsEntry] = LogDispatcher[FileStatsEntry]()
+        return self._log_dispatcher[FileStatsEntry]
 
     def with_multimeter(self, serial_number: str) -> Self:
         self._serial_number = serial_number
-        if self._multimeter_dispatcher is None:
-            self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
+        if ElectricalMeasurement not in self._log_dispatcher:
+            self._log_dispatcher[ElectricalMeasurement] = LogDispatcher[ElectricalMeasurement]()
         return self
 
     def with_head_delay(self, delay: int) -> Self:
@@ -173,9 +171,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.extend(metrics[0])
             steps.extend(metrics[1])
 
-        if self._timing_dispatcher:
+        if TimingEntry in self._log_dispatcher:
             log_providers.append(self._create_timing_log_provider())
-        if self._file_stats_dispatcher:
+        if FileStatsEntry in self._log_dispatcher:
             log_providers.append(self._create_file_stats_log_provider())
 
         commands = self._commands[:]
@@ -214,19 +212,21 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def _create_multimeter(self) -> tuple[Measurement, LogProvider]:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
+        multimeter_dispatcher = self._log_dispatcher[ElectricalMeasurement]
         log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
                                                                                formatter)
-        multimeter_log_provider = GenericLogProvider(self._multimeter_dispatcher, log_factory)
+        multimeter_log_provider = GenericLogProvider(multimeter_dispatcher, log_factory)
         device_manager = MultimeterDeviceManager(self._serial_number)
         device = device_manager.get_device()
-        measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
+        measurement = MultimeterMeasurement(device, multimeter_dispatcher)
         return measurement, multimeter_log_provider
 
     def _create_timing_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
         log_factory: LoggerFactory = lambda resource_path: CSVTimingLogger(resource_path / "timings.csv", formatter)
-        timing_log_provider = GenericLogProvider(self._timing_dispatcher, log_factory)
+        timing_dispatcher = self._log_dispatcher[TimingEntry]
+        timing_log_provider = GenericLogProvider(timing_dispatcher, log_factory)
         return timing_log_provider
 
     def _create_file_stats_log_provider(self) -> LogProvider:
@@ -234,7 +234,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         formatter = formatter_class(**formatter_config)
         log_factory: LoggerFactory = lambda resource_path: CSVFileStatLogger(resource_path / "file_stats.csv",
                                                                              formatter)
-        file_stats_log_provider = GenericLogProvider(self._file_stats_dispatcher, log_factory)
+        file_stats_dispatcher = self._log_dispatcher[FileStatsEntry]
+        file_stats_log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
         return file_stats_log_provider
 
 
