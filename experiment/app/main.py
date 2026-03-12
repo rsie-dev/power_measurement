@@ -36,9 +36,6 @@ class ExperimentMain:
         yaml_config['handlers']['console']['level'] = log_level
         if log_file_name:
             yaml_config['handlers']['file']['filename'] = log_file_name
-            yaml_config['loggers']['']['handlers'].append("file")
-            yaml_config['loggers']['paramiko.transport.sftp']['handlers'].append("file")
-            yaml_config['loggers']['uvicorn.access']['handlers'].append("file")
         logging.config.dictConfig(yaml_config)
 
     def _get_logging_config(self):

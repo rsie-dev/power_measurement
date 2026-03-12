@@ -36,7 +36,7 @@ class Runner:
         formatter_class, formatter_config = self._formatter_info
         formatter = formatter_class(**formatter_config)
         handler.setFormatter(formatter)
-        file_logger = ["", "paramiko.transport.sftp"]
+        file_logger = ["", "paramiko.transport"]
         for logger in file_logger:
             logging.getLogger(logger).addHandler(handler)
         yield

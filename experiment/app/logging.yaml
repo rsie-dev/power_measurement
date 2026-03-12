@@ -40,12 +40,12 @@ loggers:
         handlers: [console, file]
     uvicorn.access:
         propagate: False
-        handlers: []
+        handlers: [file]
     invoke:
         level: INFO
     paramiko:
         level: INFO
-    paramiko.transport.sftp:
+    paramiko.transport:
         propagate: false
         level: INFO
         handlers: [console_warn, file]
