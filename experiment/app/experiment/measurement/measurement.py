@@ -5,6 +5,8 @@ from app.experiment.base import ExperimentEnvironment
 
 
 class Measurement(ABC):
+    """A per step measurement."""
+
     def __init__(self, name: str):
         self._name = name
 
