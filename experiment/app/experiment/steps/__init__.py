@@ -1,5 +1,6 @@
 from .step import Step, InitStep
-from .host_command_step import WarmupCommandStep, HostCommandStep
+from .host_command_step import WarmupCommandStep
+from .measurement_step import HostCommandStep
 from .system_metrics_step import SystemMetricsClientStep
 from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
@@ -8,7 +9,8 @@ from .upload_step import UploadStep
 from .delete_step import DeleteStep
 
 __all__ = ["Step", "InitStep",
-           "WarmupCommandStep", "HostCommandStep",
+           "WarmupCommandStep",
+           "HostCommandStep",
            "SystemMetricsClientStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
