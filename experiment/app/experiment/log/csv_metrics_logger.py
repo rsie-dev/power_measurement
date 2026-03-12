@@ -32,7 +32,7 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
     def __init__(self, path: Path, formatter: logging.Formatter, metric_type: MetricType):
         super().__init__(formatter)
         self._type = metric_type
-        self._stream = path.open(mode="w", encoding="utf-8")
+        self._stream = path.open(mode="x", encoding="utf-8")
         headers = self.SYSTEM_FIELD_NAMES if self._type == MetricType.SYSTEM else self.CPU_FIELD_NAMES
         self._writer = csv.DictWriter(self._stream, fieldnames=headers)
         self._start_time = None
