@@ -3,6 +3,7 @@ from abc import abstractmethod
 from contextlib import ExitStack
 from pathlib import Path
 from concurrent.futures import Executor
+from dataclasses import dataclass
 
 from fabric import Connection
 
@@ -50,14 +51,19 @@ class WarmupCommandStep(BaseHostCommandStep):
 
 
 class HostCommandStep(BaseHostCommandStep):
+    @dataclass(frozen=True)
+    class Context:
+        runs: int
+        commands: list[Command]
+        log_providers: list[LogProvider]
+        measurements: list[Measurement]
+
     def __init__(self, host: SSHHost, commands: list[Command], runs: int, log_providers: list[LogProvider],
                  measurements: list[Measurement]):
         super().__init__("host command", host)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._runs = runs
-        self._commands: list[Command] = commands
-        self._log_providers = log_providers
-        self._measurements = measurements
+        self._context = HostCommandStep.Context(runs=runs, commands=commands, log_providers=log_providers,
+                                                measurements=measurements)
         self._resources_path = None
         self._environment = None
         self._executor = None
@@ -75,25 +81,25 @@ class HostCommandStep(BaseHostCommandStep):
         resources_path = self._resources_path / self._host.host_name
         resources_path.mkdir(parents=True, exist_ok=True)
 
-        self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._commands))
+        self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._context.commands))
 
         with ExitStack() as stack:
-            for measurement in self._measurements:
+            for measurement in self._context.measurements:
                 stack.enter_context(measure(measurement, self._environment, self._executor))
-            for run in range(self._runs):
+            for run in range(self._context.runs):
                 self._execute_run(run, resources_path, connection)
 
         self._logger.info("All commands executed")
 
     def _execute_run(self, run: int, resources_path: Path, connection: Connection):
-        self._logger.info("Start run %d/%d", run + 1, self._runs)
+        self._logger.info("Start run %d/%d", run + 1, self._context.runs)
         run_resources_path = resources_path / ("run_%03d" % (run + 1))
         run_resources_path.mkdir(parents=True, exist_ok=True)
 
         with ExitStack() as stack:
-            for log_provider in self._log_providers:
+            for log_provider in self._context.log_providers:
                 stack.enter_context(log_provider.start_log(run_resources_path))
 
             timings_resources_path = run_resources_path / "timings.csv"
-            for command in self._commands:
+            for command in self._context.commands:
                 command.execute(connection, timings_resources_path)
