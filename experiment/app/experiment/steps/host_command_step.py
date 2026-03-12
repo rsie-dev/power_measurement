@@ -88,9 +88,9 @@ class HostCommandStep(BaseHostCommandStep):
 
         self._logger.info("On host: %s execute %d command(s)", self._host.host, len(self._context.commands))
 
-        with ExitStack() as stack:
+        with ExitStack() as step_stack:
             for measurement in self._context.measurements:
-                stack.enter_context(measure(measurement, self._environment, self._executor))
+                step_stack.enter_context(measure(measurement, self._environment, self._executor))
             for run in range(self._context.runs):
                 self._execute_run(run, resources_path, connection)
 
@@ -101,9 +101,9 @@ class HostCommandStep(BaseHostCommandStep):
         run_resources_path = resources_path / ("run_%03d" % (run + 1))
         run_resources_path.mkdir(parents=True, exist_ok=True)
 
-        with ExitStack() as stack:
+        with ExitStack() as run_stack:
             for log_provider in self._context.log_providers:
-                stack.enter_context(log_provider.start_log(run_resources_path))
+                run_stack.enter_context(log_provider.start_log(run_resources_path))
 
             timings_resources_path = run_resources_path / "timings.csv"
             for command in self._context.commands:
