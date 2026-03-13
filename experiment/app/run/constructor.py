@@ -24,10 +24,12 @@ from app.experiment.log import CSVMultimeterLogger
 from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
+from app.run.commands import WaitMetricsCommand
 from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager
+from .metrics_log_dispatcher import MetricsLogDispatcher
 
 
 class Constructor(Builder):
@@ -202,6 +204,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if self._tail_delay:
             commands.append(DelayCommand(self._tail_delay, "tail"))
 
+        if metrics_dispatcher:
+            commands.append(WaitMetricsCommand(metrics_dispatcher))
+
         command_config = MeasurementStep.CommandConfig(runs=self._config.runs, commands=commands, tag=self._config.tag)
         step = MeasurementStep(self._host, command_config, log_providers, measurements)
         steps.append(step)
@@ -267,7 +272,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
 
     @property
-    def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
+    def collect_metrics(self) -> MetricsLogDispatcher:
         return self._parent.collect_metrics
 
     @property
@@ -320,7 +325,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         self._multimeter_coordinator = MultimeterCoordinator()
 
     @property
-    def collect_metrics(self) -> LogDispatcher[SystemMeasurement]:
+    def collect_metrics(self) -> MetricsLogDispatcher:
         return self._metrics_dispatcher
 
     @property
@@ -337,7 +342,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         return HostConstructor(self, ssh_host, self._multimeter_coordinator)
 
     def with_metrics_collection(self) -> Self:
-        self._metrics_dispatcher = LogDispatcher[SystemMeasurement]()
+        self._metrics_dispatcher = MetricsLogDispatcher()
         return self
 
     def build(self) -> ExperimentExecutor:
