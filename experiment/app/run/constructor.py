@@ -9,6 +9,7 @@ from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBui
 from app.api import CommandBuilder, MeasuredCommandBuilder, Command
 from app.api import ExecutionBuilder
 from app.common import SSHHost
+from app.ssh import ConnectionFactory
 from app.experiment.steps import Step, InitStep
 from app.experiment.steps import SystemMetricsClientStep, TimeDeltaStep
 from app.experiment.steps import WarmupCommandStep, MeasurementStep
@@ -308,12 +309,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
-    def __init__(self, formatter_info: tuple[type, dict], ssh_user):
+    def __init__(self, formatter_info: tuple[type, dict], connection_factory: ConnectionFactory, ssh_user):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._metrics_dispatcher = None
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
+        self._connection_factory = connection_factory
         self._ssh_user = ssh_user
         self._multimeter_coordinator = MultimeterCoordinator()
 
@@ -339,5 +341,6 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         return self
 
     def build(self) -> ExperimentExecutor:
-        experiment = ExperimentExecutor(self._init_steps, self._steps, self._metrics_dispatcher)
+        experiment = ExperimentExecutor(self._connection_factory, self._init_steps, self._steps,
+                                        self._metrics_dispatcher)
         return experiment

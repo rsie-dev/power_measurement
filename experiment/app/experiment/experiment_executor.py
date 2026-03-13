@@ -7,7 +7,7 @@ from threading import Event
 from app.api import Experiment
 from app.common import SignalHandler
 from app.system_meter import MetricsServer, SystemMeasurement
-from app.ssh import SSHConnectionManager, PasswordConnectionFactory
+from app.ssh import SSHConnectionManager, ConnectionFactory
 from .steps import Step, InitStep
 from .log import LogDispatcher
 from .environment import Environment, InitialEnvironment
@@ -16,17 +16,17 @@ from .experiment_runner import ExperimentRunner
 
 
 class ExperimentExecutor(Experiment):
-    def __init__(self, init_steps: List[InitStep], steps: List[Step],
+    def __init__(self, connection_factory: ConnectionFactory, init_steps: List[InitStep], steps: List[Step],
                  metrics_dispatcher: LogDispatcher[SystemMeasurement]):
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._connection_factory = connection_factory
         self._init_steps: List[InitStep] = init_steps
         self._steps: List[Step] = steps
         self._metrics_dispatcher = metrics_dispatcher
         self._metrics_server_start_timeout: float = 3
 
     def run(self, resources: Path, metrics_server_address: tuple[str, int]):
-        connection_factory = PasswordConnectionFactory()
-        with SSHConnectionManager(connection_factory) as ssh_manager:
+        with SSHConnectionManager(self._connection_factory) as ssh_manager:
             runtime = Runtime(ssh_manager)
             self._initialize(runtime, self._init_steps)
 

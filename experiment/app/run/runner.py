@@ -3,6 +3,7 @@ from pathlib import Path
 from contextlib import contextmanager
 import shutil
 
+from app.ssh import ConnectionFactory, PasswordConnectionFactory
 from .experiment_loader import ExperimentLoader
 
 
@@ -15,7 +16,8 @@ class Runner:
     def run_experiment(self, args):
         experiment_loader = ExperimentLoader(self._formatter_info)
         experiment_module = Path(args.experiment[0])
-        experiment = experiment_loader.load_experiment_from_path(experiment_module, args.ssh_user)
+        connection_factory = self._create_connection_factory(args)
+        experiment = experiment_loader.load_experiment_from_path(experiment_module, connection_factory, args.ssh_user)
         resources = self._resources / experiment_module.stem
         self._logger.info("Experiment resource path: %s", resources.relative_to(Path.cwd()))
         resources.mkdir(parents=True)
@@ -28,6 +30,9 @@ class Runner:
                 experiment.run(resources, metrics_server_address)
             finally:
                 self._logger.info("Experiment finished: %s", experiment_module.stem)
+
+    def _create_connection_factory(self, args) -> ConnectionFactory:
+        return PasswordConnectionFactory()
 
     @contextmanager
     def _add_logfile(self, logfile: Path):
