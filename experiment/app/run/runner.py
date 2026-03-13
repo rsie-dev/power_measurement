@@ -3,8 +3,9 @@ from pathlib import Path
 from contextlib import contextmanager
 import shutil
 
-from app.ssh import ConnectionFactory, PasswordConnectionFactory
+from app.ssh import ConnectionFactory
 from .experiment_loader import ExperimentLoader
+from .user_connection_factory import UserConnectionFactory
 
 
 class Runner:
@@ -32,7 +33,7 @@ class Runner:
                 self._logger.info("Experiment finished: %s", experiment_module.stem)
 
     def _create_connection_factory(self, args) -> ConnectionFactory:
-        return PasswordConnectionFactory()
+        return UserConnectionFactory()
 
     @contextmanager
     def _add_logfile(self, logfile: Path):
