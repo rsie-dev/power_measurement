@@ -3,9 +3,10 @@ from getpass import getpass
 from typing import Optional
 from contextlib import ExitStack
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
 
 from fabric import Connection
+
+from .ssh_manager import SSHManager
 
 
 @dataclass(frozen=True)
@@ -19,16 +20,6 @@ class ConnectionEntry:
     host_info: HostInfo
     password: str
     connection: Optional[Connection]
-
-
-class SSHManager(ABC):
-    @abstractmethod
-    def register_ssh_connection(self, user: str, host: str) -> None:
-        pass
-
-    @abstractmethod
-    def get_ssh_connection(self, user: str, host: str) -> Connection:
-        pass
 
 
 class SSHConnectionManager(ExitStack, SSHManager):
