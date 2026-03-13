@@ -34,7 +34,6 @@ class PasswordConnectionFactory(ConnectionFactory):
         if host_info in self._cache:
             return
         password = getpass(f'SSH password for {host_info.user}@{host_info.host_name}: ')
-        #entry = ConnectionEntry(host_info=host_info, password=password, connection=None)
         self._cache[host_info] = password
 
     def create_connection(self, host_info: HostInfo) -> Connection:
