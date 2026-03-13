@@ -3,6 +3,7 @@ from getpass import getpass
 from typing import Optional
 from contextlib import ExitStack
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from fabric import Connection
 
@@ -20,7 +21,17 @@ class ConnectionEntry:
     connection: Optional[Connection]
 
 
-class SSHManager(ExitStack):
+class SSHManager(ABC):
+    @abstractmethod
+    def register_ssh_connection(self, user: str, host: str) -> None:
+        pass
+
+    @abstractmethod
+    def get_ssh_connection(self, user: str, host: str) -> Connection:
+        pass
+
+
+class SSHConnectionManager(ExitStack, SSHManager):
     def __init__(self):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)

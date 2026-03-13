@@ -8,7 +8,7 @@ from app.api import Experiment
 from app.common import SignalHandler
 from app.system_meter import MetricsServer, SystemMeasurement
 from .steps import Step, InitStep
-from .ssh_manager import SSHManager
+from .ssh_connection_manager import SSHConnectionManager
 from .log import LogDispatcher
 from .environment import Environment, InitialEnvironment
 from .runtime import Runtime
@@ -25,7 +25,7 @@ class ExperimentExecutor(Experiment):
         self._metrics_server_start_timeout: float = 3
 
     def run(self, resources: Path, metrics_server_address: tuple[str, int]):
-        with SSHManager() as ssh_manager:
+        with SSHConnectionManager() as ssh_manager:
             runtime = Runtime(ssh_manager)
             self._initialize(runtime, self._init_steps)
 

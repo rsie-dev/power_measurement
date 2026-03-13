@@ -1,7 +1,7 @@
 from app.common import SignalHandler
 from app.common import ShutdownHandler
 from app.experiment.base import ExperimentEnvironment, InitEnvironment
-from .ssh_manager import SSHManager
+from .ssh_connection_manager import SSHManager
 
 
 class InitialEnvironment(InitEnvironment):
