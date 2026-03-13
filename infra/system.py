@@ -262,7 +262,7 @@ def add_test_user():
 
     lines = []
     for op in ["status","start","stop","restart"]:
-        lines.append(f"{test_user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf")
+        lines.append(f"{test_user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf@*.service")
     content = StringIO("\n".join(lines) + "\n")
     files.put(
         name="Allow %s to control telegraf service" % test_user,

@@ -1,8 +1,8 @@
 ToDo:
-- adapt sudoers for ctest to not require a password
 - check systemd timers
 
 done:
+- adapt sudoers for ctest to not require a password for telegraf service
 - reduced chrony update/synch time
 - parameterize telegraf service with server IP address
 - add brotli, zopfli, zstd, pigz, pbzip2
