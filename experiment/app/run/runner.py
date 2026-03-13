@@ -5,7 +5,7 @@ import shutil
 
 from app.ssh import ConnectionFactory
 from .experiment_loader import ExperimentLoader
-from .user_connection_factory import UserConnectionFactory
+from .user_connection_factory import PasswordConnectionFactory, PrivateKeyConnectionFactory
 
 
 class Runner:
@@ -33,7 +33,9 @@ class Runner:
                 self._logger.info("Experiment finished: %s", experiment_module.stem)
 
     def _create_connection_factory(self, args) -> ConnectionFactory:
-        return UserConnectionFactory()
+        if args.ssh_key:
+            return PrivateKeyConnectionFactory(args.ssh_key)
+        return PasswordConnectionFactory()
 
     @contextmanager
     def _add_logfile(self, logfile: Path):

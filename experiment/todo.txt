@@ -6,10 +6,10 @@ ToDo:
 - collect SBC temperature, too
 - log git describe informations (https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/git-describe.md)
 - add pypi deployment
-- add support for ssh keys / rework ssh authentication
 - add API documentation
 
 done:
+- add support for ssh keys / rework ssh authentication
 - add support for pathlib.Path
 - fix multiple multimeter lookups per host
 - support distinct runs per host
