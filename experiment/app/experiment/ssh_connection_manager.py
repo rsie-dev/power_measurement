@@ -1,8 +1,8 @@
 import logging
 from getpass import getpass
-from typing import Optional
 from contextlib import ExitStack
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from fabric import Connection
 
@@ -15,37 +15,50 @@ class HostInfo:
     host_name: str
 
 
-@dataclass
-class ConnectionEntry:
-    host_info: HostInfo
-    password: str
-    connection: Optional[Connection]
+class ConnectionFactory(ABC):
+    @abstractmethod
+    def register_ssh_connection(self, host_info: HostInfo) -> None:
+        pass
+
+    @abstractmethod
+    def create_connection(self, host_info: HostInfo) -> Connection:
+        pass
+
+
+class PasswordConnectionFactory(ConnectionFactory):
+    def __init__(self):
+        super().__init__()
+        self._cache: dict[HostInfo, str] = {}
+
+    def register_ssh_connection(self, host_info: HostInfo) -> None:
+        if host_info in self._cache:
+            return
+        password = getpass(f'SSH password for {host_info.user}@{host_info.host_name}: ')
+        #entry = ConnectionEntry(host_info=host_info, password=password, connection=None)
+        self._cache[host_info] = password
+
+    def create_connection(self, host_info: HostInfo) -> Connection:
+        connect_kwargs = {
+            "password": self._cache[host_info],
+        }
+        return Connection(host_info.host_name, user=host_info.user, connect_kwargs=connect_kwargs)
 
 
 class SSHConnectionManager(ExitStack, SSHManager):
-    def __init__(self):
+    def __init__(self, connection_factory: ConnectionFactory):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._connections: dict[HostInfo, ConnectionEntry] = {}
+        self._connection_factory = connection_factory
+        self._connection_cache: dict[HostInfo, Connection] = {}
 
     def register_ssh_connection(self, user: str, host: str) -> None:
         host_info = HostInfo(user, host)
-        if host_info in self._connections:
-            return
-        password = getpass(f'SSH password for {user}@{host}: ')
-        entry = ConnectionEntry(host_info=host_info, password=password, connection=None)
-        self._connections[host_info] = entry
-
-    def _create_connection(self, entry: ConnectionEntry) -> Connection:
-        connect_kwargs = {
-            "password": entry.password,
-        }
-        return Connection(entry.host_info.host_name, user=entry.host_info.user, connect_kwargs=connect_kwargs)
+        self._connection_factory.register_ssh_connection(host_info)
 
     def get_ssh_connection(self, user: str, host: str) -> Connection:
         host_info = HostInfo(user, host)
-        entry = self._connections[host_info]
-        if not entry.connection:
-            entry.connection = self._create_connection(entry)
-            self.enter_context(entry.connection)
-        return entry.connection
+        if host_info not in self._connection_cache:
+            connection = self._connection_factory.create_connection(host_info)
+            self._connection_cache[host_info] = connection
+            self.enter_context(connection)
+        return self._connection_cache[host_info]
