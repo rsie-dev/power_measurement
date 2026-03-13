@@ -7,8 +7,8 @@ from threading import Event
 from app.api import Experiment
 from app.common import SignalHandler
 from app.system_meter import MetricsServer, SystemMeasurement
+from app.ssh import SSHConnectionManager, PasswordConnectionFactory
 from .steps import Step, InitStep
-from .ssh_connection_manager import SSHConnectionManager, PasswordConnectionFactory
 from .log import LogDispatcher
 from .environment import Environment, InitialEnvironment
 from .runtime import Runtime

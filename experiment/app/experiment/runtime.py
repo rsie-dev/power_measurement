@@ -1,7 +1,7 @@
 from fabric import Connection
 
 from app.experiment.base import ExperimentRuntime
-from .ssh_manager import SSHManager
+from app.ssh import SSHManager
 
 
 class Runtime(ExperimentRuntime):
