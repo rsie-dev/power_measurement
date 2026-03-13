@@ -2,16 +2,22 @@ import logging
 from getpass import getpass
 from typing import Optional
 from contextlib import ExitStack
+from dataclasses import dataclass
 
 from fabric import Connection
 
 
+@dataclass(frozen=True)
+class HostInfo:
+    user: str
+    host_name: str
+
+
+@dataclass
 class ConnectionEntry:
-    def __init__(self, user: str, host_name: str, password: str):
-        self.user: str = user
-        self.host_name: str = host_name
-        self.password: str = password
-        self.connection: Optional[Connection] = None
+    host_info: HostInfo
+    password: str
+    connection: Optional[Connection]
 
 
 class SSHManager(ExitStack):
@@ -21,25 +27,27 @@ class SSHManager(ExitStack):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._connections: dict[str, ConnectionEntry] = {}
 
-    def _build_entry_name(self, user: str, host: str) -> str:
-        return f"{user}@{host}"
+    def _build_entry_name(self, host_info: HostInfo) -> str:
+        return f"{host_info.user}@{host_info.host_name}"
 
     def register_ssh_connection(self, user: str, host: str) -> None:
-        entry_name = self._build_entry_name(user, host)
+        host_info = HostInfo(user, host)
+        entry_name = self._build_entry_name(host_info)
         if entry_name in self._connections:
             return
         password = getpass(f'SSH password for {user}@{host}: ')
-        entry = ConnectionEntry(user, host, password)
+        entry = ConnectionEntry(host_info=host_info, password=password, connection=None)
         self._connections[entry_name] = entry
 
     def _create_connection(self, entry: ConnectionEntry) -> Connection:
         connect_kwargs = {
             "password": entry.password,
         }
-        return Connection(entry.host_name, user=entry.user, connect_kwargs=connect_kwargs)
+        return Connection(entry.host_info.host_name, user=entry.host_info.user, connect_kwargs=connect_kwargs)
 
     def get_ssh_connection(self, user: str, host: str) -> Connection:
-        entry_name = self._build_entry_name(user, host)
+        host_info = HostInfo(user, host)
+        entry_name = self._build_entry_name(host_info)
         entry = self._connections[entry_name]
         if not entry.connection:
             entry.connection = self._create_connection(entry)
