@@ -1,3 +1,5 @@
+ToDo:
+- adapt sudoers for ctest to not require a password
 - check systemd timers
 
 done:
