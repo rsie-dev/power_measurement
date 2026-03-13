@@ -1,5 +1,4 @@
 ToDo:
-- fix hang if remote process wants to read from stdin e.g. password
 - add external temp. sensor
 - add support to add parameters
 - optional: add support to somehow mix/randomize tools and parameters
@@ -9,6 +8,7 @@ ToDo:
 - add API documentation
 
 done:
+- fix hang if remote process wants to read from stdin e.g. password
 - add forced tail delay of metrics_client_timeout when using metrics collection
 - add support for ssh keys / rework ssh authentication
 - add support for pathlib.Path
