@@ -1,3 +1,0 @@
-[submodule "collector/JT-UM120-usb-power-data-logger"]
-	path = experiment/JT-UM120-usb-power-data-logger
-	url = git@github.com:rsfzi/JT-UM120-usb-power-data-logger.git

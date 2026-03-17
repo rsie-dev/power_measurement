@@ -1,7 +1,7 @@
 import logging
 
-from app.usb_meter import devices_by_serial_number
-from app.usb_meter.device import Device
+from usb_multimeter import devices_by_serial_number
+from usb_multimeter.device import Device
 
 
 class MultimeterDeviceManager:

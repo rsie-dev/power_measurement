@@ -4,6 +4,8 @@ from typing import List, Self
 from dataclasses import dataclass
 from pathlib import Path
 
+from usb_multimeter import ElectricalMeasurement
+
 from app.api import Builder
 from app.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
 from app.api import CommandBuilder, MeasuredCommandBuilder, Command
@@ -25,7 +27,6 @@ from app.experiment.log import FileStatsEntry, CSVFileStatLogger
 from app.experiment.log import TimingEntry, CSVTimingLogger
 from app.run.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
 from app.run.commands import WaitMetricsCommand
-from app.usb_meter.measurement import ElectricalMeasurement
 from app.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager

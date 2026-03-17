@@ -10,5 +10,4 @@ humanize==4.15.0
 python-dotenv==1.2.1
 isodate==0.7.2
 pytest==9.0.2
-
--r JT-UM120-usb-power-data-logger/requirements.txt
+usb-multimeter==2.0.14

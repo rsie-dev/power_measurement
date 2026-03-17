@@ -2,10 +2,9 @@ import logging
 from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 
+from usb_multimeter import USBMeter, ElectricalMeasurement
+from usb_multimeter.device import Device
 
-from app.usb_meter import USBMeter
-from app.usb_meter.device import Device
-from app.usb_meter.measurement import ElectricalMeasurement
 from app.experiment.log import LogDispatcher
 from app.experiment.base import ExperimentEnvironment
 from .measurement import Measurement

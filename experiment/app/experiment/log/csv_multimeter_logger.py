@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import List
 import logging
 
-from app.usb_meter.measurement import ElectricalMeasurement
+from usb_multimeter import ElectricalMeasurement
+
 from .csv_base_logger import CSVBaseLogger
 from .logger import Logger
 

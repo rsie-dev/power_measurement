@@ -7,9 +7,9 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 import ifaddr
+from usb_multimeter import all_devices, devices_by_vid_pid, devices_by_serial_number
+from usb_multimeter.device import Device
 
-from .usb_meter import all_devices, devices_by_vid_pid, devices_by_serial_number
-from .usb_meter.device import Device
 from .logging import get_formatter_info
 
 
@@ -77,9 +77,18 @@ class ExperimentMain:
         devices = all_devices()
         self._logger.info("Available devices:")
         for device in devices:
-            sn = device.serial_number
-            product = device.product_name
-            manufacturer = device.manufacturer_name
+            try:
+                sn = device.serial_number
+            except ValueError:
+                sn = "n/a"
+            try:
+                product = device.product_name
+            except ValueError:
+                product = "n/a"
+            try:
+                manufacturer = device.manufacturer_name
+            except ValueError:
+                manufacturer = "n/a"
             self._logger.info("- %x:%x %s %s (type: %s SN: %s)", device.device_info.vid, device.device_info.pid,
                               manufacturer, product, device.device_info.model.name, sn)
 
