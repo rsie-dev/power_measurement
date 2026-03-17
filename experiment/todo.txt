@@ -6,6 +6,7 @@ ToDo:
 - log git describe informations (https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/git-describe.md)
 - add pypi deployment
 - add API documentation
+- detect / report possible access problems (e.g. udev rules missing)
 
 done:
 - fix hang if remote process wants to read from stdin e.g. password
