@@ -10,7 +10,7 @@ import ifaddr
 from usb_multimeter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from usb_multimeter.device import Device
 
-from experiment.logging import get_formatter_info
+from .logging import get_formatter_info
 
 
 class ExperimentMain:
@@ -99,7 +99,7 @@ class ExperimentMain:
         self._logger.info("Serial number: %s", device.serial_number)
 
     def _run_experiment(self, args):
-        from experiment.create import Runner  # pylint: disable=import-outside-toplevel
+        from .create import Runner  # pylint: disable=import-outside-toplevel
         resources = self._get_resources_folder()
         log_config = self._get_logging_config()
         formatter_info: tuple[type, dict] = get_formatter_info(log_config)
@@ -154,7 +154,10 @@ class ExperimentMain:
             self._logger.exception("Error: %s", e)
         return 1
 
+def app()
+    experiment = ExperimentMain()
+    return experiment.main()
+
 
 if __name__ == "__main__":
-    experiment = ExperimentMain()
-    sys.exit(experiment.main())
+    app()
