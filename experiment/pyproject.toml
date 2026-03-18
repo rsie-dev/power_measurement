@@ -39,7 +39,7 @@ dev = [
 ]
 
 [project.scripts]
-experiment = "experiment.experimenter:app"
+experiment = "experiment.cli:app"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.in"] }
