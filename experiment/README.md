@@ -16,13 +16,13 @@ venv/bin/pip install -e .[dev]
 
 ## Checks
 ```
-venv/bin/pylint --source-roots . experiment/
+venv/bin/pylint src/experiment experiment_app.py
 venv/bin/prospector
 ```
 
 ## Test
 ```
-venv/bin/pytest -v experiment
+venv/bin/pytest -v src
 ```
 
 # Releasing

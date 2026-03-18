@@ -23,5 +23,5 @@ jobs:
       working-directory: experiment
     - name: Running unit tests
       run: |
-        pytest -v app/
+        pytest -v src
       working-directory: experiment

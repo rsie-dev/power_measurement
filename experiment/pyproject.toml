@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm>=9.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "experiment"
+dynamic = ["version"]
+description = "Small framework to experimental collect electrical and system metrics of SBC devices."
+readme = "README.md"
+requires-python = ">=3.12"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+	"ruamel.yaml==0.18.10",
+	"fastapi[standard-no-fastapi-cloud-cli]==0.119.0",
+	"ifaddr==0.2.0",
+	"fabric==3.2.2",
+	"ntplib==0.4.0",
+	"humanize==4.15.0",
+	"python-dotenv==1.2.1",
+	"isodate==0.7.2",
+	"usb-multimeter==2.0.14",
+]
+
+[project.optional-dependencies]
+dev = [
+	"prospector==1.17.3",
+	"pytest==9.0.2",
+	"pylint==3.3.0",
+	"build==1.4.0",
+	"twine==6.2.0",
+]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.in"] }
+optional-dependencies.test = { file = ["requirements-test.txt"] }
+
+[project.urls]
+Homepage = "https://github.com/rsie-dev/power_measurement"
+Repository = "https://github.com/rsie-dev/power_measurement"
+
+[tool.setuptools_scm]
+root = ".."
+version_file = "src/experiment/_version.py"
+

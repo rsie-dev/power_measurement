@@ -10,7 +10,7 @@ import ifaddr
 from usb_multimeter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from usb_multimeter.device import Device
 
-from .logging import get_formatter_info
+from experiment.logging import get_formatter_info
 
 
 class ExperimentMain:
@@ -24,7 +24,6 @@ class ExperimentMain:
 
     def _get_resources_folder(self):
         folder = self._get_app_folder()
-        folder = folder.parent
         return folder / "resources"
 
     def _start_logging(self, args):

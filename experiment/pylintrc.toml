@@ -42,12 +42,12 @@ ignore = ["CVS"]
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\\' represents the directory delimiter on Windows systems, it
 # can't be used as an escape character.
-ignore-paths = ["venv", "JT-UM120-usb-power-data-logger"]
+#ignore-paths = [""]
 
 # Files or directories matching the regular expression patterns are skipped. The
 # regex matches against base names, not paths. The default value ignores Emacs
 # file locks
-ignore-patterns = ["^\\.#"]
+ignore-patterns = ["^\\.#", "_version.py"]
 
 # List of module names for which member attributes should not be checked and will
 # not be imported (useful for modules/projects where namespaces are manipulated
@@ -92,7 +92,7 @@ recursive = true
 # source root is an absolute path or a path relative to the current working
 # directory used to determine a package namespace for modules located under the
 # source root.
-source-roots = [".", "app"]
+source-roots = []
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
