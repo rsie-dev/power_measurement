@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
 import logging.config
-import sys
 import argparse
 from pathlib import Path
 
@@ -10,7 +7,7 @@ import ifaddr
 from usb_multimeter import all_devices, devices_by_vid_pid, devices_by_serial_number
 from usb_multimeter.device import Device
 
-from .logging import get_formatter_info
+from experiment.log_util import get_formatter_info
 
 
 class ExperimentMain:
@@ -23,8 +20,9 @@ class ExperimentMain:
         return folder
 
     def _get_resources_folder(self):
-        folder = self._get_app_folder()
-        return folder / "resources"
+        folder = Path.cwd()
+        resources_folder = folder / "resources"
+        return resources_folder
 
     def _start_logging(self, args):
         log_file_name = args.logFile
@@ -99,7 +97,7 @@ class ExperimentMain:
         self._logger.info("Serial number: %s", device.serial_number)
 
     def _run_experiment(self, args):
-        from .create import Runner  # pylint: disable=import-outside-toplevel
+        from experiment.create import Runner  # pylint: disable=import-outside-toplevel
         resources = self._get_resources_folder()
         log_config = self._get_logging_config()
         formatter_info: tuple[type, dict] = get_formatter_info(log_config)
@@ -154,10 +152,7 @@ class ExperimentMain:
             self._logger.exception("Error: %s", e)
         return 1
 
-def app()
+
+def app():
     experiment = ExperimentMain()
     return experiment.main()
-
-
-if __name__ == "__main__":
-    app()
