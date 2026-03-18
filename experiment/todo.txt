@@ -7,6 +7,7 @@ ToDo:
 - add pypi deployment
 - add API documentation
 - detect / report possible access problems (e.g. udev rules missing)
+- add file size detection
 
 done:
 - fix hang if remote process wants to read from stdin e.g. password
