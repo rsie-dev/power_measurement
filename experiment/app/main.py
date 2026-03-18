@@ -100,7 +100,7 @@ class ExperimentMain:
         self._logger.info("Serial number: %s", device.serial_number)
 
     def _run_experiment(self, args):
-        from app.run import Runner  # pylint: disable=import-outside-toplevel
+        from app.create import Runner  # pylint: disable=import-outside-toplevel
         resources = self._get_resources_folder()
         log_config = self._get_logging_config()
         formatter_info: tuple[type, dict] = get_formatter_info(log_config)
