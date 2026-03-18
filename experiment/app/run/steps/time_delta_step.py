@@ -6,9 +6,9 @@ import humanize
 import isodate
 
 from app.common import Host
-from app.experiment.base import ExperimentEnvironment
-from app.experiment.base import ExperimentRuntime
-from app.experiment.base import ExperimentResources
+from app.run.base import ExperimentEnvironment
+from app.run.base import ExperimentRuntime
+from app.run.base import ExperimentResources
 from .step import Step
 
 

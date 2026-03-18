@@ -1,7 +1,7 @@
 import logging
 
 from app.api import Command
-from app.experiment.log import FileStatsEntry, Logger
+from app.run.log import FileStatsEntry, Logger
 
 
 class FileStatCommand(Command):

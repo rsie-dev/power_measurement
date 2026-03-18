@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from concurrent.futures import Executor
 
-from app.experiment.base import ExperimentEnvironment
+from app.run.base import ExperimentEnvironment
 
 
 class Measurement(ABC):

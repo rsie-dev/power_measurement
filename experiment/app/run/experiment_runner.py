@@ -4,8 +4,8 @@ from concurrent.futures import Executor
 from typing import List
 
 from app.common import SignalHandler
-from app.experiment.base import ExperimentEnvironment
-from app.experiment.base import ExperimentRuntime
+from app.run.base import ExperimentEnvironment
+from app.run.base import ExperimentRuntime
 from .steps import Step
 from .resources import Resources
 

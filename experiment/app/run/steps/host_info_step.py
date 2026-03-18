@@ -5,7 +5,7 @@ from io import StringIO, BytesIO
 import dotenv
 
 from app.common import SSHHost
-from app.experiment.base import ExperimentRuntime
+from app.run.base import ExperimentRuntime
 from .hostname_validation_step import HostnameValidationStep
 
 

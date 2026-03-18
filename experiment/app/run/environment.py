@@ -1,6 +1,6 @@
 from app.common import SignalHandler
 from app.common import ShutdownHandler
-from app.experiment.base import ExperimentEnvironment, InitEnvironment
+from app.run.base import ExperimentEnvironment, InitEnvironment
 from app.ssh import SSHManager
 
 

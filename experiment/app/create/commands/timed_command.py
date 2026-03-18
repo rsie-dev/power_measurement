@@ -5,7 +5,7 @@ import datetime
 from fabric import Connection
 
 from app.api import Command
-from app.experiment.log import TimingEntry, Logger
+from app.run.log import TimingEntry, Logger
 from .executor_command import ExecutorCommand
 
 

@@ -5,8 +5,8 @@ from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 from usb_multimeter import USBMeter, ElectricalMeasurement
 from usb_multimeter.device import Device
 
-from app.experiment.log import LogDispatcher
-from app.experiment.base import ExperimentEnvironment
+from app.run.log import LogDispatcher
+from app.run.base import ExperimentEnvironment
 from .measurement import Measurement
 from .signal_stop_provider import SignalStopProvider
 

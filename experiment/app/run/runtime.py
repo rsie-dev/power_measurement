@@ -1,6 +1,6 @@
 from fabric import Connection
 
-from app.experiment.base import ExperimentRuntime
+from app.run.base import ExperimentRuntime
 from app.ssh import SSHManager
 
 

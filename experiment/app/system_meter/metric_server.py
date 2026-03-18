@@ -8,7 +8,7 @@ from uvicorn.config import Config
 from uvicorn.server import Server
 
 from app.common.shutdown_handler import ShutdownHandler
-from app.experiment.log import Logger
+from app.run.log import Logger
 from .app import create_app
 from .metrics import SystemMeasurement
 

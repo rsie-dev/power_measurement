@@ -4,7 +4,7 @@ from typing import Callable
 
 from fastapi import FastAPI
 
-from app.experiment.log import Logger
+from app.run.log import Logger
 from .metrics import SystemMeasurement, Metrics
 
 

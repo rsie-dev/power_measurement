@@ -8,10 +8,10 @@ from fabric import Connection
 
 from app.api import Command
 from app.common import SSHHost
-from app.experiment.base import ExperimentEnvironment
-from app.experiment.base import ExperimentResources
-from app.experiment.steps.measurement import measure, Measurement
-from app.experiment.log import LogProvider
+from app.run.base import ExperimentEnvironment
+from app.run.base import ExperimentResources
+from app.run.steps.measurement import measure, Measurement
+from app.run.log import LogProvider
 from .host_command_step import BaseHostCommandStep
 
 

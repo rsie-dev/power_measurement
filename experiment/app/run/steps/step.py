@@ -1,9 +1,9 @@
 from abc import ABC
 from concurrent.futures import Executor
 
-from app.experiment.base import ExperimentEnvironment, InitEnvironment
-from app.experiment.base import ExperimentRuntime
-from app.experiment.base import ExperimentResources
+from app.run.base import ExperimentEnvironment, InitEnvironment
+from app.run.base import ExperimentRuntime
+from app.run.base import ExperimentResources
 
 
 class BaseStep(ABC):

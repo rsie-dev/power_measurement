@@ -6,10 +6,10 @@ import humanize
 
 from app.common import SSHHost
 from app.system_meter import SystemMeasurement
-from app.experiment.log import Logger, LogDispatcher
-from app.experiment.base import ExperimentEnvironment
-from app.experiment.base import ExperimentRuntime
-from app.experiment.base import ExperimentResources
+from app.run.log import Logger, LogDispatcher
+from app.run.base import ExperimentEnvironment
+from app.run.base import ExperimentRuntime
+from app.run.base import ExperimentResources
 from .host_command_step import BaseHostCommandStep
 
 

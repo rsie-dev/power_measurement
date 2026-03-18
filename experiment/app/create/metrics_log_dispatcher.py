@@ -2,7 +2,7 @@ import logging
 from threading import Event
 from collections import deque
 
-from app.experiment.log import LogDispatcher
+from app.run.log import LogDispatcher
 from app.system_meter import SystemMeasurement
 from .commands import MetricsNotificator
 

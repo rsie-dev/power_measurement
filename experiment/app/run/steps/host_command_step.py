@@ -5,9 +5,9 @@ from fabric import Connection
 
 from app.api import Command
 from app.common import SSHHost
-from app.experiment.base import ExperimentEnvironment
-from app.experiment.base import ExperimentRuntime
-from app.experiment.base import ExperimentResources
+from app.run.base import ExperimentEnvironment
+from app.run.base import ExperimentRuntime
+from app.run.base import ExperimentResources
 from .step import Step
 
 
