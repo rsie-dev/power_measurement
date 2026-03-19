@@ -55,4 +55,4 @@ class Runner:
             logging.getLogger(logger).removeHandler(handler)
 
     def _log_version_infos(self):
-        self._logger.debug(f"Using power-measurement-experiment v{version} ({commit_id})")
+        self._logger.debug("Using power-measurement-experiment v%s (%s)", version, commit_id)
