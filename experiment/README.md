@@ -25,6 +25,11 @@ venv/bin/prospector
 venv/bin/pytest -v src
 ```
 
+## Run
+```
+venv/bin/experiment -h
+```
+
 # Releasing
 ```
 venv/bin/python -m build
