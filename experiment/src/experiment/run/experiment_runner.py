@@ -32,13 +32,10 @@ class ExperimentRunner:
                 self._logger.debug("start step: %s", step.name)
                 step.start(self._executor)
 
-            try:
-                with self._signal_handler.capture_signals():
-                    for step in self._steps:
-                        self._logger.debug("execute step: %s", step.name)
-                        step.execute(runtime)
-            except KeyboardInterrupt:
-                pass
+            with self._signal_handler.capture_signals():
+                for step in self._steps:
+                    self._logger.debug("execute step: %s", step.name)
+                    step.execute(runtime)
 
         finally:
             self._logger.info("Stopping all steps")
