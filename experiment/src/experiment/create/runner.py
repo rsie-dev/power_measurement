@@ -19,9 +19,10 @@ class Runner:
         experiment_module = Path(args.experiment[0])
         connection_factory = self._create_connection_factory(args)
         experiment = experiment_loader.load_experiment_from_path(experiment_module, connection_factory, args.ssh_user)
+        self._resources.mkdir(parents=True, exist_ok=True)
         resources = self._resources / experiment_module.stem
         self._logger.info("Experiment resource path: %s", resources.relative_to(Path.cwd()))
-        resources.mkdir(parents=True)
+        resources.mkdir()
         self._logger.debug("copy experiment module to resource folder")
         shutil.copy(experiment_module.resolve(), resources / experiment_module.name)
         with self._add_logfile(resources / "experiment.log"):
