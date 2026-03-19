@@ -148,6 +148,8 @@ class ExperimentMain:
         try:
             args.func(args)
             return 0
+        except KeyboardInterrupt:
+            self._logger.warning("User cancel")
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception("Error: %s", e)
         return 1
