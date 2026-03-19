@@ -70,14 +70,17 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         self._parent = parent
         self._with_timings = False
         self._file_stats: set[str] = set()
-        self._count_stdout: None | Path = None
+        self._count_stdout: Path | bool = False
 
     def with_timings(self) -> Self:
         self._with_timings = True
         return self
 
-    def count_stdout(self, target: str | Path = "/dev/null") -> Self:
-        self._count_stdout = Path(target)
+    def count_stdout(self, target: str | Path = None) -> Self:
+        if target is None:
+            self._count_stdout = True
+        else:
+            self._count_stdout = Path(target)
         return self
 
     def collect_file_stats(self, path: str) -> Self:
