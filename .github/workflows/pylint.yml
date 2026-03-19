@@ -23,5 +23,5 @@ jobs:
       working-directory: experiment
     - name: Analysing the code with pylint
       run: |
-        pylint src/experiment experiment_app.py
+        pylint src/experiment
       working-directory: experiment
