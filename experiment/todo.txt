@@ -4,12 +4,12 @@ ToDo:
 - optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
 - log git describe informations (https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/git-describe.md)
-- add pypi deployment
 - add API documentation
 - detect / report possible access problems (e.g. udev rules missing)
 - add file size detection
 
 done:
+- add pypi deployment
 - fix hang if remote process wants to read from stdin e.g. password
 - add forced tail delay of metrics_client_timeout when using metrics collection
 - add support for ssh keys / rework ssh authentication
