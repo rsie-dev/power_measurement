@@ -3,7 +3,7 @@ requires = ["setuptools>=80", "setuptools-scm>=9.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "experiment"
+name = "power-measurement-experiment"
 dynamic = ["version"]
 description = "Small framework to experimental collect electrical and system metrics of SBC devices."
 readme = "README.md"
