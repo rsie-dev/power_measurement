@@ -3,6 +3,7 @@ from io import BytesIO, TextIOWrapper
 from pathlib import Path
 
 from fabric import Connection
+import humanize
 
 from experiment.api import Command
 from experiment.run.log import CountStreamEntry, Logger
@@ -36,7 +37,8 @@ class CountStreamCommand(Command):
             count_buffer = BytesIO()
             connection.get(remote=count_output, local=count_buffer)
             entry = self._extract_count(nr, count_buffer)
-            self._logger.info("Count stdout:       %s", entry.count)
+            human_size = humanize.naturalsize(entry.count, binary=True, format="%.3f")
+            self._logger.info("Count stdout:       %s (%d Bytes)", human_size, entry.count)
             self._count_logger.log(entry)
         connection.run(f"rm -f {count_output}", hide=True, warn=True)
 
