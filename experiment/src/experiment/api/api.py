@@ -26,6 +26,10 @@ class MeasuredCommandBuilder(CommandBuilder):
         pass
 
     @abstractmethod
+    def count_stdout(self, target: str | Path = "/dev/null") -> Self:
+        pass
+
+    @abstractmethod
     def collect_file_stats(self, path: str) -> Self:
         pass
 

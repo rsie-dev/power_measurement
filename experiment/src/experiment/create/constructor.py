@@ -25,8 +25,9 @@ from experiment.run.log import MetricType, CSVMetricsLogger
 from experiment.run.log import CSVMultimeterLogger
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
+from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.create.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
-from experiment.create.commands import WaitMetricsCommand
+from experiment.create.commands import WaitMetricsCommand, CountStreamCommand
 from experiment.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager
@@ -69,9 +70,14 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         self._parent = parent
         self._with_timings = False
         self._file_stats: set[str] = set()
+        self._count_stdout: None | Path = None
 
     def with_timings(self) -> Self:
         self._with_timings = True
+        return self
+
+    def count_stdout(self, target: str | Path = "/dev/null") -> Self:
+        self._count_stdout = Path(target)
         return self
 
     def collect_file_stats(self, path: str) -> Self:
@@ -80,6 +86,9 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
 
     def done(self) -> ExecutionBuilder:
         command = ExecutorCommand(self._command, self._work_dir)
+        if self._count_stdout:
+            count_dispatcher = self._parent.allocate_count_stream_dispatcher()
+            command = CountStreamCommand(command, self._count_stdout, count_dispatcher)
         if self._with_timings:
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
             command = TimedCommand(command, timing_dispatcher)
@@ -156,6 +165,11 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             self._log_dispatcher[TimingEntry] = LogDispatcher[TimingEntry]()
         return self._log_dispatcher[TimingEntry]
 
+    def allocate_count_stream_dispatcher(self) -> LogDispatcher[CountStreamEntry]:
+        if CountStreamEntry not in self._log_dispatcher:
+            self._log_dispatcher[CountStreamEntry] = LogDispatcher[CountStreamEntry]()
+        return self._log_dispatcher[CountStreamEntry]
+
     def allocate_file_stats_dispatcher(self) -> LogDispatcher[FileStatsEntry]:
         if FileStatsEntry not in self._log_dispatcher:
             self._log_dispatcher[FileStatsEntry] = LogDispatcher[FileStatsEntry]()
@@ -198,6 +212,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(self._create_timing_log_provider())
         if FileStatsEntry in self._log_dispatcher:
             log_providers.append(self._create_file_stats_log_provider())
+        if CountStreamEntry in self._log_dispatcher:
+            log_providers.append(self._create_count_stream_log_provider())
 
         commands = self._commands[:]
         if self._head_delay:
@@ -261,6 +277,15 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         file_stats_dispatcher = self._log_dispatcher[FileStatsEntry]
         file_stats_log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
         return file_stats_log_provider
+
+    def _create_count_stream_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVCountStreamLogger(resource_path / "stream_count.csv",
+                                                                                formatter)
+        file_stats_dispatcher = self._log_dispatcher[CountStreamEntry]
+        log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
+        return log_provider
 
 
 class HostConstructor(CompositeConstructor, HostBuilder):
