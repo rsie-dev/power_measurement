@@ -10,9 +10,9 @@ class FileStatCommand(Command):
         self._path = path
         self._logger = logger
 
-    def execute(self, connection, resources_path) -> None:
+    def execute(self, nr: int, connection, resources_path) -> None:
         command = f"stat -c %s {self._path}"
         result = connection.run(command, hide=True)
         remote_size = int(result.stdout.strip())
-        entry = FileStatsEntry(path=self._path, size=remote_size)
+        entry = FileStatsEntry(nr=nr, path=self._path, size=remote_size)
         self._logger.log(entry)

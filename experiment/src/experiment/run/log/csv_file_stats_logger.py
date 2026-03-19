@@ -8,24 +8,23 @@ from .csv_base_logger import CSVBaseLogger
 
 @dataclass(frozen=True)
 class FileStatsEntry:
+    nr: int
     size: int
     path: str
 
 
 class CSVFileStatLogger(CSVBaseLogger, Logger[FileStatsEntry]):
-    FIELD_NAMES = ["entry", "size", "path"]
+    FIELD_NAMES = ["nr", "size", "path"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter, path, self.FIELD_NAMES)
-        self._index = 0
 
     def log(self, data: FileStatsEntry | list[FileStatsEntry]) -> None:
         if not isinstance(data, list):
             data = [data]
         for entry in data:
-            self._index += 1
             log_entry = {
-                "entry": f"{self._index}",
+                "nr": f"{entry.nr}",
                 "size": f"{entry.size}",
                 "path": f"{entry.path}",
             }

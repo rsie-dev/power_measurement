@@ -75,5 +75,5 @@ class MeasurementStep(BaseHostCommandStep):
                 run_stack.enter_context(log_provider.start_log(run_resources_path))
 
             timings_resources_path = run_resources_path / "timings.csv"
-            for command in self._context.commands:
-                command.execute(connection, timings_resources_path)
+            for i, command in enumerate(self._context.commands):
+                command.execute(i + 1, connection, timings_resources_path)

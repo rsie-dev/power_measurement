@@ -10,6 +10,6 @@ class CompositeCommand(Command):
             commands = []
         self._commands = commands
 
-    def execute(self, connection, resources_path) -> None:
+    def execute(self, nr: int, connection, resources_path) -> None:
         for command in self._commands:
-            command.execute(connection, resources_path)
+            command.execute(nr, connection, resources_path)
