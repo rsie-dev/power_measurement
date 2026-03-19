@@ -7,8 +7,10 @@ ToDo:
 - detect / report possible access problems (e.g. udev rules missing)
 - add file size detection
 
-done:
+v0.0.2
 - log git informations
+
+v0.0.1
 - add pypi deployment
 - fix hang if remote process wants to read from stdin e.g. password
 - add forced tail delay of metrics_client_timeout when using metrics collection
