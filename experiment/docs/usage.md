@@ -1,4 +1,4 @@
-# Develop
+# Usage
 
 ## Getting help
 To get help for the experiment command:
@@ -9,7 +9,7 @@ venv/bin/experiment -h
 The complete API informations can be found [here](api.md).
 
 ## Getting started
-Create this example.py experiment script:
+Create this `example.py` experiment script:
 ```python
 from experiment.api import get_experiment_builder
 
