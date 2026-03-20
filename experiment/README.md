@@ -4,7 +4,7 @@
 Small framework to collect electrical and system metrics of SBC devices.
 
 # Develop
-Developer informations can be found [here](Develop.md).
+Developer informations can be found [here](docs/Develop.md).
 
 # Install
 ```
