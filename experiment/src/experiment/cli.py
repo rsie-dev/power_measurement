@@ -75,26 +75,27 @@ class ExperimentMain:
         self._logger.info("Available devices:")
         for device in devices:
             try:
+                device.access_check()
                 sn = device.serial_number
-            except ValueError:
-                sn = "n/a"
-            try:
                 product = device.product_name
-            except ValueError:
-                product = "n/a"
-            try:
                 manufacturer = device.manufacturer_name
-            except ValueError:
+                extra = ""
+            except PermissionError as e:
+                sn = "n/a"
+                product = "n/a"
                 manufacturer = "n/a"
-            self._logger.info("- %x:%x %s %s (type: %s SN: %s)", device.device_info.vid, device.device_info.pid,
-                              manufacturer, product, device.device_info.model.name, sn)
+                extra = " (%s)" % e
+            self._logger.info("- %x:%x %s %s (type: %s SN: %s)%s", device.device_info.vid, device.device_info.pid,
+                              manufacturer, product, device.device_info.model.name, sn, extra)
 
     def _device_show(self, args):
         device = self._find_device(args)
+        device.access_check()
         self._logger.info("Vendor ID:     %x", device.device_info.vid)
         self._logger.info("Product ID:    %x", device.device_info.pid)
         self._logger.info("Type:          %s", device.device_info.model.name)
         self._logger.info("Serial number: %s", device.serial_number)
+        self._logger.info("Location:      %s", device.location)
 
     def _run_experiment(self, args):
         from experiment.create import Runner  # pylint: disable=import-outside-toplevel
