@@ -4,7 +4,7 @@
 Small framework to collect electrical and system metrics of SBC devices.
 
 # Develop
-Developer informations can be found [here](docs/Develop.md).
+Developer informations can be found [here](docs/develop.md).
 
 # Install
 ```
@@ -13,6 +13,4 @@ venv/bin/pip install power-measurement-experiment
 ```
 
 # Usage
-```
-venv/bin/experiment -h
-```
+Usage informations can be found [here](docs/usage.md).
