@@ -6,10 +6,10 @@ from fabric import Connection
 import humanize
 
 from experiment.run.log import CountStreamEntry, Logger
-from .executor_command import ExecutorCommand, PostChainLink
+from .executor_command import ExecutorCommand, PostCommand
 
 
-class CountStreamPostChainLink(PostChainLink):
+class CountStreamPostCommand(PostCommand):
     def __init__(self, stdout_target: Path | bool, count_logger: Logger[CountStreamEntry]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._stdout_target = stdout_target

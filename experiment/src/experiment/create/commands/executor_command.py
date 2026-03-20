@@ -8,7 +8,7 @@ from fabric import Connection
 from experiment.api import Command
 
 
-class ChainLink(ABC):
+class CommandExtender(ABC):
     @abstractmethod
     def name(self) -> str:
         pass
@@ -22,13 +22,13 @@ class ChainLink(ABC):
         pass
 
 
-class PreChainLink(ChainLink):
+class PreCommand(CommandExtender):
     @abstractmethod
     def prepend(self, command: ExecutorCommand) -> str:
         pass
 
 
-class PostChainLink(ChainLink):
+class PostCommand(CommandExtender):
     @abstractmethod
     def append(self, command: ExecutorCommand) -> str:
         pass
@@ -39,13 +39,13 @@ class ExecutorCommand(Command):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
         self._work_dir = work_dir
-        self._prepend_chain: list[PreChainLink] = []
-        self._append_chain: list[PostChainLink] = []
+        self._prepend_chain: list[PreCommand] = []
+        self._append_chain: list[PostCommand] = []
 
-    def prepend(self, link: PreChainLink) -> None:
+    def prepend(self, link: PreCommand) -> None:
         self._prepend_chain.append(link)
 
-    def append(self, link: PostChainLink) -> None:
+    def append(self, link: PostCommand) -> None:
         self._append_chain.append(link)
 
     @property

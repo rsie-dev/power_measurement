@@ -5,7 +5,7 @@ import datetime
 from fabric import Connection
 
 from experiment.run.log import TimingEntry, Logger
-from .executor_command import ExecutorCommand, PreChainLink
+from .executor_command import ExecutorCommand, PreCommand
 
 
 def _parse_time_line(line) -> tuple[str, datetime.timedelta]:
@@ -13,7 +13,7 @@ def _parse_time_line(line) -> tuple[str, datetime.timedelta]:
     return key, datetime.timedelta(seconds=float(value))
 
 
-class TimedCommandPreChainLink(PreChainLink):
+class TimedCommandPreCommand(PreCommand):
     def __init__(self, timing_logger: Logger[TimingEntry]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._count_logger = timing_logger
