@@ -23,9 +23,9 @@ class CSVCountStreamLogger(CSVBaseLogger, Logger[CountStreamEntry]):
         if not isinstance(data, list):
             data = [data]
         for data_entry in data:
-            log_entry = {
+            count_entry = {
                 "nr": f"{data_entry.entry_nr}",
                 "count_B": f"{data_entry.count}",
                 "command": f"{data_entry.command}",
             }
-            self._writer.writerow(log_entry)
+            self._writer.writerow(count_entry)
