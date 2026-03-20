@@ -1,9 +1,37 @@
+from __future__ import annotations
 import logging
 from typing import Optional
+from abc import ABC, abstractmethod
 
 from fabric import Connection
 
 from experiment.api import Command
+
+
+class ChainLink(ABC):
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
+    @abstractmethod
+    def init(self, nr: int, connection: Connection) -> None:
+        pass
+
+    @abstractmethod
+    def finish(self, nr: int, command: ExecutorCommand, connection: Connection) -> None:
+        pass
+
+
+class PreChainLink(ChainLink):
+    @abstractmethod
+    def prepend(self, command: ExecutorCommand) -> str:
+        pass
+
+
+class PostChainLink(ChainLink):
+    @abstractmethod
+    def append(self, command: ExecutorCommand) -> str:
+        pass
 
 
 class ExecutorCommand(Command):
@@ -11,6 +39,14 @@ class ExecutorCommand(Command):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
         self._work_dir = work_dir
+        self._prepend_chain: list[PreChainLink] = []
+        self._append_chain: list[PostChainLink] = []
+
+    def prepend(self, link: PreChainLink) -> None:
+        self._prepend_chain.append(link)
+
+    def append(self, link: PostChainLink) -> None:
+        self._append_chain.append(link)
 
     @property
     def command(self):
@@ -21,7 +57,22 @@ class ExecutorCommand(Command):
         return self._work_dir
 
     def execute(self, nr: int, connection: Connection, resources_path):
+        links = self._prepend_chain + self._append_chain
+        tags = [link.name() for link in links]
+        tags.insert(0, "%02d" % nr)
         work_dir = self._work_dir if self._work_dir else "."
-        self._logger.info("Execute[%02d]: %s", nr, self._command)
+        self._logger.info("Execute[%s]: %s", tags, self._command)
         with connection.cd(work_dir):
-            connection.run(self._command, hide=True)
+            for link in links:
+                link.init(nr, connection)
+
+            command = self._command
+            for link in self._append_chain:
+                append = link.append(self)
+                command = command + append
+
+            self._logger.info("remote execute: %s", command)
+            connection.run(command, hide=True)
+
+            for link in links:
+                link.finish(nr, self, connection)
