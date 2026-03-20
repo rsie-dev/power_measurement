@@ -137,7 +137,7 @@ class ExperimentMain:
         parser_run.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
         parser_run.add_argument("-p", "--port", type=int, default=10000, help="Server listening port" + default)
         parser_run.add_argument('--system', default="system.csv", help="System data file name" + default)
-        parser_run.add_argument('--ssh-user', default="dietpi", help="SSH user" + default)
+        parser_run.add_argument('--ssh-user', default="ctest", help="SSH user" + default)
         parser_run.add_argument('--ssh-key', type=Path, help="File from which the private key for is read")
         parser_run.add_argument('experiment', nargs=1, help="Experiment to execute")
         parser_run.set_defaults(func=self._run_experiment)
