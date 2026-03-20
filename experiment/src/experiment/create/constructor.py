@@ -288,7 +288,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def _create_count_stream_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
-        log_factory: LoggerFactory = lambda resource_path: CSVCountStreamLogger(resource_path / "stream_count.csv",
+        log_factory: LoggerFactory = lambda resource_path: CSVCountStreamLogger(resource_path / "count_stdout.csv",
                                                                                 formatter)
         file_stats_dispatcher = self._log_dispatcher[CountStreamEntry]
         log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
