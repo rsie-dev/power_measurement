@@ -58,10 +58,11 @@ class ExecutorCommand(Command):
 
     def execute(self, nr: int, connection: Connection, resources_path):
         links = self._prepend_chain + self._append_chain
-        tags = [link.name() for link in links]
-        tags.insert(0, "%02d" % nr)
+        tags = ["%02d" % nr]
+        tags.extend([link.name() for link in links])
+
         work_dir = self._work_dir if self._work_dir else "."
-        self._logger.info("Execute[%s]: %s", tags, self._command)
+        self._logger.info("Execute[%s]: %s", ",".join(tags), self._command)
         with connection.cd(work_dir):
             for link in links:
                 link.init(nr, connection)
@@ -70,6 +71,9 @@ class ExecutorCommand(Command):
             for link in self._append_chain:
                 append = link.append(self)
                 command = command + append
+            for link in self._prepend_chain:
+                prepend = link.prepend(self)
+                command = prepend + command
 
             self._logger.info("remote execute: %s", command)
             connection.run(command, hide=True)

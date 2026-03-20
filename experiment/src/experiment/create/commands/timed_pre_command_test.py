@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from .timed_command import _parse_time_line
+from .timed_pre_command import _parse_time_line
 
 
 def test_parse_time_line_short():

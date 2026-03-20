@@ -26,9 +26,9 @@ from experiment.run.log import CSVMultimeterLogger
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
-from experiment.create.commands import ExecutorCommand, DelayCommand, TimedCommand, CompositeCommand, FileStatCommand
+from experiment.create.commands import ExecutorCommand, DelayCommand, CompositeCommand, FileStatCommand
 from experiment.create.commands import WaitMetricsCommand
-from experiment.create.commands import CountStreamPostChainLink
+from experiment.create.commands import CountStreamPostChainLink, TimedCommandPreChainLink
 from experiment.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager
@@ -96,7 +96,9 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
             command.append(link)
         if self._with_timings:
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
-            command = TimedCommand(command, timing_dispatcher)
+            link = TimedCommandPreChainLink(timing_dispatcher)
+            command.prepend(link)
+
         if self._file_stats:
             commands = [command]
             file_stats_dispatcher = self._parent.allocate_file_stats_dispatcher()
