@@ -40,7 +40,7 @@ class CountStreamPostCommand(PostCommand):
         connection.get(remote=self._count_output, local=count_buffer)
         entry = self._extract_count(nr, command, count_buffer)
         human_size = humanize.naturalsize(entry.count, binary=True, format="%.3f")
-        self._logger.info("Count stdout: %s", human_size)
+        self._logger.info("Count stdout:\t%s", human_size)
         self._count_logger.log(entry)
         connection.run(f"rm -f {self._count_output}", hide=True, warn=True)
 

@@ -75,7 +75,7 @@ class ExecutorCommand(Command):
                 prepend = link.prepend(self)
                 command = prepend + command
 
-            self._logger.info("remote execute: %s", command)
+            self._logger.debug("remote execute: %s", command)
             connection.run(command, hide=True)
 
             for link in links:

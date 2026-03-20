@@ -44,7 +44,7 @@ class TimedCommandPreCommand(PreCommand):
             f"user: {timing_entry.user.total_seconds():.2f} "
             f"sys: {timing_entry.sys.total_seconds():.2f} "
         )
-        self._logger.info("Execution times:    %s", timings)
+        self._logger.info("Execution times:\t%s", timings)
         self._timing_logger.log(timing_entry)
 
         connection.run(f"rm -f {self._timing_output}", hide=True, warn=True)
