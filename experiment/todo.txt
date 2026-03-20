@@ -1,7 +1,5 @@
 ToDo:
 - add external temp. sensor
-- add support to add parameters
-- optional: add support to somehow mix/randomize tools and parameters
 - collect SBC temperature, too
 - add API documentation
 - detect / report possible access problems (e.g. udev rules missing)
