@@ -5,10 +5,10 @@ ToDo:
 - collect SBC temperature, too
 - add API documentation
 - detect / report possible access problems (e.g. udev rules missing)
-- add file size detection
 
 v0.0.2
 - log git informations
+- add logging of stdout count
 
 v0.0.1
 - add pypi deployment
