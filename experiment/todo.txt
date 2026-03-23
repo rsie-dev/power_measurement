@@ -4,6 +4,7 @@ ToDo:
 - add API documentation
 - measurement/log markers to identify measurement start/end
 - detect compressor errors even when using timing and stdout count
+- added multithread detection (real -> user) to timing
 
 v0.0.2
 - provide USB udev rules, too
