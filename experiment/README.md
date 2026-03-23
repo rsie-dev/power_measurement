@@ -20,7 +20,7 @@ sudo addgroup usbmeter
 
 ### Install udev rules:
 ```shell
-sudo install --mode=0644 --target-directory=/etc/udev/rules.d/ udev/90-usb-power-meter.rules
+sudo install --mode=0644 --target-directory=/etc/udev/rules.d/ venv/lib/python3.12/site-packages/usb_multimeter/udev/90-usb-power-meter.rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
