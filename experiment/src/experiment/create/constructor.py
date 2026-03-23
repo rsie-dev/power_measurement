@@ -26,7 +26,8 @@ from experiment.run.log import CSVMultimeterLogger
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
-from experiment.create.commands import ExecutorCommand, DelayCommand, CompositeCommand, FileStatCommand
+from experiment.run.log import MarkersEntry, CSVMarkersLogger
+from experiment.create.commands import ExecutorCommand, MeasuringCommand, DelayCommand, CompositeCommand, FileStatCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
@@ -89,7 +90,8 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         return self
 
     def done(self) -> ExecutionBuilder:
-        command = ExecutorCommand(self._command, self._work_dir)
+        markers_dispatcher = self._parent.allocate_markers_dispatcher()
+        command = MeasuringCommand(markers_dispatcher, self._command, self._work_dir)
 
         if self._count_stdout:
             count_dispatcher = self._parent.allocate_count_stream_dispatcher()
@@ -176,6 +178,11 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             self._log_dispatcher[TimingEntry] = LogDispatcher[TimingEntry]()
         return self._log_dispatcher[TimingEntry]
 
+    def allocate_markers_dispatcher(self) -> LogDispatcher[MarkersEntry]:
+        if MarkersEntry not in self._log_dispatcher:
+            self._log_dispatcher[MarkersEntry] = LogDispatcher[MarkersEntry]()
+        return self._log_dispatcher[MarkersEntry]
+
     def allocate_count_stream_dispatcher(self) -> LogDispatcher[CountStreamEntry]:
         if CountStreamEntry not in self._log_dispatcher:
             self._log_dispatcher[CountStreamEntry] = LogDispatcher[CountStreamEntry]()
@@ -223,6 +230,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(self._create_timing_log_provider())
         if FileStatsEntry in self._log_dispatcher:
             log_providers.append(self._create_file_stats_log_provider())
+        if MarkersEntry in self._log_dispatcher:
+            log_providers.append(self._create_markers_log_provider())
         if CountStreamEntry in self._log_dispatcher:
             log_providers.append(self._create_count_stream_log_provider())
 
@@ -289,13 +298,21 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         file_stats_log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
         return file_stats_log_provider
 
+    def _create_markers_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVMarkersLogger(resource_path / "markers.csv", formatter)
+        markers_dispatcher = self._log_dispatcher[MarkersEntry]
+        log_provider = GenericLogProvider(markers_dispatcher, log_factory)
+        return log_provider
+
     def _create_count_stream_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
         log_factory: LoggerFactory = lambda resource_path: CSVCountStreamLogger(resource_path / "count_stdout.csv",
                                                                                 formatter)
-        file_stats_dispatcher = self._log_dispatcher[CountStreamEntry]
-        log_provider = GenericLogProvider(file_stats_dispatcher, log_factory)
+        count_streamdispatcher = self._log_dispatcher[CountStreamEntry]
+        log_provider = GenericLogProvider(count_streamdispatcher, log_factory)
         return log_provider
 
 

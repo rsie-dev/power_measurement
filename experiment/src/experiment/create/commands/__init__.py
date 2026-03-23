@@ -1,4 +1,4 @@
-from .executor_command import ExecutorCommand
+from .executor_command import ExecutorCommand, MeasuringCommand
 from .delay_command import DelayCommand
 from .timed_pre_command import TimedCommandPreCommand
 from .composite_command import CompositeCommand
@@ -9,7 +9,7 @@ from .count_stream_post_command import CountStreamPostCommand
 from .pipefail_pre_command import PipefailPreCommand
 
 __all__ = [
-    "ExecutorCommand",
+    "ExecutorCommand", "MeasuringCommand",
     "DelayCommand",
     "CompositeCommand",
     "FileStatCommand",

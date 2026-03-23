@@ -2,10 +2,12 @@ from __future__ import annotations
 import logging
 from typing import Optional
 from abc import ABC, abstractmethod
+import datetime
 
 from fabric import Connection
 
 from experiment.api import Command
+from experiment.run.log import MarkerKind, MarkersEntry, Logger
 
 
 class CommandExtender(ABC):
@@ -75,9 +77,30 @@ class ExecutorCommand(Command):
                 append = link.append(self)
                 command = command + append
 
-            self._logger.debug("remote execute: %s", command)
-            result = connection.run(command, hide=True)
-            self._logger.debug("command returned with exit code: %d", result.return_code)
+            self._do_execute(command, nr, connection)
 
             for link in links:
                 link.finish(nr, self, connection)
+
+    def _do_execute(self, command: str, nr: int, connection: Connection) -> None:
+        self._logger.debug("remote execute: %s", command)
+        result = connection.run(command, hide=True)
+        self._logger.debug("command returned with exit code: %d", result.return_code)
+
+
+class MeasuringCommand(ExecutorCommand):
+    def __init__(self, markers_logger: Logger[MarkersEntry], command: str, work_dir: Optional[str] = None):
+        super().__init__(command, work_dir)
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._markers_logger = markers_logger
+
+    def _do_execute(self, command: str, nr: int, connection: Connection) -> None:
+        self._markers_logger.log(self._create_marker(nr, MarkerKind.START))
+        super()._do_execute(command, nr, connection)
+        self._markers_logger.log(self._create_marker(nr, MarkerKind.END))
+
+    def _create_marker(self, nr: int, kind: MarkerKind):
+        return MarkersEntry(entry_nr=nr,
+                            kind=kind,
+                            timestamp=datetime.datetime.now(datetime.UTC),
+                            command=self._command)
