@@ -3,7 +3,7 @@ ToDo:
 - collect SBC temperature, too
 - add API documentation
 - measurement/log markers to identify measurement start/end
-- drop rel. time in logs
+- detect compressor errors even when using timing and stdout count
 
 v0.0.2
 - provide USB udev rules, too
