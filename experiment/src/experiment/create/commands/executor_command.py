@@ -68,15 +68,16 @@ class ExecutorCommand(Command):
                 link.init(nr, connection)
 
             command = self._command
-            for link in self._append_chain:
-                append = link.append(self)
-                command = command + append
             for link in self._prepend_chain:
                 prepend = link.prepend(self)
                 command = prepend + command
+            for link in self._append_chain:
+                append = link.append(self)
+                command = command + append
 
-            self._logger.debug("remote execute: %s", command)
-            connection.run(command, hide=True)
+            self._logger.warning("remote execute: %s", command)
+            result = connection.run(command, hide=True)
+            self._logger.debug("command returned with exit code: %d", result.return_code)
 
             for link in links:
                 link.finish(nr, self, connection)
