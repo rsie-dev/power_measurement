@@ -2,6 +2,7 @@ ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
 - add API documentation
+- measurement/log markes to identify measurement start/end
 
 v0.0.2
 - provide USB udev rules, too
