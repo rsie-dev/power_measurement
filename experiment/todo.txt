@@ -2,9 +2,9 @@ ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
 - add API documentation
-- provide USB udev rules, too
 
 v0.0.2
+- provide USB udev rules, too
 - detect USB device access problems
 - log git informations
 - add logging of stdout count
