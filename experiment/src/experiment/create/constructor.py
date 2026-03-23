@@ -28,7 +28,7 @@ from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.create.commands import ExecutorCommand, DelayCommand, CompositeCommand, FileStatCommand
 from experiment.create.commands import WaitMetricsCommand
-from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand
+from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager
@@ -90,6 +90,7 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
 
     def done(self) -> ExecutionBuilder:
         command = ExecutorCommand(self._command, self._work_dir)
+
         if self._count_stdout:
             count_dispatcher = self._parent.allocate_count_stream_dispatcher()
             link = CountStreamPostCommand(self._count_stdout, count_dispatcher)
@@ -98,6 +99,9 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
             link = TimedCommandPreCommand(timing_dispatcher)
             command.prepend(link)
+
+        if self._count_stdout or self._with_timings:
+            command.prepend(PipefailPreCommand())
 
         if self._file_stats:
             commands = [command]
