@@ -3,10 +3,10 @@ ToDo:
 - collect SBC temperature, too
 - add API documentation
 - measurement/log markers to identify measurement start/end
-- detect compressor errors even when using timing and stdout count
 - added multithread detection (real -> user) to timing
 
 v0.0.2
+- detect compressor errors even when using timing and stdout count
 - provide USB udev rules, too
 - detect USB device access problems
 - log git informations
