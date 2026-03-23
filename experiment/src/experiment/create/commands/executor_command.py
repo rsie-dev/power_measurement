@@ -75,7 +75,7 @@ class ExecutorCommand(Command):
                 append = link.append(self)
                 command = command + append
 
-            self._logger.warning("remote execute: %s", command)
+            self._logger.debug("remote execute: %s", command)
             result = connection.run(command, hide=True)
             self._logger.debug("command returned with exit code: %d", result.return_code)
 
