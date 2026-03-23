@@ -19,6 +19,7 @@ class TimedCommandPreCommand(PreCommand):
         self._count_logger = timing_logger
         self._timing_logger = timing_logger
         self._timing_output = None
+        self._threshold = datetime.timedelta(milliseconds=100)
 
     def name(self) -> str:
         return "timed"
@@ -44,7 +45,8 @@ class TimedCommandPreCommand(PreCommand):
             f"user: {timing_entry.user.total_seconds():.2f} "
             f"sys: {timing_entry.sys.total_seconds():.2f} "
         )
-        self._logger.info("Execution times:\t%s", timings)
+        extra = self._analysze_timings(timing_entry)
+        self._logger.info("Execution times:\t%s%s", timings, extra)
         self._timing_logger.log(timing_entry)
 
         connection.run(f"rm -f {self._timing_output}", hide=True, warn=True)
@@ -61,3 +63,19 @@ class TimedCommandPreCommand(PreCommand):
                            user=entries["user"],
                            sys=entries["sys"],
                            command=command.command)
+
+    def _analysze_timings(self, timing_entry):
+        result = []
+        # multithread (user + sys >> real) and I/O bound (user + sys << real)
+        process_time = timing_entry.user + timing_entry.sys - timing_entry.real
+        if timing_entry.user + timing_entry.sys > timing_entry.real:
+            if process_time > self._threshold:
+                result.append("multithreaded")
+        wait_time = timing_entry.real - timing_entry.user - timing_entry.sys
+        if timing_entry.user + timing_entry.sys < timing_entry.real:
+            if wait_time > self._threshold:
+                result.append("I/O bound")
+
+        if not result:
+            return ""
+        return " [%s]" % ", ".join(result)
