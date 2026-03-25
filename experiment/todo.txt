@@ -2,6 +2,7 @@ ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
 - add API documentation
+- add progress for measurement sets
 
 v0.0.2
 - added measurement markers to identify measurement start/end
