@@ -22,12 +22,12 @@ class MeasurementStep(BaseHostCommandStep):
         commands: list[Command]
         tag: str
         log_providers: list[LogProvider]
-        measurements: list[Measurement]
 
-    def __init__(self, host: SSHHost, command_config: CommandConfig):
+    def __init__(self, host: SSHHost, measurements: list[Measurement], command_config: CommandConfig):
         super().__init__("measurement", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = command_config
+        self._measurements = measurements
         self._resources_path = None
         self._environment = None
         self._executor = None
@@ -46,7 +46,7 @@ class MeasurementStep(BaseHostCommandStep):
         resources_path.mkdir(parents=True, exist_ok=True)
 
         with ExitStack() as step_stack:
-            for measurement in self._config.measurements:
+            for measurement in self._measurements:
                 step_stack.enter_context(measure(measurement, self._environment, self._executor))
             for run in range(self._config.runs):
                 self._execute_run(run, resources_path, connection)
