@@ -337,6 +337,11 @@ class ShutdownConstructor(CompositeConstructor, ShutdownBuilder):
 
 
 class HostConstructor(CompositeConstructor, HostBuilder):
+    @dataclass
+    class ExtraHostContext:
+        init_steps: list[Step]
+        shutdown_steps: list[Step]
+
     def __init__(self, parent: ExperimentConstructor, host: SSHHost,
                  multimeter_coordinator: MultimeterCoordinator):
         super().__init__()
@@ -344,10 +349,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._host = host
         self._multimeter_coordinator = multimeter_coordinator
         self._tags: set[str] = set()
-        self._init_steps: List[Step] = []
-        self._shutdown_steps: List[Step] = []
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
+        self._context = HostConstructor.ExtraHostContext(init_steps=[], shutdown_steps=[])
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
@@ -362,10 +366,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return self._parent.formatter_info
 
     def add_init_step(self, steps: List[Step]) -> None:
-        self._init_steps.extend(steps)
+        self._context.init_steps.extend(steps)
 
     def add_shutdown_step(self, steps: List[Step]) -> None:
-        self._shutdown_steps.extend(steps)
+        self._context.shutdown_steps.extend(steps)
 
     def initialize(self) -> InitializationBuilder:
         return InitializationConstructor(self, self._host)
@@ -410,9 +414,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps.extend(self._steps)
 
-        self._parent.add_steps(self._init_steps)
+        self._parent.add_steps(self._context.init_steps)
         self._parent.add_steps(steps)
-        self._parent.add_steps(self._shutdown_steps)
+        self._parent.add_steps(self._context.shutdown_steps)
         return self._parent
 
 
