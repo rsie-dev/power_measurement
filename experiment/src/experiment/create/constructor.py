@@ -246,8 +246,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         if metrics_dispatcher:
             commands.append(WaitMetricsCommand(metrics_dispatcher))
 
-        command_config = MeasurementStep.CommandConfig(runs=self._config.runs, commands=commands, tag=self._config.tag)
-        step = MeasurementStep(self._host, command_config, log_providers, measurements)
+        command_config = MeasurementStep.CommandConfig(runs=self._config.runs, commands=commands, tag=self._config.tag,
+                                                       log_providers=log_providers, measurements=measurements)
+        step = MeasurementStep(self._host, command_config)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
