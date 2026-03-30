@@ -18,7 +18,6 @@ from experiment.run.steps import SystemMetricsClientStep, TimeDeltaStep
 from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DeleteStep
-from experiment.run.steps.measurement import Measurement
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -239,10 +238,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             command_config = MeasurementStep.CommandConfig(run=run, runs=self._config.runs, commands=commands,
                                                            tag=self._config.tag, log_providers=log_providers)
             command_configs.append(command_config)
+        self._parent.add_command_configs(command_configs)
 
-        measurement = self._parent.measurement
-        step = MeasurementStep(self._host, measurement=measurement, command_configs=command_configs)
-        self._parent.add_steps([step])
         return self._parent
 
     def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> list[LogProvider]:
@@ -341,6 +338,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     class ExtraHostContext:
         init_steps: list[Step]
         shutdown_steps: list[Step]
+        command_configs: list[MeasurementStep.CommandConfig]
 
     def __init__(self, parent: ExperimentConstructor, host: SSHHost,
                  multimeter_coordinator: MultimeterCoordinator):
@@ -351,15 +349,14 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
-        self._context = HostConstructor.ExtraHostContext(init_steps=[], shutdown_steps=[])
+        self._context = HostConstructor.ExtraHostContext(init_steps=[], shutdown_steps=[], command_configs=[])
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
         return self._parent.collect_metrics
 
-    @property
-    def measurement(self) -> Measurement:
-        return self._measurement
+    def add_command_configs(self, command_configs: list[MeasurementStep.CommandConfig]) -> None:
+        self._context.command_configs.extend(command_configs)
 
     @property
     def formatter_info(self) -> tuple[type, dict]:
@@ -413,6 +410,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(SystemMetricsClientStep(self._host, metrics_dispatcher))
 
         steps.extend(self._steps)
+
+        if self._context.command_configs:
+            step = MeasurementStep(self._host, measurement=self._measurement,
+                                   command_configs=self._context.command_configs)
+            steps.append(step)
 
         self._parent.add_steps(self._context.init_steps)
         self._parent.add_steps(steps)
