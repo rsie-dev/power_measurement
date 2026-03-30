@@ -213,9 +213,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return MeasuredCommandConstructor(self, command)
 
     def done(self) -> HostBuilder:
-        steps = []
-
         log_providers: list[LogProvider] = []
+
         measurement: Measurement | None = None
         if self._serial_number:
             measurement, multimeter_log_provider = self._create_multimeter()
@@ -223,9 +222,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
-            metrics = self._create_metrics(metrics_dispatcher)
-            log_providers.extend(metrics[0])
-            steps.extend(metrics[1])
+            metrics_log_providers = self._create_metrics(metrics_dispatcher)
+            log_providers.extend(metrics_log_providers)
 
         if TimingEntry in self._log_dispatcher:
             log_providers.append(self._create_timing_log_provider())
@@ -251,13 +249,10 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
                                                            tag=self._config.tag, log_providers=log_providers)
             command_configs.append(command_config)
         step = MeasurementStep(self._host, measurement=measurement, command_configs=command_configs)
-        steps.append(step)
-        self._parent.add_steps(steps)
+        self._parent.add_steps([step])
         return self._parent
 
-    def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> (
-            tuple)[list[LogProvider], list[Step]]:
-        steps: list[Step] = []
+    def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> list[LogProvider]:
         log_providers: list[LogProvider] = []
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
@@ -272,7 +267,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         cpu_log_provider = GenericLogProvider(metrics_dispatcher, cpu_log_factory)
         log_providers.append(cpu_log_provider)
 
-        return log_providers, steps
+        return log_providers
 
     def _create_multimeter(self) -> tuple[Measurement, LogProvider]:
         formatter_class, formatter_config = self._parent.formatter_info
@@ -403,6 +398,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if metrics_dispatcher:
             steps.append(TimeDeltaStep(self._host))
             steps.append(SystemMetricsClientStep(self._host, metrics_dispatcher))
+
         steps.extend(self._steps)
 
         self._parent.add_steps(self._init_steps)
