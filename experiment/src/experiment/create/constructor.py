@@ -3,6 +3,7 @@ import logging
 from typing import List, Self
 from dataclasses import dataclass, field
 from pathlib import Path
+from random import shuffle
 
 from usb_multimeter import ElectricalMeasurement
 
@@ -412,8 +413,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
 
         if self._context.command_configs:
-            step = MeasurementStep(self._host, measurement=self._measurement,
-                                   command_configs=self._context.command_configs)
+            command_configs = self._context.command_configs[:]
+            shuffle(command_configs)
+            step = MeasurementStep(self._host, measurement=self._measurement, command_configs=command_configs)
             steps.append(step)
 
         self._parent.add_steps(self._context.init_steps)

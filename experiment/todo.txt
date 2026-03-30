@@ -3,9 +3,9 @@ ToDo:
 - collect SBC temperature, too
 - add API documentation
 - add progress for measurement sets
-- add support to randomize the execution of measurement sets
 
 v0.0.2
+- add support to randomize the execution of measurement sets
 - ensure file uploads / deletions are executed between the measurement sets and warmup tasks
 - added measurement markers to identify measurement start/end
 - added multithread (user + sys >> real) and I/O bound (user + sys << real) detection to timing
