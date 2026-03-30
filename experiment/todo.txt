@@ -4,9 +4,9 @@ ToDo:
 - add API documentation
 - add progress for measurement sets
 - add support to randomize the execution of measurement sets
-- ensure file uploads / deletions are executed between the measurement sets and warmup tasks
 
 v0.0.2
+- ensure file uploads / deletions are executed between the measurement sets and warmup tasks
 - added measurement markers to identify measurement start/end
 - added multithread (user + sys >> real) and I/O bound (user + sys << real) detection to timing
 - detect compressor errors even when using timing and stdout count
