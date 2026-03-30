@@ -3,7 +3,6 @@ import logging
 from typing import List, Self
 from dataclasses import dataclass, field
 from pathlib import Path
-from random import shuffle
 
 from usb_multimeter import ElectricalMeasurement
 
@@ -36,6 +35,7 @@ from experiment.system_meter import SystemMeasurement
 
 from .multimeter_device_manager import MultimeterDeviceManager
 from .metrics_log_dispatcher import MetricsLogDispatcher
+from .command_config_shuffle import command_config_shuffle
 
 
 class Constructor(Builder):
@@ -413,8 +413,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
 
         if self._context.command_configs:
-            command_configs = self._context.command_configs[:]
-            shuffle(command_configs)
+            command_configs = command_config_shuffle(self._context.command_configs)
             step = MeasurementStep(self._host, measurement=self._measurement, command_configs=command_configs)
             steps.append(step)
 
