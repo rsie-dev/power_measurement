@@ -72,13 +72,33 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
         pass
 
 
-class HostBuilder(Builder):
+class InitializationBuilder(Builder):
     @abstractmethod
     def upload(self, local: str | Path, remote: str | Path) -> Self:
         pass
 
     @abstractmethod
+    def done(self) -> HostBuilder:
+        pass
+
+
+class ShutdownBuilder(Builder):
+    @abstractmethod
     def delete(self, remote: str | Path) -> Self:
+        pass
+
+    @abstractmethod
+    def done(self) -> HostBuilder:
+        pass
+
+
+class HostBuilder(Builder):
+    @abstractmethod
+    def initialize(self) -> InitializationBuilder:
+        pass
+
+    @abstractmethod
+    def shutdown(self) -> ShutdownBuilder:
         pass
 
     @abstractmethod

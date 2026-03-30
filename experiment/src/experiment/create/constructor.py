@@ -9,6 +9,7 @@ from usb_multimeter import ElectricalMeasurement
 from experiment.api import Builder
 from experiment.api import HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExperimentBuilder
 from experiment.api import CommandBuilder, MeasuredCommandBuilder, Command
+from experiment.api import InitializationBuilder, ShutdownBuilder
 from experiment.api import ExecutionBuilder
 from experiment.common import SSHHost
 from experiment.ssh import ConnectionFactory
@@ -317,6 +318,36 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return log_provider
 
 
+class InitializationConstructor(CompositeConstructor, InitializationBuilder):
+    def __init__(self, parent: HostConstructor, host: SSHHost):
+        super().__init__()
+        self._parent = parent
+        self._host = host
+
+    def upload(self, local: str | Path, remote: str | Path) -> Self:
+        self._steps.append(UploadStep(self._host, Path(local), Path(remote)))
+        return self
+
+    def done(self) -> HostBuilder:
+        self._parent.add_init_step(self._steps)
+        return self._parent
+
+
+class ShutdownConstructor(CompositeConstructor, ShutdownBuilder):
+    def __init__(self, parent: HostConstructor, host: SSHHost):
+        super().__init__()
+        self._parent = parent
+        self._host = host
+
+    def delete(self, remote: str | Path) -> Self:
+        self._steps.append(DeleteStep(self._host, Path(remote)))
+        return self
+
+    def done(self) -> HostBuilder:
+        self._parent.add_shutdown_step(self._steps)
+        return self._parent
+
+
 class HostConstructor(CompositeConstructor, HostBuilder):
     def __init__(self, parent: ExperimentConstructor, host: SSHHost,
                  multimeter_coordinator: MultimeterCoordinator):
@@ -325,6 +356,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._host = host
         self._multimeter_coordinator = multimeter_coordinator
         self._tags: set[str] = set()
+        self._init_steps: List[Step] = []
+        self._shutdown_steps: List[Step] = []
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
@@ -334,13 +367,17 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
 
-    def upload(self, local: str | Path, remote: str | Path) -> Self:
-        self._steps.append(UploadStep(self._host, Path(local), Path(remote)))
-        return self
+    def add_init_step(self, steps: List[Step]) -> None:
+        self._init_steps.extend(steps)
 
-    def delete(self, remote: str | Path) -> Self:
-        self._steps.append(DeleteStep(self._host, Path(remote)))
-        return self
+    def add_shutdown_step(self, steps: List[Step]) -> None:
+        self._shutdown_steps.extend(steps)
+
+    def initialize(self) -> InitializationBuilder:
+        return InitializationConstructor(self, self._host)
+
+    def shutdown(self) -> ShutdownBuilder:
+        return ShutdownConstructor(self, self._host)
 
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._host)
@@ -364,7 +401,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(TimeDeltaStep(self._host))
             steps.append(SystemMetricsClientStep(self._host, metrics_dispatcher))
         steps.extend(self._steps)
+
+        self._parent.add_steps(self._init_steps)
         self._parent.add_steps(steps)
+        self._parent.add_steps(self._shutdown_steps)
         return self._parent
 
 

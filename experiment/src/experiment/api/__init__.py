@@ -4,6 +4,7 @@ from .command import Command
 from .api import Builder
 from .api import CommandBuilder, MeasuredCommandBuilder
 from .api import ExperimentBuilder, HostBuilder, MeasurementExecutionBuilder, WarmupExecutionBuilder, ExecutionBuilder
+from .api import InitializationBuilder, ShutdownBuilder
 
 
 __all__ = [
@@ -12,6 +13,7 @@ __all__ = [
     "ExperimentBuilder",
     "CommandBuilder", "MeasuredCommandBuilder",
     "HostBuilder", "MeasurementExecutionBuilder", "WarmupExecutionBuilder", "ExecutionBuilder",
+    "InitializationBuilder", "ShutdownBuilder",
     "get_experiment_builder", "set_experiment_builder",
 ]
 
