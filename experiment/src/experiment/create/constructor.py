@@ -216,11 +216,10 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         steps = []
 
         log_providers: list[LogProvider] = []
-        measurements: list[Measurement] = []
+        measurement: Measurement | None = None
         if self._serial_number:
             measurement, multimeter_log_provider = self._create_multimeter()
             log_providers.append(multimeter_log_provider)
-            measurements.append(measurement)
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
@@ -251,7 +250,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             command_config = MeasurementStep.CommandConfig(run=run, runs=self._config.runs, commands=commands,
                                                            tag=self._config.tag, log_providers=log_providers)
             command_configs.append(command_config)
-        step = MeasurementStep(self._host, measurements=measurements, command_configs=command_configs)
+        step = MeasurementStep(self._host, measurement=measurement, command_configs=command_configs)
         steps.append(step)
         self._parent.add_steps(steps)
         return self._parent
