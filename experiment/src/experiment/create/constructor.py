@@ -165,15 +165,15 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         tag: str
 
     def __init__(self, parent: HostConstructor, host: SSHHost,
-                 multimeter_coordinator: MultimeterCoordinator, config: MeasurementExecutionConstructor.Config):
+                 multimeter_dispatcher: LogDispatcher[ElectricalMeasurement],
+                 config: MeasurementExecutionConstructor.Config):
         super().__init__(host)
         self._parent = parent
-        self._multimeter_coordinator = multimeter_coordinator
         self._config = config
-        self._serial_number = None
         self._head_delay = None
         self._tail_delay = None
         self._log_dispatcher: dict[object, LogDispatcher] = {}
+        self._log_dispatcher[ElectricalMeasurement] = multimeter_dispatcher
 
     def allocate_timing_dispatcher(self) -> LogDispatcher[TimingEntry]:
         if TimingEntry not in self._log_dispatcher:
@@ -195,12 +195,6 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             self._log_dispatcher[FileStatsEntry] = LogDispatcher[FileStatsEntry]()
         return self._log_dispatcher[FileStatsEntry]
 
-    def with_multimeter(self, serial_number: str) -> Self:
-        self._serial_number = serial_number
-        if ElectricalMeasurement not in self._log_dispatcher:
-            self._log_dispatcher[ElectricalMeasurement] = LogDispatcher[ElectricalMeasurement]()
-        return self
-
     def with_head_delay(self, delay: int) -> Self:
         self._head_delay = delay
         return self
@@ -215,16 +209,13 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def done(self) -> HostBuilder:
         log_providers: list[LogProvider] = []
 
-        measurement: Measurement | None = None
-        if self._serial_number:
-            measurement, multimeter_log_provider = self._create_multimeter()
-            log_providers.append(multimeter_log_provider)
-
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
             metrics_log_providers = self._create_metrics(metrics_dispatcher)
             log_providers.extend(metrics_log_providers)
 
+        if ElectricalMeasurement in self._log_dispatcher:
+            log_providers.append(self._create_multimeter_log_provider())
         if TimingEntry in self._log_dispatcher:
             log_providers.append(self._create_timing_log_provider())
         if FileStatsEntry in self._log_dispatcher:
@@ -248,6 +239,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             command_config = MeasurementStep.CommandConfig(run=run, runs=self._config.runs, commands=commands,
                                                            tag=self._config.tag, log_providers=log_providers)
             command_configs.append(command_config)
+
+        measurement = self._parent.measurement
         step = MeasurementStep(self._host, measurement=measurement, command_configs=command_configs)
         self._parent.add_steps([step])
         return self._parent
@@ -269,17 +262,14 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         return log_providers
 
-    def _create_multimeter(self) -> tuple[Measurement, LogProvider]:
+    def _create_multimeter_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
-        multimeter_dispatcher = self._log_dispatcher[ElectricalMeasurement]
         log_factory: LoggerFactory = lambda resource_path: CSVMultimeterLogger(resource_path / "multimeter.csv",
                                                                                formatter)
+        multimeter_dispatcher = self._log_dispatcher[ElectricalMeasurement]
         multimeter_log_provider = GenericLogProvider(multimeter_dispatcher, log_factory)
-        device_manager = self._multimeter_coordinator.get_device_manager(self._serial_number)
-        device = device_manager.get_device()
-        measurement = MultimeterMeasurement(device, multimeter_dispatcher)
-        return measurement, multimeter_log_provider
+        return multimeter_log_provider
 
     def _create_timing_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
@@ -356,10 +346,16 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
         self._init_steps: List[Step] = []
         self._shutdown_steps: List[Step] = []
+        self._measurement: MultimeterMeasurement | None = None
+        self._multimeter_dispatcher = None
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
         return self._parent.collect_metrics
+
+    @property
+    def measurement(self) -> Measurement:
+        return self._measurement
 
     @property
     def formatter_info(self) -> tuple[type, dict]:
@@ -380,6 +376,15 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._host)
 
+    def measure_with_multimeter(self, serial_number: str) -> Self:
+        if self._measurement:
+            raise RuntimeError("multimeter for measurement already specified")
+        device_manager = self._multimeter_coordinator.get_device_manager(serial_number)
+        device = device_manager.get_device()
+        self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
+        self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
+        return self
+
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         if tag is None:
             tag = ""
@@ -387,7 +392,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
         self._tags.add(tag)
         config = MeasurementExecutionConstructor.Config(runs=runs, tag=tag)
-        return MeasurementExecutionConstructor(self, self._host, self._multimeter_coordinator, config)
+
+        if not self._measurement:
+            raise RuntimeError("no multimeter for measurement available")
+
+        return MeasurementExecutionConstructor(self, self._host, self._multimeter_dispatcher, config)
 
     def done(self) -> ExperimentBuilder:
         if "" in self._tags and len(self._tags) > 1:
