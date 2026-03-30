@@ -1,7 +1,7 @@
 from __future__ import annotations
 import logging
 from typing import List, Self
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from usb_multimeter import ElectricalMeasurement
@@ -336,9 +336,9 @@ class ShutdownConstructor(CompositeConstructor, ShutdownBuilder):
 class HostConstructor(CompositeConstructor, HostBuilder):
     @dataclass
     class ExtraHostContext:
-        init_steps: list[Step]
-        shutdown_steps: list[Step]
-        command_configs: list[MeasurementStep.CommandConfig]
+        init_steps: list[Step] = field(default_factory=list)
+        shutdown_steps: list[Step] = field(default_factory=list)
+        command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
 
     def __init__(self, parent: ExperimentConstructor, host: SSHHost,
                  multimeter_coordinator: MultimeterCoordinator):
@@ -349,7 +349,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
-        self._context = HostConstructor.ExtraHostContext(init_steps=[], shutdown_steps=[], command_configs=[])
+        self._context = HostConstructor.ExtraHostContext()
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
