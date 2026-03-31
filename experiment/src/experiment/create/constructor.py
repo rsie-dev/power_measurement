@@ -341,11 +341,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         shutdown_steps: list[Step] = field(default_factory=list)
         command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
 
-    def __init__(self, parent: ExperimentConstructor, host: SSHHost,
+    def __init__(self, parent: ExperimentConstructor, host: SSHHost, shuffle_measurement_sets: bool,
                  multimeter_coordinator: MultimeterCoordinator):
         super().__init__()
         self._parent = parent
         self._host = host
+        self._shuffle_measurement_sets = shuffle_measurement_sets
         self._multimeter_coordinator = multimeter_coordinator
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
@@ -413,7 +414,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
 
         if self._context.command_configs:
-            command_configs = command_config_shuffle(self._context.command_configs)
+            if self._shuffle_measurement_sets:
+                command_configs = command_config_shuffle(self._context.command_configs)
+            else:
+                command_configs = self._context.command_configs[:]
             step = MeasurementStep(self._host, measurement=self._measurement, command_configs=command_configs)
             steps.append(step)
 
@@ -424,14 +428,19 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
-    def __init__(self, formatter_info: tuple[type, dict], connection_factory: ConnectionFactory, ssh_user):
+    @dataclass(frozen=True)
+    class Arguments:
+        ssh_user: str
+        shuffle_measurement_sets: bool
+
+    def __init__(self, formatter_info: tuple[type, dict], connection_factory: ConnectionFactory, arguments: Arguments):
         super().__init__()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._metrics_dispatcher = None
         self._init_steps: List[InitStep] = []
         self._formatter_info = formatter_info
         self._connection_factory = connection_factory
-        self._ssh_user = ssh_user
+        self._arguments = arguments
         self._multimeter_coordinator = MultimeterCoordinator()
 
     @property
@@ -446,10 +455,10 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         self._init_steps.extend(init_steps)
 
     def on_host(self, host_name: str, host: str) -> HostBuilder:
-        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=self._ssh_user)
+        ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=self._arguments.ssh_user)
         self._init_steps.append(HostnameValidationStep(ssh_host))
         self._init_steps.append(HostnameInfoStep(ssh_host))
-        return HostConstructor(self, ssh_host, self._multimeter_coordinator)
+        return HostConstructor(self, ssh_host, self._arguments.shuffle_measurement_sets, self._multimeter_coordinator)
 
     def with_metrics_collection(self) -> Self:
         self._metrics_dispatcher = MetricsLogDispatcher()

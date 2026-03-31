@@ -16,7 +16,7 @@ class ExperimentLoader:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._formatter_info = formatter_info
 
-    def load_experiment_from_path(self, path: Path, connection_factory: ConnectionFactory, ssh_user: str,
+    def load_experiment_from_path(self, path: Path, connection_factory: ConnectionFactory, args,
                                   package_name: Optional[str] = None) -> ExperimentExecutor:
         """
         Import a .py file at `path` as a module and return the module object.
@@ -27,7 +27,10 @@ class ExperimentLoader:
         if not path.exists():
             raise FileNotFoundError(path)
 
-        builder = ExperimentConstructor(self._formatter_info, connection_factory, ssh_user)
+        arguments = ExperimentConstructor.Arguments(ssh_user=args.ssh_user,
+                                                    shuffle_measurement_sets=not args.no_shuffle
+                                                    )
+        builder = ExperimentConstructor(self._formatter_info, connection_factory, arguments)
         set_experiment_builder(builder)
 
         unique_name = f"{package_name or ""}.{path.stem}"
