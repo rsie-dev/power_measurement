@@ -5,6 +5,7 @@ from concurrent.futures import Executor
 from dataclasses import dataclass
 
 from fabric import Connection
+from tqdm import tqdm
 
 from experiment.api import Command
 from experiment.common import SSHHost
@@ -13,6 +14,7 @@ from experiment.run.base import ExperimentResources
 from experiment.run.steps.measurement import measure, Measurement
 from experiment.run.log import LogProvider
 from .host_command_step import BaseHostCommandStep
+from .log_redirect import logging_redirect_tqdm
 
 
 class MeasurementStep(BaseHostCommandStep):
@@ -47,10 +49,12 @@ class MeasurementStep(BaseHostCommandStep):
             if self._measurement:
                 step_stack.enter_context(measure(self._measurement, self._environment, self._executor))
             self._logger.info("Taking %d measurements", len(self._configs))
-            for command_config in self._configs:
-                resources_path = self._resources_path / self._host.host_name / command_config.tag
-                resources_path.mkdir(parents=True, exist_ok=True)
-                self._execute_run(command_config, resources_path, connection)
+            with logging_redirect_tqdm():
+                bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt}"
+                for command_config in tqdm(self._configs, colour="green", bar_format=bar_format):
+                    resources_path = self._resources_path / self._host.host_name / command_config.tag
+                    resources_path.mkdir(parents=True, exist_ok=True)
+                    self._execute_run(command_config, resources_path, connection)
 
     def _execute_run(self, command_config: CommandConfig, resources_path: Path, connection: Connection):
         tag = f"{command_config.tag} " if command_config.tag else ""
