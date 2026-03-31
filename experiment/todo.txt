@@ -5,6 +5,7 @@ ToDo:
 - add progress for measurement sets
 
 v0.0.2
+- add download step
 - add support to randomize the execution of measurement sets
 - ensure file uploads / deletions are executed between the measurement sets and warmup tasks
 - added measurement markers to identify measurement start/end

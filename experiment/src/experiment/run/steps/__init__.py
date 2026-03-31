@@ -6,6 +6,7 @@ from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
 from .host_info_step import HostnameInfoStep
 from .upload_step import UploadStep
+from .download_step import DownloadStep
 from .delete_step import DeleteStep
 
 __all__ = ["Step", "InitStep",
@@ -14,5 +15,6 @@ __all__ = ["Step", "InitStep",
            "SystemMetricsClientStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
-           "UploadStep", "DeleteStep",
+           "UploadStep", "DownloadStep",
+           "DeleteStep",
            ]

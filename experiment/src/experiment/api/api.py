@@ -84,6 +84,10 @@ class ShutdownBuilder(Builder):
         pass
 
     @abstractmethod
+    def download(self, remote: str | Path, local: str | Path) -> Self:
+        pass
+
+    @abstractmethod
     def done(self) -> HostBuilder:
         pass
 

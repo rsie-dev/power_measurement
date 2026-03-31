@@ -17,7 +17,7 @@ from experiment.run.steps import Step, InitStep
 from experiment.run.steps import SystemMetricsClientStep, TimeDeltaStep
 from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
-from experiment.run.steps import UploadStep, DeleteStep
+from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -327,6 +327,10 @@ class ShutdownConstructor(CompositeConstructor, ShutdownBuilder):
 
     def delete(self, remote: str | Path) -> Self:
         self._steps.append(DeleteStep(self._host, Path(remote)))
+        return self
+
+    def download(self, remote: str | Path, local: str | Path) -> Self:
+        self._steps.append(DownloadStep(self._host, Path(remote), Path(local)))
         return self
 
     def done(self) -> HostBuilder:
