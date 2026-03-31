@@ -4,7 +4,6 @@ Helper functionality for interoperability with stdlib `logging`.
 import logging
 import sys
 from contextlib import contextmanager
-from typing import Iterator, Type
 
 from tqdm.std import tqdm as std_tqdm
 
@@ -45,7 +44,6 @@ def logging_redirect_tqdm(
     loggers=None,  # type: Optional[List[logging.Logger]],
     tqdm_class=std_tqdm  # type: Type[std_tqdm]
 ):
-    # type: (...) -> Iterator[None]
     """
     Context manager redirecting console logging to `tqdm.write()`, leaving
     other logging handlers (e.g. log files) unaffected.
