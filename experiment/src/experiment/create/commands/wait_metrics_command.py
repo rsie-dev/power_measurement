@@ -14,7 +14,7 @@ class WaitMetricsCommand(Command):
         self._metrics_notificator = metrics_notificator
         self._metrics_client_timeout = 5
 
-    def execute(self, nr: int, connection, resources_path) -> None:
+    def execute(self, nr: int, connection) -> None:
         self._logger.info("Wait %s for metrics data...", humanize.precisedelta(self._metrics_client_timeout))
         event = Event()
         self._metrics_notificator.add_notification(event)

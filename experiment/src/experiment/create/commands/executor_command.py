@@ -58,7 +58,7 @@ class ExecutorCommand(Command):
     def work_dir(self):
         return self._work_dir
 
-    def execute(self, nr: int, connection: Connection, resources_path):
+    def execute(self, nr: int, connection: Connection):
         links = self._prepend_chain + self._append_chain
         tags = ["%02d" % nr]
         tags.extend([link.name() for link in links])
