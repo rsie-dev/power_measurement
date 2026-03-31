@@ -51,7 +51,8 @@ class MeasurementStep(BaseHostCommandStep):
             self._logger.info("Taking %d measurements", len(self._configs))
             with logging_redirect_tqdm():
                 bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt}"
-                for command_config in tqdm(self._configs, colour="green", bar_format=bar_format):
+                configs = tqdm(self._configs, colour="green", bar_format=bar_format)
+                for command_config in configs:
                     resources_path = self._resources_path / self._host.host_name / command_config.tag
                     resources_path.mkdir(parents=True, exist_ok=True)
                     self._execute_run(command_config, resources_path, connection)
