@@ -339,21 +339,23 @@ class ShutdownConstructor(CompositeConstructor, ShutdownBuilder):
 
 
 class HostConstructor(CompositeConstructor, HostBuilder):
+    @dataclass(frozen=True)
+    class Config:
+        host: SSHHost
+        shuffle_measurement_sets: bool
+        show_progress: bool
+        multimeter_coordinator: MultimeterCoordinator
+
     @dataclass
     class ExtraHostContext:
         init_steps: list[Step] = field(default_factory=list)
         shutdown_steps: list[Step] = field(default_factory=list)
         command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
 
-    def __init__(self, parent: ExperimentConstructor, host: SSHHost,
-                 shuffle_measurement_sets: bool, show_progress: bool,
-                 multimeter_coordinator: MultimeterCoordinator):
+    def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
         self._parent = parent
-        self._host = host
-        self._shuffle_measurement_sets = shuffle_measurement_sets
-        self._show_progress = show_progress
-        self._multimeter_coordinator = multimeter_coordinator
+        self._config = config
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
@@ -377,18 +379,18 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._context.shutdown_steps.extend(steps)
 
     def initialize(self) -> InitializationBuilder:
-        return InitializationConstructor(self, self._host)
+        return InitializationConstructor(self, self._config.host)
 
     def shutdown(self) -> ShutdownBuilder:
-        return ShutdownConstructor(self, self._host)
+        return ShutdownConstructor(self, self._config.host)
 
     def with_warmup(self) -> WarmupExecutionBuilder:
-        return WarmupExecutionConstructor(self, self._host)
+        return WarmupExecutionConstructor(self, self._config.host)
 
     def measure_with_multimeter(self, serial_number: str) -> Self:
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
-        device_manager = self._multimeter_coordinator.get_device_manager(serial_number)
+        device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
         device = device_manager.get_device()
         self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
         self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
@@ -405,7 +407,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if not self._measurement:
             raise RuntimeError("no multimeter for measurement available")
 
-        return MeasurementExecutionConstructor(self, self._host, self._multimeter_dispatcher, config)
+        return MeasurementExecutionConstructor(self, self._config.host, self._multimeter_dispatcher, config)
 
     def done(self) -> ExperimentBuilder:
         if "" in self._tags and len(self._tags) > 1:
@@ -414,18 +416,18 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps = []
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
-            steps.append(TimeDeltaStep(self._host))
-            steps.append(SystemMetricsClientStep(self._host, metrics_dispatcher))
+            steps.append(TimeDeltaStep(self._config.host))
+            steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         steps.extend(self._steps)
 
         if self._context.command_configs:
-            if self._shuffle_measurement_sets:
+            if self._config.shuffle_measurement_sets:
                 command_configs = command_config_shuffle(self._context.command_configs)
             else:
                 command_configs = self._context.command_configs[:]
-            step = MeasurementStep(self._host, measurement=self._measurement, show_progress=self._show_progress,
-                                   command_configs=command_configs)
+            step = MeasurementStep(self._config.host, measurement=self._measurement,
+                                   show_progress=self._config.show_progress, command_configs=command_configs)
             steps.append(step)
 
         self._parent.add_steps(self._context.init_steps)
@@ -466,8 +468,12 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         ssh_host = SSHHost(host_name=host_name, host=host, ssh_user=self._arguments.ssh_user)
         self._init_steps.append(HostnameValidationStep(ssh_host))
         self._init_steps.append(HostnameInfoStep(ssh_host))
-        return HostConstructor(self, ssh_host, self._arguments.shuffle_measurement_sets, self._arguments.show_progress,
-                               self._multimeter_coordinator)
+        config = HostConstructor.Config(host=ssh_host,
+                                        shuffle_measurement_sets=self._arguments.shuffle_measurement_sets,
+                                        show_progress=self._arguments.show_progress,
+                                        multimeter_coordinator=self._multimeter_coordinator
+                                        )
+        return HostConstructor(self, config=config)
 
     def with_metrics_collection(self) -> Self:
         self._metrics_dispatcher = MetricsLogDispatcher()
