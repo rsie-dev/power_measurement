@@ -1,5 +1,5 @@
 import logging
-from contextlib import ExitStack
+from contextlib import ExitStack, nullcontext
 from pathlib import Path
 from concurrent.futures import Executor
 from dataclasses import dataclass
@@ -26,11 +26,13 @@ class MeasurementStep(BaseHostCommandStep):
         tag: str
         log_providers: list[LogProvider]
 
-    def __init__(self, host: SSHHost, measurement: Measurement | None, command_configs: list[CommandConfig]):
+    def __init__(self, host: SSHHost, measurement: Measurement | None, show_progress: bool,
+                 command_configs: list[CommandConfig]):
         super().__init__("measurement", host)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._configs = command_configs
         self._measurement = measurement
+        self._configs = command_configs
+        self._show_progress = show_progress
         self._resources_path = None
         self._environment = None
         self._executor = None
@@ -49,9 +51,17 @@ class MeasurementStep(BaseHostCommandStep):
             if self._measurement:
                 step_stack.enter_context(measure(self._measurement, self._environment, self._executor))
             self._logger.info("Taking %d measurements", len(self._configs))
-            with logging_redirect_tqdm():
-                bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt}"
-                configs = tqdm(self._configs, colour="green", bar_format=bar_format)
+
+            if self._show_progress:
+                progress_context = logging_redirect_tqdm
+            else:
+                progress_context = nullcontext
+            with progress_context():
+                if self._show_progress:
+                    bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt}"
+                    configs = tqdm(self._configs, colour="green", bar_format=bar_format)
+                else:
+                    configs = self._configs
                 for command_config in configs:
                     resources_path = self._resources_path / self._host.host_name / command_config.tag
                     resources_path.mkdir(parents=True, exist_ok=True)

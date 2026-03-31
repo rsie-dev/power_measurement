@@ -141,6 +141,7 @@ class ExperimentMain:
         parser_run.add_argument('--ssh-user', default="ctest", help="SSH user" + default)
         parser_run.add_argument('--ssh-key', type=Path, help="File from which the private key for is read")
         parser_run.add_argument('--no-shuffle', action='store_true', help="Does not shuffle measurements")
+        parser_run.add_argument('--no-progress', action='store_true', help="Disable progress bar")
         parser_run.add_argument('experiment', nargs=1, help="Experiment to execute")
         parser_run.set_defaults(func=self._run_experiment)
 

@@ -28,7 +28,8 @@ class ExperimentLoader:
             raise FileNotFoundError(path)
 
         arguments = ExperimentConstructor.Arguments(ssh_user=args.ssh_user,
-                                                    shuffle_measurement_sets=not args.no_shuffle
+                                                    shuffle_measurement_sets=not args.no_shuffle,
+                                                    show_progress=not args.no_progress,
                                                     )
         builder = ExperimentConstructor(self._formatter_info, connection_factory, arguments)
         set_experiment_builder(builder)
