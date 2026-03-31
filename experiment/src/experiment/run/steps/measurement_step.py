@@ -46,6 +46,7 @@ class MeasurementStep(BaseHostCommandStep):
         with ExitStack() as step_stack:
             if self._measurement:
                 step_stack.enter_context(measure(self._measurement, self._environment, self._executor))
+            self._logger.info("Taking %d measurements", len(self._configs))
             for command_config in self._configs:
                 resources_path = self._resources_path / self._host.host_name / command_config.tag
                 resources_path.mkdir(parents=True, exist_ok=True)
@@ -53,7 +54,7 @@ class MeasurementStep(BaseHostCommandStep):
 
     def _execute_run(self, command_config: CommandConfig, resources_path: Path, connection: Connection):
         tag = f"{command_config.tag} " if command_config.tag else ""
-        self._logger.info("Run %s%d/%d", tag, command_config.run + 1, command_config.runs)
+        self._logger.info("Measure %srun %d/%d", tag, command_config.run + 1, command_config.runs)
         run_resources_path = resources_path / ("run_%03d" % (command_config.run + 1))
         run_resources_path.mkdir(parents=True, exist_ok=True)
 
