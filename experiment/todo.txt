@@ -1,9 +1,9 @@
 ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
-- add API documentation
 
 v0.0.2
+- add API documentation
 - add progress bar for measurement sets
 - add download step
 - add support to randomize the execution of measurement sets
