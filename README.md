@@ -2,10 +2,10 @@
 [![Pylint](https://github.com/rsie-dev/power_measurement/actions/workflows/pylint.yml/badge.svg)](https://github.com/rsie-dev/power_measurement/actions/workflows/pylint.yml)
 [![Prospector](https://github.com/rsie-dev/power_measurement/actions/workflows/prospector.yml/badge.svg)](https://github.com/rsie-dev/power_measurement/actions/workflows/prospector.yml)
 
-## Setup
+## Develop
 ### Clone
 ```
-git clone [-b branch] --recurse-submodules git@github.com:rsie-dev/power_measurement.git
+git clone [-b branch] git@github.com:rsie-dev/power_measurement.git
 ```
 
 # OS installs
