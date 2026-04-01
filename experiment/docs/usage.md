@@ -15,6 +15,7 @@ from experiment.api import get_experiment_builder
 
 experiment = (get_experiment_builder()
             .on_host("raspi5", "192.168.1.102")
+                .measure_with_multimeter("07D1A5642160")
                 .measure_runs(2)
                   .execute("sleep 2")
                 .done()
@@ -39,6 +40,11 @@ The name of the _experiment_ variable is fixed otherwise the experiment cannot b
 .done()
 ```
 States that the experiment is to be run on the host _raspi5_ which can be reached with the IP address _192.168.1.102_.
+
+```python
+.measure_with_multimeter("07D1A5642160")
+```
+States that for measurments the multimeter with the serial number 07D1A5642160 is to be used.
 
 ```python
 .measure_runs(2)
@@ -70,4 +76,13 @@ resources/
 Under _resources_ a folder with the name of the experiment script (_example_) is created.
 Also a copy cof the experiment script is placed there, along with the logfile of the experiment.
 
-For each host a separate folder is created which receives the logs of the experiment runs.
+For each script a separate folder is created which receives the logs of the experiment runs.
+
+Each run_<xxx> folder contains the logfiles of the specified measurments.
+In our example:
+```
+markers.csv
+multimeter.csv
+```
+Wheras _markers.csv_ receives the exact timestamps when the measured program (_sleep_) has been started and when it has finished.
+Wheras _multimeter.csv_ receives the recorded multimeter samples.
