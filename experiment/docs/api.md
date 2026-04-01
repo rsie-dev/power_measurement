@@ -59,17 +59,20 @@ Adds measurement capabilities to commands.
 with_timings() -> Self
 ```
 Enables timing measurements.
+Measurements will be written to _timings.csv_ in the run folder.
 
 ```python
 count_stdout(target: str | Path = None) -> Self
 ```
 Counts occurrences in stdout.
 Optional target specifies what to count.
+Results will be written to _count_stdout.csv_ in the run folder.
 
 ```python
 collect_file_stats(path: str) -> Self
 ```
 Collects file statistics for a given path.
+Results will be written to _file_stats.csv_ in the run folder.
 
 ### ExecutionBuilder
 Defines how commands are executed.
@@ -112,6 +115,8 @@ Adds delay after execution completes.
 execute_with(command: str) -> MeasuredCommandBuilder
 ```
 Starts configuring a measurable command.
+Execution markers will be written to _markers.csv_ in the run folder.
+Multimeter measurements will be written to _multimeter.csv_ in the run folder.
 
 ```python
 done() -> HostBuilder
@@ -194,6 +199,7 @@ Top-level builder for constructing an experiment.
 with_metrics_collection() -> Self
 ```
 Enables global metrics collection.
+Metrics measurements will be written to _system.csv_ and _cpu.csv_ in the run folder.
 
 ```python
 on_host(host_name: str, host: str) -> HostBuilder
