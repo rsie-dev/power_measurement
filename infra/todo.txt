@@ -1,5 +1,8 @@
 ToDo:
-- check systemd timers
+- add install of ssh keys to ctest user
+- add pigz, pbzip2/lbzip2
+- add lzip, plzip (if streaming)
+
 
 done:
 - adapt sudoers for ctest to not require a password for telegraf service
