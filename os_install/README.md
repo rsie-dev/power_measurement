@@ -11,7 +11,7 @@ xz -d DietPi_RPi5-ARMv8-Trixie.img.xz
 1. Prepare and write the image to SD card:
 '''
 sudo dd if=DietPi_RPi5-ARMv8-Trixie.img of=/dev/<sdX>
-sudo mount -t auto /dev/<sdX>1 /mnt/tmp/
+sudo mount -t auto /dev/<sdX>2 /mnt/tmp/
 sudo patch /mnt/tmp/dietpi.txt patches/dietpi_raspi5.patch
 sudo umount /mnt/tmp/
 '''
@@ -41,10 +41,12 @@ sudo umount /mnt/tmp/
 1. Boot from USB stick and install system -> power off
 1. Prepare initial USB stick with live linux system
 1. Boot from USB stick
-1. Copy patches/dietpi_radxax4.txt to separate USB stick
+1. Copy patches/dietpi_radxax4.txt and patches/dietpi_radxax4.patch to separate USB stick
 1. Mount separate USB stick to /mnt/tmp
-1. Mount /dev/mmcblk0p1 to /mnt/boot
-1. Copy /mnt/tmp/dietpi_radxax4.txt to /mnt/boot/boot/dietpi.txt
+1. Mount /dev/mmcblk0p2 to /mnt/boot
+1. Either
+   - Copy /mnt/tmp/dietpi_radxax4.txt to /mnt/boot/boot/dietpi.txt
+   - sudo patch /mnt/boot/boot/dietpi.txt /mnt/tmp/dietpi_radxax4.patch
 1. Power off
 1. Remove both USB sticks
 1. Boot device
