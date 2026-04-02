@@ -7,6 +7,7 @@ from network import base_network, router, ntp_client
 from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, add_test_user
+from ssh import install_ssh_keys
 
 
 server.mount(
@@ -38,7 +39,9 @@ if "dut" in host.groups:
     telegraf()
     stressors()
     compressors()
-    add_test_user()
+    test_user = "ctest"
+    add_test_user(test_user)
+    install_ssh_keys(test_user)
 
 
 switch_to_read_only()

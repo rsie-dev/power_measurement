@@ -234,7 +234,7 @@ def set_kernel_ro_flag_riscv():
 
 
 def set_kernel_ro_flag_raspi():
-    cmd_path = Path("/boot/cmdline.txt")
+    cmd_path = Path("/boot/firmware/cmdline.txt")
     link_info = host.get_fact(Link, str(cmd_path))
     if link_info:
         cmd_path = cmd_path.parent / link_info["link_target"]
@@ -248,12 +248,11 @@ def set_kernel_ro_flag_raspi():
     )
 
 
-def add_test_user():
-    test_user = "ctest"
-    hashed_pw = crypt.crypt("ctest", crypt.mksalt(crypt.METHOD_SHA512))
+def add_test_user(user: str):
+    hashed_pw = crypt.crypt(user, crypt.mksalt(crypt.METHOD_SHA512))
     server.user(
         name="Create test user",
-        user=test_user,
+        user=user,
         password=hashed_pw,
         shell="/bin/bash",
         create_home=True,
@@ -262,11 +261,11 @@ def add_test_user():
 
     lines = []
     for op in ["status","start","stop","restart"]:
-        lines.append(f"{test_user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf@*.service")
+        lines.append(f"{user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf@*.service")
     content = StringIO("\n".join(lines) + "\n")
     files.put(
-        name="Allow %s to control telegraf service" % test_user,
+        name="Allow %s to control telegraf service" % user,
         src=content,
-        dest="/etc/sudoers.d/%s" % test_user,
+        dest="/etc/sudoers.d/%s" % user,
         _sudo=True,
     )
