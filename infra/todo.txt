@@ -4,6 +4,7 @@ ToDo:
 
 
 done:
+- limit memory of VisionFive2 to 4GB
 - add install of ssh keys to ctest user
 - adapt sudoers for ctest to not require a password for telegraf service
 - reduced chrony update/synch time

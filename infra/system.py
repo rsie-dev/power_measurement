@@ -269,3 +269,26 @@ def add_test_user(user: str):
         dest="/etc/sudoers.d/%s" % user,
         _sudo=True,
     )
+
+
+def unify_memory_size():
+    memory_limit_gb = 4
+    arch = host.get_fact(Arch, )
+    if arch == "x86_64":
+        pass
+    elif arch == "riscv64":
+        _limit_kernel_memory(memory_limit_gb )
+    elif arch == "aarch64":
+        pass
+    else:
+        raise RuntimeError("unsupported architecture: %s" % arch)
+
+
+def _limit_kernel_memory(memory_limit_gb: int):
+    files.replace(
+        name=f"Limit memory to {memory_limit_gb}GB",
+        path="/boot/extlinux/extlinux.conf",
+        text=r"rootwait earlycon",
+        replace=f"rootwait mem={memory_limit_gb}G earlycon",
+        _sudo=True,
+    )
