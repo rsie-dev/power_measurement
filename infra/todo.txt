@@ -1,8 +1,8 @@
 ToDo:
-- add lzip, plzip (if streaming)
 
 
 done:
+- add lzip, plzip
 - add lbzip2
 - limit memory of VisionFive2 to 4GB
 - add install of ssh keys to ctest user

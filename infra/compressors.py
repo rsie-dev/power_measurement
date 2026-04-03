@@ -8,6 +8,7 @@ def compressors():
                         "bzip2", "pbzip2", "lbzip2",
                         "bzip3",
                         "xz-utils",
+                        "lzip", "plzip",
                         "lzop", "lz4",  "zstd",
                         "brotli", "zopfli",
                         ]
