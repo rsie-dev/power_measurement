@@ -31,7 +31,6 @@ class MultimeterMeasurement(Measurement):
 
     def _prepare(self, environment: ExperimentEnvironment):
         self._stop_provider = SignalStopProvider()
-        environment.add_shutdown_handler(self._stop_provider)
         self._usb_meter = USBMeter(device=self._device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
 
@@ -45,7 +44,6 @@ class MultimeterMeasurement(Measurement):
 
     def stop(self, environment: ExperimentEnvironment):
         if self._stop_provider:
-            environment.remove_shutdown_handler(self._stop_provider)
             self._stop_provider.shut_down(False)
 
         wait([self._future], return_when=FIRST_EXCEPTION)

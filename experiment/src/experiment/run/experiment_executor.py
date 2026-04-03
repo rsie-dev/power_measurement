@@ -6,7 +6,6 @@ from threading import Event
 from contextlib import nullcontext
 
 from experiment.api import Experiment
-from experiment.common import SignalHandler
 from experiment.system_meter import MetricsServer, SystemMeasurement
 from experiment.ssh import SSHConnectionManager, ConnectionFactory
 from .steps import Step, InitStep
@@ -31,8 +30,6 @@ class ExperimentExecutor(Experiment):
             runtime = Runtime(ssh_manager)
             self._initialize(runtime, self._init_steps)
 
-            signal_handler = SignalHandler()
-
             with ThreadPoolExecutor() as executor:
                 future = None
                 if self._metrics_dispatcher:
@@ -47,7 +44,7 @@ class ExperimentExecutor(Experiment):
                                                      self._metrics_dispatcher, event)
                             event.wait(self._metrics_server_start_timeout)
 
-                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
+                        environment = Environment(ssh_manager, metrics_server_address)
                         runner = ExperimentRunner(executor, resources, self._steps)
                         runner.execute_runs(runtime, environment)
                 finally:
