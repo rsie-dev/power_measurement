@@ -4,9 +4,16 @@ from pyinfra.api import deploy
 
 @deploy("Compressors")
 def compressors():
+    compressor_tools = ["gzip", "pigz",
+                        "bzip2", "pbzip2", "lbzip2",
+                        "bzip3",
+                        "xz-utils",
+                        "lzop", "lz4",  "zstd",
+                        "brotli", "zopfli",
+                        ]
     apt.packages(
         name="Install compression tools",
-        packages=["gzip", "xz-utils", "lzop", "lz4", "bzip2", "bzip3", "brotli", "zopfli", "zstd", "pigz", "pbzip2"],
+        packages=compressor_tools,
         no_recommends=True,
         _sudo=True,
     )

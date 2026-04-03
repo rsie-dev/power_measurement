@@ -1,9 +1,9 @@
 ToDo:
-- add pigz, pbzip2/lbzip2
 - add lzip, plzip (if streaming)
 
 
 done:
+- add lbzip2
 - limit memory of VisionFive2 to 4GB
 - add install of ssh keys to ctest user
 - adapt sudoers for ctest to not require a password for telegraf service
