@@ -3,7 +3,6 @@ from pathlib import Path
 from concurrent.futures import Executor
 from typing import List
 
-from experiment.common import SignalHandler
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from .steps import Step
@@ -11,11 +10,10 @@ from .resources import Resources
 
 
 class ExperimentRunner:
-    def __init__(self, executor: Executor, resource_path: Path, signal_handler: SignalHandler, steps: List[Step]):
+    def __init__(self, executor: Executor, resource_path: Path, steps: List[Step]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._executor = executor
         self._resource_path = resource_path
-        self._signal_handler = signal_handler
         self._steps = steps[:]
 
     def execute_runs(self, runtime: ExperimentRuntime, environment: ExperimentEnvironment):
@@ -32,10 +30,9 @@ class ExperimentRunner:
                 self._logger.debug("start step: %s", step.name)
                 step.start(self._executor)
 
-            with self._signal_handler.capture_signals():
-                for step in self._steps:
-                    self._logger.debug("execute step: %s", step.name)
-                    step.execute(runtime)
+            for step in self._steps:
+                self._logger.debug("execute step: %s", step.name)
+                step.execute(runtime)
 
         finally:
             self._logger.info("Stopping all steps")

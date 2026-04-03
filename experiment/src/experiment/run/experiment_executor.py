@@ -3,6 +3,7 @@ from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 from threading import Event
+from contextlib import nullcontext
 
 from experiment.api import Experiment
 from experiment.common import SignalHandler
@@ -36,23 +37,22 @@ class ExperimentExecutor(Experiment):
                 future = None
                 if self._metrics_dispatcher:
                     metrics_server = MetricsServer(metrics_server_address)
-                    signal_handler.add_shutdown_handler(metrics_server)
                 else:
-                    metrics_server = None
+                    metrics_server = nullcontext()
                 try:
-                    if self._metrics_dispatcher:
-                        event = Event()
-                        future = executor.submit(self._system_collector, metrics_server,
-                                                 self._metrics_dispatcher, event)
-                        event.wait(self._metrics_server_start_timeout)
+                    with metrics_server:
+                        if self._metrics_dispatcher:
+                            event = Event()
+                            future = executor.submit(self._system_collector, metrics_server,
+                                                     self._metrics_dispatcher, event)
+                            event.wait(self._metrics_server_start_timeout)
 
-                    environment = Environment(ssh_manager, signal_handler, metrics_server_address)
-                    runner = ExperimentRunner(executor, resources, signal_handler, self._steps)
-                    runner.execute_runs(runtime, environment)
+                        environment = Environment(ssh_manager, signal_handler, metrics_server_address)
+                        runner = ExperimentRunner(executor, resources, self._steps)
+                        runner.execute_runs(runtime, environment)
                 finally:
                     if future:
-                        metrics_server.shut_down(False)
-                        self._logger.info("Wait for system_meter")
+                        self._logger.info("Wait for metrics server")
                         wait([future], return_when=FIRST_EXCEPTION)
                         if future.done():
                             future.result()

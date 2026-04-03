@@ -34,6 +34,13 @@ class MetricsServer(ShutdownHandler):
         self._server = None
         self._metrics_server_address = metrics_server_address
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._logger.info("Signal metrics server to shutdown")
+        self.shut_down(False)
+
     def shut_down(self, force: bool) -> None:
         if self._server is None:
             return
