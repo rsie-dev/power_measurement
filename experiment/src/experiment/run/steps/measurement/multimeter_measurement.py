@@ -23,13 +23,13 @@ class MultimeterMeasurement(Measurement):
         self._log_dispatcher = log_dispatcher
 
     def start(self, environment: ExperimentEnvironment, executor: Executor):
-        self._prepare(environment)
+        self._prepare()
         event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, event)
         event.wait(self._start_timeout)
         self._future = future
 
-    def _prepare(self, environment: ExperimentEnvironment):
+    def _prepare(self):
         self._stop_provider = SignalStopProvider()
         self._usb_meter = USBMeter(device=self._device, stop_provider=self._stop_provider, use_crc=True)
         self._usb_meter.setup_device()
