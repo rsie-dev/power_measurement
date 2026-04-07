@@ -22,7 +22,7 @@ def _get_measuremnt_type(measurement: SystemMeasurement) -> MetricType:
 
 
 class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
-    FIELD_NAMES = ["timestamp", "rel_time_S", "host", "name"]
+    FIELD_NAMES = ["timestamp", "host", "name"]
     SYSTEM_FIELD_NAMES = FIELD_NAMES + ["load1", "load5", "load15"]
     CPU_FIELD_NAMES = FIELD_NAMES + ["entity",
                    "usage_idle", "usage_system", "usage_user", "usage_nice", "usage_iowait",
@@ -35,7 +35,6 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
         self._stream = path.open(mode="x", encoding="utf-8")
         headers = self.SYSTEM_FIELD_NAMES if self._type == MetricType.SYSTEM else self.CPU_FIELD_NAMES
         self._writer = csv.DictWriter(self._stream, fieldnames=headers)
-        self._start_time = None
 
     def init(self) -> None:
         self._writer.writeheader()
@@ -44,10 +43,6 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
         self._stream.close()
 
     def _log(self, measurement: SystemMeasurement) -> None:
-        if self._start_time is None:
-            self._start_time = measurement.timestamp
-        rel_time = measurement.timestamp - self._start_time
-
         measurement_type = _get_measuremnt_type(measurement)
         if self._type != measurement_type:
             return
@@ -56,7 +51,6 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
 
         entry = {
             "timestamp": f"{formatted_time}",
-            "rel_time_S": f"{rel_time.total_seconds():8.3f}",
             "host": f"{measurement.tags["host"]}",
             "name": f"{measurement.name}",
         }
