@@ -1,5 +1,10 @@
 version: 1
 disable_existing_loggers: False
+
+filters:
+  path_sanitizer:
+    (): experiment.log_util.PathSanitizer
+
 formatters:
     console:
         format: "%(asctime)s - %(levelname)s - %(message)s"
@@ -22,10 +27,12 @@ handlers:
     console:
         class: logging.StreamHandler
         formatter: console_color
+        filters: [path_sanitizer]
         stream: ext://sys.stderr
     console_warn:
         class: logging.StreamHandler
         formatter: console_color
+        filters: [path_sanitizer]
         stream: ext://sys.stderr
         level: WARN
     file:
@@ -33,6 +40,7 @@ handlers:
         mode: w
         level: DEBUG
         formatter: file
+        filters: [path_sanitizer]
         filename: /dev/null
 loggers:
     "":

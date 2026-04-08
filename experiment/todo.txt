@@ -1,9 +1,9 @@
 ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
-- remove absolute path names from log file
 
 v0.0.2
+- remove absolute path names from log file
 - remove rel time entries
 - add API documentation
 - add progress bar for measurement sets
