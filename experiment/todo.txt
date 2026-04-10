@@ -1,5 +1,4 @@
 ToDo:
-- log version
 - add units to generated multimeter files
 - add temp check of multimeter
 - add external temp. sensor
