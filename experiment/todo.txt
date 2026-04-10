@@ -1,4 +1,5 @@
 ToDo:
+- log temperature in separate logfile
 - add temp check of multimeter
 - add external temp. sensor
 - collect SBC temperature, too
