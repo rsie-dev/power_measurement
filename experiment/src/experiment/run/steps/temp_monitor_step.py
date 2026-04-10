@@ -9,13 +9,17 @@ from experiment.run.log import LogDispatcher, Logger
 from usb_multimeter import ElectricalMeasurement
 
 from .step import Step
+from .measurement_step import MeasurementAbort
 
 
-class TempMonitorStep(Step, Logger):
+class TempMonitorStep(Step, Logger, MeasurementAbort):
     def __init__(self, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
         super().__init__("temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_dispatcher = log_dispatcher
+
+    def abort_measurement(self) -> bool:
+        return False
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         pass

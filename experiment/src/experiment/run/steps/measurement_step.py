@@ -1,8 +1,10 @@
+from __future__ import annotations
 import logging
 from contextlib import ExitStack, nullcontext
 from pathlib import Path
 from concurrent.futures import Executor
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from fabric import Connection
 from tqdm import tqdm
@@ -17,6 +19,12 @@ from .host_command_step import BaseHostCommandStep
 from .log_redirect import logging_redirect_tqdm
 
 
+class MeasurementAbort:
+    @abstractmethod
+    def abort_measurement(self) -> bool:
+        pass
+
+
 class MeasurementStep(BaseHostCommandStep):
     @dataclass(frozen=True)
     class CommandConfig:
@@ -26,16 +34,21 @@ class MeasurementStep(BaseHostCommandStep):
         tag: str
         log_providers: list[LogProvider]
 
-    def __init__(self, host: SSHHost, measurement: Measurement | None, show_progress: bool,
-                 command_configs: list[CommandConfig]):
+    @dataclass(frozen=True)
+    class Config:
+        show_progress: bool
+        command_configs: list[MeasurementStep.CommandConfig]
+
+    def __init__(self, host: SSHHost, measurement: Measurement | None, config: Config,
+                 aborter: MeasurementAbort):
         super().__init__("measurement", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._measurement = measurement
-        self._configs = command_configs
-        self._show_progress = show_progress
+        self._config = config
         self._resources_path = None
         self._environment = None
         self._executor = None
+        self._aborter = aborter
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         super().prepare(environment, resources)
@@ -50,19 +63,21 @@ class MeasurementStep(BaseHostCommandStep):
         with ExitStack() as step_stack:
             if self._measurement:
                 step_stack.enter_context(measure(self._measurement, self._environment, self._executor))
-            self._logger.info("Taking %d measurements", len(self._configs))
+            self._logger.info("Taking %d measurements", len(self._config.command_configs))
 
-            if self._show_progress:
+            if self._config.show_progress:
                 progress_context = logging_redirect_tqdm
             else:
                 progress_context = nullcontext
             with progress_context():
-                if self._show_progress:
+                if self._config.show_progress:
                     bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt} {rate_fmt}"
-                    configs = tqdm(self._configs, colour="green", bar_format=bar_format, unit="cmd")
+                    configs = tqdm(self._config.command_configs, colour="green", bar_format=bar_format, unit="cmd")
                 else:
-                    configs = self._configs
+                    configs = self._config.command_configs
                 for command_config in configs:
+                    if self._aborter.abort_measurement():
+                        break
                     resources_path = self._resources_path / self._host.host_name / command_config.tag
                     resources_path.mkdir(parents=True, exist_ok=True)
                     self._execute_run(command_config, resources_path, connection)

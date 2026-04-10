@@ -429,8 +429,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 command_configs = command_config_shuffle(self._context.command_configs)
             else:
                 command_configs = self._context.command_configs[:]
-            step = MeasurementStep(self._config.host, measurement=self._measurement,
-                                   show_progress=self._config.show_progress, command_configs=command_configs)
+            aborter = monitor_step
+            config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs)
+            step = MeasurementStep(self._config.host, self._measurement, config, aborter)
+
             steps.append(step)
 
         self._parent.add_steps(self._context.init_steps)
