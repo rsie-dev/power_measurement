@@ -8,6 +8,7 @@ from .host_info_step import HostnameInfoStep
 from .upload_step import UploadStep
 from .download_step import DownloadStep
 from .delete_step import DeleteStep
+from .temp_monitor_step import TempMonitorStep
 
 __all__ = ["Step", "InitStep",
            "WarmupCommandStep",
@@ -17,4 +18,5 @@ __all__ = ["Step", "InitStep",
            "HostnameValidationStep", "HostnameInfoStep",
            "UploadStep", "DownloadStep",
            "DeleteStep",
+           "TempMonitorStep",
            ]

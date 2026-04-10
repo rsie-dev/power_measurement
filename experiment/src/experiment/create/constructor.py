@@ -18,6 +18,7 @@ from experiment.run.steps import SystemMetricsClientStep, TimeDeltaStep
 from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
+from experiment.run.steps import TempMonitorStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -420,6 +421,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         steps.extend(self._steps)
+        monitor_step = TempMonitorStep(self._multimeter_dispatcher)
+        steps.append(monitor_step)
 
         if self._context.command_configs:
             if self._config.shuffle_measurement_sets:
