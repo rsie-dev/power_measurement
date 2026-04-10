@@ -17,10 +17,21 @@ class TimingEntry:
 
 
 class CSVTimingLogger(CSVBaseLogger, Logger[TimingEntry]):
-    FIELD_NAMES = ["nr", "real_S", "user_S", "sys_S", "command"]
+    FIELD_NAMES = ["nr", "real", "user", "sys", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter, path, self.FIELD_NAMES)
+
+    def init(self) -> None:
+        self._writer.writeheader()
+        entry = {
+            "nr": "No Unit",
+            "real": "second",
+            "user": "second",
+            "sys": "second",
+            "command": "No Unit",
+        }
+        self._writer.writerow(entry)
 
     def log(self, data: TimingEntry | list[TimingEntry]) -> None:
         if not isinstance(data, list):
@@ -28,9 +39,9 @@ class CSVTimingLogger(CSVBaseLogger, Logger[TimingEntry]):
         for data_entry in data:
             log_entry = {
                 "nr": f"{data_entry.entry_nr}",
-                "real_S": f"{data_entry.real.total_seconds():8.3f}",
-                "user_S": f"{data_entry.user.total_seconds():8.3f}",
-                "sys_S": f"{data_entry.sys.total_seconds():8.3f}",
+                "real": f"{data_entry.real.total_seconds():8.3f}",
+                "user": f"{data_entry.user.total_seconds():8.3f}",
+                "sys": f"{data_entry.sys.total_seconds():8.3f}",
                 "command": f"{data_entry.command}",
             }
             self._writer.writerow(log_entry)

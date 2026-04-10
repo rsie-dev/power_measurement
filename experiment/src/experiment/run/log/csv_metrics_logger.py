@@ -38,6 +38,32 @@ class CSVMetricsLogger(BaseLogger, Logger[SystemMeasurement]):
 
     def init(self) -> None:
         self._writer.writeheader()
+        entry = {
+            "timestamp": "No Unit",
+            "host": "No Unit",
+            "name": "No Unit",
+        }
+        if self._type == MetricType.SYSTEM:
+            entry = entry | {
+                "load1": "No Unit",
+                "load5": "No Unit",
+                "load15": "No Unit",
+            }
+        else:
+            entry = entry | {
+                "entity": "No Unit",
+                "usage_guest": "No Unit",
+                "usage_guest_nice": "No Unit",
+                "usage_idle": "No Unit",
+                "usage_iowait": "No Unit",
+                "usage_irq": "No Unit",
+                "usage_nice": "No Unit",
+                "usage_softirq": "No Unit",
+                "usage_steal": "No Unit",
+                "usage_system": "No Unit",
+                "usage_user": "No Unit",
+            }
+        self._writer.writerow(entry)
 
     def close(self) -> None:
         self._stream.close()

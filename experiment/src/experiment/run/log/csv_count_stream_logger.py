@@ -14,10 +14,19 @@ class CountStreamEntry:
 
 
 class CSVCountStreamLogger(CSVBaseLogger, Logger[CountStreamEntry]):
-    FIELD_NAMES = ["nr", "count_B", "command"]
+    FIELD_NAMES = ["nr", "count", "command"]
 
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter, path, self.FIELD_NAMES)
+
+    def init(self) -> None:
+        self._writer.writeheader()
+        entry = {
+            "nr": "No Unit",
+            "count": "byte",
+            "command": "No Unit",
+        }
+        self._writer.writerow(entry)
 
     def log(self, data: CountStreamEntry | list[CountStreamEntry]) -> None:
         if not isinstance(data, list):
@@ -25,7 +34,7 @@ class CSVCountStreamLogger(CSVBaseLogger, Logger[CountStreamEntry]):
         for data_entry in data:
             count_entry = {
                 "nr": f"{data_entry.entry_nr}",
-                "count_B": f"{data_entry.count}",
+                "count": f"{data_entry.count}",
                 "command": f"{data_entry.command}",
             }
             self._writer.writerow(count_entry)

@@ -27,6 +27,16 @@ class CSVMarkersLogger(CSVBaseLogger, Logger[MarkersEntry]):
     def __init__(self, path: Path, formatter: logging.Formatter):
         super().__init__(formatter, path, self.FIELD_NAMES)
 
+    def init(self) -> None:
+        self._writer.writeheader()
+        entry = {
+            "nr": "No Unit",
+            "kind": "No Unit",
+            "timestamp": "No Unit",
+            "command": "No Unit",
+        }
+        self._writer.writerow(entry)
+
     def log(self, data: MarkersEntry | list[MarkersEntry]) -> None:
         if not isinstance(data, list):
             data = [data]

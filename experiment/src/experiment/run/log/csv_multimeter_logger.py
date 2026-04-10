@@ -9,20 +9,30 @@ from .logger import Logger
 
 
 class CSVMultimeterLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
-    FIELD_NAMES = ["timestamp", "temperature_C", "voltage_V", "current_A"]
+    FIELD_NAMES = ["timestamp", "temperature", "voltage", "current"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool = False):
         super().__init__(formatter, path, self.FIELD_NAMES)
         self._latest_only = latest_only
+
+    def init(self) -> None:
+        self._writer.writeheader()
+        entry = {
+            "timestamp": "No Unit",
+            "temperature": "celsius",
+            "voltage": "volt",
+            "current": "ampere",
+        }
+        self._writer.writerow(entry)
 
     def _log_measurement(self, data: ElectricalMeasurement) -> None:
         formatted_time = self._format_time(data.timestamp)
 
         entry = {
             "timestamp": f"{formatted_time}",
-            "temperature_C": f"{data.temperature:2.2f}",
-            "voltage_V": f"{data.voltage:7.5f}",
-            "current_A": f"{data.current:7.5f}",
+            "temperature": f"{data.temperature:2.2f}",
+            "voltage": f"{data.voltage:7.5f}",
+            "current": f"{data.current:7.5f}",
         }
         self._writer.writerow(entry)
 
