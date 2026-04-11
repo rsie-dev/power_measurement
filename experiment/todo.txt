@@ -1,11 +1,11 @@
 ToDo:
 - log temperature in separate logfile
-- add temp check of multimeter
 - add external temp. sensor
 - collect SBC temperature, too
 
 v0.0.3
 - add units to data files
+- add temp check of multimeter
 
 v0.0.2
 - remove absolute path names from log file
