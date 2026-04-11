@@ -40,7 +40,7 @@ class MeasurementStep(BaseHostCommandStep):
         command_configs: list[MeasurementStep.CommandConfig]
 
     def __init__(self, host: SSHHost, measurement: Measurement | None, config: Config,
-                 aborter: MeasurementAbort):
+                 aborter: MeasurementAbort | None):
         super().__init__("measurement", host)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._measurement = measurement
@@ -76,7 +76,7 @@ class MeasurementStep(BaseHostCommandStep):
                 else:
                     configs = self._config.command_configs
                 for command_config in configs:
-                    if self._aborter.abort_measurement():
+                    if self._aborter and self._aborter.abort_measurement():
                         break
                     resources_path = self._resources_path / self._host.host_name / command_config.tag
                     resources_path.mkdir(parents=True, exist_ok=True)
