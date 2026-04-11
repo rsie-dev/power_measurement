@@ -19,7 +19,7 @@ from .host_command_step import BaseHostCommandStep
 from .log_redirect import logging_redirect_tqdm
 
 
-class MeasurementAbort:
+class MeasurementAbort(ABC):
     @abstractmethod
     def abort_measurement(self) -> bool:
         pass
