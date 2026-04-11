@@ -13,10 +13,11 @@ from .measurement_step import MeasurementAbort
 
 
 class TempMonitorStep(Step, Logger, MeasurementAbort):
-    def __init__(self, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
+    def __init__(self, log_dispatcher: LogDispatcher[ElectricalMeasurement], max_temp_delta: float):
         super().__init__("temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_dispatcher = log_dispatcher
+        self._max_temp_delta = max_temp_delta
 
     def abort_measurement(self) -> bool:
         return False

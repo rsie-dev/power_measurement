@@ -421,7 +421,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         steps.extend(self._steps)
-        monitor_step = TempMonitorStep(self._multimeter_dispatcher)
+        max_temp_delta = 1.0
+        monitor_step = TempMonitorStep(self._multimeter_dispatcher, max_temp_delta)
         steps.append(monitor_step)
 
         if self._context.command_configs:
