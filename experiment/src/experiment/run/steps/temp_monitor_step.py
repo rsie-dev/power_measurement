@@ -72,7 +72,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is below lower threshold %s for more than %s s",
+                self._logger.fatal("temp is below lower threshold %s for more than %s s -> abort",
                                    self._format_temp(self._context.threshold_low), self._min_duration)
                 self._context.abort_flag = True
         elif data.temperature > self._context.threshold_high:
@@ -82,7 +82,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is above upper threshold %s for more than %s s",
+                self._logger.fatal("temp is above upper threshold %s for more than %s s -> abort",
                                    self._format_temp(self._context.threshold_high), self._min_duration)
                 self._context.abort_flag = True
         else:
