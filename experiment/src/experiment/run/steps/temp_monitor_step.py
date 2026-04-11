@@ -89,7 +89,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
             self._context.start_time = None
 
     def _format_temp(self, temp: float) -> str:
-        return f"{temp:0.2}°C"
+        return f"{temp:2.2f}°C"
 
     def log(self, data: List[ElectricalMeasurement]) -> None:
         self._log_measurement(data[-1])
