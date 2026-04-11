@@ -16,7 +16,7 @@ from .measurement_step import MeasurementAbort
 
 class TempMonitorStep(Step, Logger, MeasurementAbort):
     def __init__(self, log_dispatcher: LogDispatcher[ElectricalMeasurement], max_temp_delta: float,
-                 min_duration: datetime.timedelta | None = None):
+                 min_duration: datetime.timedelta | None = None, now=datetime.datetime.now):
         super().__init__("temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_dispatcher = log_dispatcher
@@ -24,7 +24,9 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         if min_duration is None:
             min_duration = datetime.timedelta(seconds=2)
         self._min_duration = min_duration
-        self._threshold = None
+        self._now = now
+        self._threshold_high = None
+        self._threshold_low = None
         self._start_time = None
         self._abort_flag = False
 
@@ -46,24 +48,34 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         self._logger.debug("temperature monitor stop")
 
     def _log_measurement(self, data: ElectricalMeasurement) -> None:
-        if self._threshold is None:
+        if self._threshold_high is None:
             initial_temperature = data.temperature
-            self._threshold = initial_temperature + self._max_temp_delta
-            self._logger.info("initial temp: %s -> threshold: %s",
-                              self._format_temp(initial_temperature), self._format_temp(self._threshold))
+            self._threshold_high = initial_temperature + self._max_temp_delta
+            self._threshold_low = initial_temperature - self._max_temp_delta
+            self._logger.info("initial temp: %s -> thresholds: %s : %s",
+                              self._format_temp(initial_temperature),
+                              self._format_temp(self._threshold_low), self._format_temp(self._threshold_high))
             return
 
-        now = datetime.datetime.now()
+        now = self._now()
 
-        # Fixme: check for low threshold, too
-        if data.temperature > self._threshold:
+        if data.temperature < self._threshold_low:
+            if self._start_time is None:
+                self._logger.warning("temp is below threshold (%s): %s",
+                                     self._format_temp(self._threshold_low), self._format_temp(data.temperature))
+                self._start_time = now
+            elif now - self._start_time > self._min_duration:
+                self._logger.fatal("temp is below threshold %s for more than %s s",
+                                   self._format_temp(self._threshold_low), self._min_duration)
+                self._abort_flag = True
+        elif data.temperature > self._threshold_high:
             if self._start_time is None:
                 self._logger.warning("temp is above threshold (%s): %s",
-                                     self._format_temp(self._threshold), self._format_temp(data.temperature))
+                                     self._format_temp(self._threshold_high), self._format_temp(data.temperature))
                 self._start_time = now
             elif now - self._start_time > self._min_duration:
                 self._logger.fatal("temp is above threshold %s for more than %s s",
-                                   self._format_temp(self._threshold), self._min_duration)
+                                   self._format_temp(self._threshold_high), self._min_duration)
                 self._abort_flag = True
         else:
             self._start_time = None
