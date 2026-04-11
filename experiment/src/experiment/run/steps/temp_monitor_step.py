@@ -57,7 +57,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
             initial_temperature = data.temperature
             self._context.threshold_high = initial_temperature + self._max_temp_delta
             self._context.threshold_low = initial_temperature - self._max_temp_delta
-            self._logger.info("initial temp: %s -> thresholds: %s : %s",
+            self._logger.info("initial temp: %s -> thresholds: %s -- %s",
                               self._format_temp(initial_temperature),
                               self._format_temp(self._context.threshold_low),
                               self._format_temp(self._context.threshold_high))
@@ -67,22 +67,22 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
 
         if data.temperature < self._context.threshold_low:
             if self._context.start_time is None:
-                self._logger.warning("temp is below threshold (%s): %s",
+                self._logger.warning("temp is below lower threshold (%s): %s",
                                      self._format_temp(self._context.threshold_low),
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is below threshold %s for more than %s s",
+                self._logger.fatal("temp is below lower threshold %s for more than %s s",
                                    self._format_temp(self._context.threshold_low), self._min_duration)
                 self._context.abort_flag = True
         elif data.temperature > self._context.threshold_high:
             if self._context.start_time is None:
-                self._logger.warning("temp is above threshold (%s): %s",
+                self._logger.warning("temp is above upper threshold (%s): %s",
                                      self._format_temp(self._context.threshold_high),
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is above threshold %s for more than %s s",
+                self._logger.fatal("temp is above upper threshold %s for more than %s s",
                                    self._format_temp(self._context.threshold_high), self._min_duration)
                 self._context.abort_flag = True
         else:
