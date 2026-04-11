@@ -49,22 +49,26 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         if self._threshold is None:
             initial_temperature = data.temperature
             self._threshold = initial_temperature + self._max_temp_delta
-            self._logger.info("initial temp: %0.2f°C -> threshold: %0.2f°C", initial_temperature, self._threshold)
+            self._logger.info("initial temp: %s -> threshold: %s",
+                              self._format_temp(initial_temperature), self._format_temp(self._threshold))
             return
 
         now = datetime.datetime.now()
 
         if data.temperature > self._threshold:
             if self._start_time is None:
-                self._logger.warning("temp is above threshold (%0.2f°C): %0.3f",
-                                     self._threshold, data.temperature)
+                self._logger.warning("temp is above threshold (%s): %s",
+                                     self._format_temp(self._threshold), self._format_temp(data.temperature))
                 self._start_time = now
             elif now - self._start_time > self._min_duration:
-                self._logger.fatal("temp is above threshold %0.2f°C for more than %s s",
-                                   self._threshold, self._min_duration)
+                self._logger.fatal("temp is above threshold %s for more than %s s",
+                                   self._format_temp(self._threshold), self._min_duration)
                 self._abort_flag = True
         else:
             self._start_time = None
+
+    def _format_temp(self, temp: float) -> str:
+        return f"{temp:0.2}°C"
 
     def log(self, data: List[ElectricalMeasurement]) -> None:
         self._log_measurement(data[-1])
