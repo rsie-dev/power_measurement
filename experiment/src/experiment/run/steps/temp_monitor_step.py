@@ -2,11 +2,12 @@ import logging
 from concurrent.futures import Executor
 from typing import List
 
+from usb_multimeter import ElectricalMeasurement
+
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
 from experiment.run.log import LogDispatcher, Logger
-from usb_multimeter import ElectricalMeasurement
 
 from .step import Step
 from .measurement_step import MeasurementAbort
