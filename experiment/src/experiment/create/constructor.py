@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import datetime
 import logging
 from typing import List, Self
 from dataclasses import dataclass, field
@@ -352,6 +354,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         init_steps: list[Step] = field(default_factory=list)
         shutdown_steps: list[Step] = field(default_factory=list)
         command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
+        temp_delta: float | None = None
+        temp_min_duration: float | None = None
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
@@ -397,6 +401,16 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
         return self
 
+    def control_temperature(self, temp_delta: float, min_duration: float | None = None) -> Self:
+        if not self._measurement:
+            raise RuntimeError("no temperature input available")
+
+        self._context.temp_delta = temp_delta
+        if min_duration is None:
+            min_duration = datetime.timedelta(seconds=2)
+        self._context.temp_min_duration = min_duration
+        return self
+
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         if tag is None:
             tag = ""
@@ -421,9 +435,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         steps.extend(self._steps)
-        max_temp_delta = 1.0
-        monitor_step = TempMonitorStep(self._multimeter_dispatcher, max_temp_delta)
-        steps.append(monitor_step)
+        if self._context.temp_delta is not None:
+            max_temp_delta = self._context.temp_delta
+            monitor_step = TempMonitorStep(self._multimeter_dispatcher, max_temp_delta, self._context.temp_min_duration)
+            steps.append(monitor_step)
+        else:
+            monitor_step = None
 
         if self._context.command_configs:
             if self._config.shuffle_measurement_sets:

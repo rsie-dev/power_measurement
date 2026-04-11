@@ -110,6 +110,10 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def control_temperature(self, temp_delta: float, min_duration: float | None = None) -> Self:
+        pass
+
+    @abstractmethod
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         pass
 

@@ -55,6 +55,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
 
         now = datetime.datetime.now()
 
+        # Fixme: check for low threshold, too
         if data.temperature > self._threshold:
             if self._start_time is None:
                 self._logger.warning("temp is above threshold (%s): %s",
