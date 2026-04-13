@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+from datetime import timedelta
 import logging
 from typing import List, Self
 from dataclasses import dataclass, field
@@ -401,13 +401,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
         return self
 
-    def control_temperature(self, temp_delta: float, min_duration: float | None = None) -> Self:
+    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=1)) -> Self:
         if not self._measurement:
             raise RuntimeError("no temperature input available")
 
         self._context.temp_delta = temp_delta
-        if min_duration is None:
-            min_duration = datetime.timedelta(seconds=2)
         self._context.temp_min_duration = min_duration
         return self
 

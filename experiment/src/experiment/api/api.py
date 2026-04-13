@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Self
 from abc import ABC, abstractmethod
 from pathlib import Path
+from datetime import timedelta
 
 from .experiment import Experiment
 
@@ -110,7 +111,7 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def control_temperature(self, temp_delta: float, min_duration: float | None = None) -> Self:
+    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=1)) -> Self:
         pass
 
     @abstractmethod
