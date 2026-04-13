@@ -53,6 +53,9 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         self._logger.debug("temperature monitor stop")
 
     def _log_measurement(self, data: ElectricalMeasurement) -> None:
+        if self._context.abort_flag:
+            return
+
         if self._context.threshold_high is None:
             initial_temperature = data.temperature
             self._context.threshold_high = initial_temperature + self._max_temp_delta
