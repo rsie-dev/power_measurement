@@ -25,7 +25,7 @@ from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
 from experiment.run.log import MetricType, CSVMetricsLogger
-from experiment.run.log import CSVMultimeterLogger
+from experiment.run.log import CSVMultimeterLogger, CSVTemperatureLogger
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
@@ -448,7 +448,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             else:
                 command_configs = self._context.command_configs[:]
             aborter = monitor_step
-            config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs)
+            temp_log_provider = self._create_temperature_log_provider()
+            config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
+                                            log_providers=[temp_log_provider])
             step = MeasurementStep(self._config.host, self._measurement, config, aborter)
 
             steps.append(step)
@@ -457,6 +459,18 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._parent.add_steps(steps)
         self._parent.add_steps(self._context.shutdown_steps)
         return self._parent
+
+    def _create_temperature_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+
+        def temp_logger_factory(path: Path):
+            log_folder = path / self._config.host.host_name
+            log_folder.mkdir(parents=True, exist_ok=True)
+            return CSVTemperatureLogger(log_folder / "temperature.csv", formatter)
+
+        log_provider = GenericLogProvider(self._multimeter_dispatcher, temp_logger_factory)
+        return log_provider
 
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):

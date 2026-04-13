@@ -38,6 +38,7 @@ class MeasurementStep(BaseHostCommandStep):
     class Config:
         show_progress: bool
         command_configs: list[MeasurementStep.CommandConfig]
+        log_providers: list[LogProvider]
 
     def __init__(self, host: SSHHost, measurement: Measurement | None, config: Config,
                  aborter: MeasurementAbort | None):
@@ -63,6 +64,8 @@ class MeasurementStep(BaseHostCommandStep):
         with ExitStack() as step_stack:
             if self._measurement:
                 step_stack.enter_context(measure(self._measurement, self._environment, self._executor))
+            for log_provider in self._config.log_providers:
+                step_stack.enter_context(log_provider.start_log(self._resources_path))
             self._logger.info("Taking %d measurements", len(self._config.command_configs))
 
             if self._config.show_progress:
