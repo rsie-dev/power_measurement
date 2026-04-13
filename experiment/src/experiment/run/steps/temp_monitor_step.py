@@ -5,6 +5,7 @@ import datetime
 from dataclasses import dataclass
 
 from usb_multimeter import ElectricalMeasurement
+from humanize import naturaldelta
 
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
@@ -75,8 +76,9 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is below lower threshold %s for more than %s s -> abort",
-                                   self._format_temp(self._context.threshold_low), self._min_duration)
+                self._logger.fatal("temp is below lower threshold %s for more than %s -> abort",
+                                   self._format_temp(self._context.threshold_low),
+                                   naturaldelta(self._min_duration))
                 self._context.abort_flag = True
         elif data.temperature > self._context.threshold_high:
             if self._context.start_time is None:
@@ -85,10 +87,16 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                      self._format_temp(data.temperature))
                 self._context.start_time = now
             elif now - self._context.start_time > self._min_duration:
-                self._logger.fatal("temp is above upper threshold %s for more than %s s -> abort",
-                                   self._format_temp(self._context.threshold_high), self._min_duration)
+                self._logger.fatal("temp is above upper threshold %s for more than %s -> abort",
+                                   self._format_temp(self._context.threshold_high),
+                                   naturaldelta(self._min_duration))
                 self._context.abort_flag = True
         else:
+            if self._context.start_time:
+                self._logger.info("temp %s is back in range: %s -- %s",
+                                  self._format_temp(data.temperature),
+                                  self._format_temp(self._context.threshold_low),
+                                  self._format_temp(self._context.threshold_high))
             self._context.start_time = None
 
     def _format_temp(self, temp: float) -> str:
