@@ -1,9 +1,9 @@
 ToDo:
-- log timestamps should be in local timezone
 - add external temp. sensor
 - collect SBC temperature, too
 
 v0.0.3
+- log timestamps in local timezone
 - log temperature in separate logfile
 - add units to data files
 - add temp check of multimeter

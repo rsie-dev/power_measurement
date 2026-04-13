@@ -7,4 +7,6 @@ class ISO8601Formatter(logging.Formatter):
         # record.created is seconds since epoch (float)
         ts = record.created
         dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+        # convert to local timezone
+        dt = dt.astimezone()
         return dt.isoformat(timespec="milliseconds")
