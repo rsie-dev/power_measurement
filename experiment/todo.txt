@@ -1,5 +1,6 @@
 ToDo:
 - log temperature in separate logfile
+- log timestamps should be in local timezone
 - add external temp. sensor
 - collect SBC temperature, too
 
