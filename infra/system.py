@@ -248,7 +248,7 @@ def set_kernel_ro_flag_raspi():
     )
 
 
-def add_test_user(user: str):
+def add_user(user: str):
     hashed_pw = crypt.crypt(user, crypt.mksalt(crypt.METHOD_SHA512))
     server.user(
         name="Create test user",
