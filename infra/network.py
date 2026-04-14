@@ -1,4 +1,5 @@
 from io import StringIO
+from ipaddress import IPv4Address, ip_address
 
 from pyinfra.operations import apt, files, systemd
 from pyinfra.api import deploy
@@ -24,7 +25,9 @@ def base_network():
 @deploy("Router")
 def router():
     ntp_server()
-    dhcp_server()
+    ip = ip_address("192.168.5.1")
+    set_static_ip(ip)
+    dhcp_server(ip)
 
 
 def ntp_server():
@@ -104,7 +107,12 @@ def _ntp_server_mode():
     return config_file
 
 
-def dhcp_server():
+def set_static_ip(ip: IPv4Address):
+    # fixme
+    pass
+
+
+def dhcp_server(ip: IPv4Address):
     apt.packages(
         name="Install DHCP server",
         packages=["isc-dhcp-server"],
