@@ -11,12 +11,15 @@ from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
 from experiment.run.log import LogDispatcher, Logger
+from experiment.log_util import TimeThrottleFilter
 
 from .step import Step
 from .measurement_step import MeasurementAbort
 
 
 class TempMonitorStep(Step, Logger, MeasurementAbort):
+    TEMP_UPDATE_LOG_NAME = None
+
     @dataclass
     class RunContext:
         threshold_high: float | None = None
@@ -35,6 +38,10 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         self._min_duration = min_duration
         self._now = now
         self._context = TempMonitorStep.RunContext()
+        if TempMonitorStep.TEMP_UPDATE_LOG_NAME is None:
+            TempMonitorStep.TEMP_UPDATE_LOG_NAME = self.__class__.__name__ + ".UPDATE"
+            logger = logging.getLogger(TempMonitorStep.TEMP_UPDATE_LOG_NAME)
+            logger.addFilter(TimeThrottleFilter(datetime.timedelta(seconds=30)))
 
     def abort_measurement(self) -> bool:
         return self._context.abort_flag
@@ -80,6 +87,10 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                    self._format_temp(self._context.threshold_low),
                                    naturaldelta(self._min_duration))
                 self._context.abort_flag = True
+            else:
+                self._log_update("temp is still below lower threshold (%s): %s" %
+                                 (self._format_temp(self._context.threshold_low),
+                                  self._format_temp(data.temperature)))
         elif data.temperature > self._context.threshold_high:
             if self._context.start_time is None:
                 self._logger.warning("temp is above upper threshold (%s): %s",
@@ -91,13 +102,21 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
                                    self._format_temp(self._context.threshold_high),
                                    naturaldelta(self._min_duration))
                 self._context.abort_flag = True
+            else:
+                self._log_update("temp is still above upper threshold (%s): %s" %
+                                 (self._format_temp(self._context.threshold_high),
+                                  self._format_temp(data.temperature)))
         else:
             if self._context.start_time:
-                self._logger.info("temp %s is back in range: %s -- %s",
-                                  self._format_temp(data.temperature),
-                                  self._format_temp(self._context.threshold_low),
-                                  self._format_temp(self._context.threshold_high))
+                self._logger.warning("temp %s is back in range: %s -- %s",
+                                     self._format_temp(data.temperature),
+                                     self._format_temp(self._context.threshold_low),
+                                     self._format_temp(self._context.threshold_high))
             self._context.start_time = None
+
+    def _log_update(self, state):
+        logger = logging.getLogger(TempMonitorStep.TEMP_UPDATE_LOG_NAME)
+        logger.warning(state)
 
     def _format_temp(self, temp: float) -> str:
         return f"{temp:2.2f}°C"
