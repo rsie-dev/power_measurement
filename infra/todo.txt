@@ -1,4 +1,9 @@
 ToDo:
+- controller: add accounts for tester
+- controller: add ssh-keys for tester
+- controller: enable sudo shutdown/restart for tester
+- controller: configure ntp-server
+- controller: configure dhcp-server
 
 
 done:
