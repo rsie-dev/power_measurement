@@ -6,7 +6,7 @@ from pyinfra.api import deploy
 def develop():
     apt.packages(
         name="Install SCM tools",
-        packages=["git"],
+        packages=["git", "subversion"],
         no_recommends=True,
         _sudo=True,
     )
