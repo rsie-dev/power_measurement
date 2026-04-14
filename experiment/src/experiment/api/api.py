@@ -111,7 +111,7 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=1)) -> Self:
+    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:
         pass
 
     @abstractmethod

@@ -401,7 +401,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
         return self
 
-    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=1)) -> Self:
+    def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:
         if not self._measurement:
             raise RuntimeError("no temperature input available")
 
