@@ -12,6 +12,7 @@ from pyinfra.facts.server import Arch
 
 from fstab import FstabDirs
 from fstab import fstab_option
+from partition import Partitions, add_partition
 
 
 @deploy("Switch to read only")
@@ -293,6 +294,12 @@ def _limit_kernel_memory(memory_limit_gb: int):
         _sudo=True,
     )
 
+
 @deploy("Home partition")
 def add_home_partition():
-    pass
+    device = "/dev/mmcblk0"
+    add_partition(
+        device=device,
+        part_number=3,
+        _sudo=True,
+    )
