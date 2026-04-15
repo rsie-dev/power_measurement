@@ -292,3 +292,7 @@ def _limit_kernel_memory(memory_limit_gb: int):
         replace=f"rootwait mem={memory_limit_gb}G earlycon",
         _sudo=True,
     )
+
+@deploy("Home partition")
+def add_home_partition():
+    pass
