@@ -1,0 +1,11 @@
+--- patches/fs_partition_resize.sh	2026-04-15 08:47:09.198868161 +0200
++++ /mnt/tmp/var/lib/dietpi/services/fs_partition_resize.sh	2026-04-15 09:07:10.966654170 +0200
+@@ -129,7 +129,7 @@
+ 		fi
+ 
+ 		echo '[ INFO ] Maximising root partition size'
+-		sfdisk --no-reread --no-tell-kernel -fN"$ROOT_PART" "$ROOT_DRIVE" <<< ',+'
++		sfdisk --no-reread --no-tell-kernel -fN"$ROOT_PART" "$ROOT_DRIVE" <<< ',7340032'
+ 
+ 		echo '[ INFO ] Informing kernel about changed partition table, rebooting in case of failure (expected in case of GPT partition table)'
+ 		partx -uv "$ROOT_DEV" || Reboot_to_load_Partition_table

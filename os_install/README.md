@@ -15,6 +15,7 @@ xz -d DietPi_RPi234-ARMv8-Trixie.img.xz
 sudo dd if=DietPi_RPi234-ARMv8-Trixie.img of=/dev/<sdX>
 sudo mount -t auto /dev/<sdX>2 /mnt/tmp/
 sudo patch /mnt/tmp/boot/dietpi.txt patches/dietpi_controller.patch
+sudo patch /mnt/tmp/var/lib/dietpi/services/fs_partition_resize.sh patches/fs_partition_resize.sh.patch
 sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
