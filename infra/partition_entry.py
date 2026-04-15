@@ -9,3 +9,6 @@ class PartitionEntry:
     size: int
     type: str
     bootable: bool
+
+    def __str__(self):
+        return f"Partition {self.node}"

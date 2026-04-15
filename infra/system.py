@@ -4,6 +4,7 @@ from io import StringIO
 
 
 from pyinfra import host
+from pyinfra import logger
 from pyinfra.api import deploy
 from pyinfra.operations import files, systemd
 from pyinfra.operations import server
@@ -12,7 +13,8 @@ from pyinfra.facts.server import Arch
 
 from fstab import FstabDirs
 from fstab import fstab_option
-from partition import Partitions, add_partition
+from partition import Partition, add_partition
+from filesystem import format_partition
 
 
 @deploy("Switch to read only")
@@ -301,5 +303,14 @@ def add_home_partition():
     add_partition(
         device=device,
         part_number=3,
+        _sudo=True,
+    )
+    partition = host.get_fact(Partition, device, 3)
+    if partition:
+        print("found partition: %s" % partition)
+    else:
+        logger.error("partition not found")
+    format_partition(
+        partition,
         _sudo=True,
     )
