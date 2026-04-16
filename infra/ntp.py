@@ -22,7 +22,7 @@ def ntp_server():
 def activate_rtc():
     apt.packages(
         name="Install RTC tools",
-        packages=["i2c-tools"],
+        packages=["i2c-tools", "util-linux-extra"],
         _sudo=True,
     )
 
@@ -37,18 +37,26 @@ i2c-bcm2708
         _sudo=True,
     )
 
-    update_config = files.line(
+    firmware_config = files.line(
         name="Enable i2c firmware",
         path="/boot/firmware/config.txt",
         line="#dtparam=i2c_arm=off",
         replace="dtparam=i2c_arm=on",
         _sudo=True,
     )
+
+    dtoverlay = files.line(
+        name="Enable dtoverlay for RTC",
+        path="/boot/firmware/config.txt",
+        line="dtoverlay=i2c-rtc,ds3231",
+        _sudo=True,
+    )
+
     server.reboot(
         name="Reboot after firmware change",
         delay=0,  # otherwise exception
         _sudo=True,
-        _if=lambda: update_config.did_change() or add_config.did_change(),
+        _if=lambda: firmware_config.did_change() or add_config.did_change() or dtoverlay.did_change(),
     )
 
 
