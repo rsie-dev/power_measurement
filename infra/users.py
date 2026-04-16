@@ -16,6 +16,7 @@ def add_users():
         add_user(user)
         key = read_ssh_key(keyfile)
         install_ssh_key(user, key)
+        allow_user_power_control(user)
 
 
 def _collect_user_names():
@@ -48,6 +49,19 @@ def allow_user_telegraf_control(user: str):
     files.put(
         name="Allow %s to control telegraf service" % user,
         src=content,
-        dest="/etc/sudoers.d/%s" % user,
+        dest="/etc/sudoers.d/%s_telegraf" % user,
+        _sudo=True,
+    )
+
+
+def allow_user_power_control(user: str):
+    content = f"""
+{user} ALL=(root) /bin/systemctl reboot, /bin/systemctl poweroff
+{user} ALL=(root) /sbin/reboot, /sbin/shutdown, /sbin/poweroff
+"""
+    files.put(
+        name="Allow %s to shut down / reboot the machine" % user,
+        src=StringIO(content),
+        dest="/etc/sudoers.d/%s_power" % user,
         _sudo=True,
     )
