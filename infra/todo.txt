@@ -7,7 +7,7 @@ ToDo:
 
 
 done:
-- add home partition
+- add home partition on controller
 - add lzip, plzip
 - add lbzip2
 - limit memory of VisionFive2 to 4GB
