@@ -18,7 +18,7 @@ def develop():
     )
     apt.packages(
         name="Install monitoring tools",
-        packages=["htop", "btop", "iotop", "sysstat", "dstat"],
+        packages=["htop", "btop", "iotop", "sysstat"],
         no_recommends=True,
         _sudo=True,
     )

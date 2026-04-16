@@ -1,12 +1,14 @@
 from io import StringIO
 
-from pyinfra.api import deploy
-from pyinfra.operations import apt, files, systemd
+from pyinfra.api import deploy, operation
+from pyinfra.operations import apt, files, systemd, server
 
 
 @deploy("NTP server")
 def ntp_server():
     _ntp_service()
+    activate_rtc()
+
     config_file = _ntp_server_mode()
     systemd.service(
         name="Restart chrony service",
@@ -14,6 +16,47 @@ def ntp_server():
         restarted=True,
         _sudo=True,
         _if=config_file.did_change
+    )
+
+
+def activate_rtc():
+    apt.packages(
+        name="Install RTC tools",
+        packages=["i2c-tools", "util-linux-extra"],
+        _sudo=True,
+    )
+
+    content = """
+i2c-dev
+i2c-bcm2708    
+"""
+    add_config = files.put(
+        name="Enable auto load of i2c kernel modules",
+        src=StringIO(content),
+        dest="/etc/modules-load.d/rtc_i2c.conf",
+        _sudo=True,
+    )
+
+    firmware_config = files.line(
+        name="Enable i2c firmware",
+        path="/boot/firmware/config.txt",
+        line="#dtparam=i2c_arm=off",
+        replace="dtparam=i2c_arm=on",
+        _sudo=True,
+    )
+
+    dtoverlay = files.line(
+        name="Enable dtoverlay for RTC",
+        path="/boot/firmware/config.txt",
+        line="dtoverlay=i2c-rtc,ds3231",
+        _sudo=True,
+    )
+
+    server.reboot(
+        name="Reboot after firmware change",
+        delay=0,  # otherwise exception
+        _sudo=True,
+        _if=lambda: firmware_config.did_change() or add_config.did_change() or dtoverlay.did_change(),
     )
 
 
@@ -60,8 +103,8 @@ rtcsync
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=config_file.did_change or update_config.did_change() or add_config.did_change()
-            or update_dhcp_config.did_change()
+        _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
+                    update_dhcp_config.did_change()
     )
 
 
