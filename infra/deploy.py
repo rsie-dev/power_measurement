@@ -8,6 +8,7 @@ from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, add_user, unify_memory_size, add_home_partition
 from ssh import install_ssh_keys
+from data import setup_data_folder
 
 
 server.mount(
@@ -25,6 +26,7 @@ if "controller" in host.groups:
     router()
     base_filesystem()
     add_home_partition()
+    setup_data_folder()
 
 
 if "dut" in host.groups:
