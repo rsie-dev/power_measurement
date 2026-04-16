@@ -15,7 +15,11 @@ from ssh import install_ssh_key, read_ssh_key
 def add_users():
     users = _collect_user_names()
     for user, keyfile in users.items():
-        add_user(user)
+        add_user(
+            name="Create user: %s" % user,
+            user=user,
+            _sudo=True,
+        )
         key = read_ssh_key(keyfile)
         install_ssh_key(user, key)
         allow_user_power_control(user)
