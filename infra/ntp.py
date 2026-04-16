@@ -1,6 +1,6 @@
 from io import StringIO
 
-from pyinfra.api import deploy, operation
+from pyinfra.api import deploy
 from pyinfra.operations import apt, files, systemd, server
 
 
