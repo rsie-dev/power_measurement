@@ -1,8 +1,10 @@
 from ipaddress import IPv4Address, ip_address, IPv4Network
 
+from pyinfra import host
+from pyinfra import inventory
 from pyinfra.operations import apt, files
 from pyinfra.api import deploy
-from pyinfra import inventory
+from pyinfra.facts.hardware import NetworkDevices
 
 
 @deploy("NetworkBase")
@@ -94,3 +96,23 @@ host {host.name} {{
         line='# This is a very basic subnet declaration.',
         _sudo=True,
     )
+
+    ethernet_if = _get_ethernet_device()
+    files.line(
+        name="Prepare DHCP server standalone",
+        path="/etc/default/isc-dhcp-server",
+        line='INTERFACESv4=""',
+        replace=f'#INTERFACESv4="{ethernet_if}"',
+        _sudo=True,
+    )
+
+
+def _get_ethernet_device() -> str:
+    devices = host.get_fact(NetworkDevices, )
+    for device, state in devices.items():
+        if state["state"] != "UP":
+            continue
+        if "ether" not in state:
+            continue
+        return device
+    return ""
