@@ -1,12 +1,14 @@
 from io import StringIO
 
-from pyinfra.api import deploy
-from pyinfra.operations import apt, files, systemd
+from pyinfra.api import deploy, operation
+from pyinfra.operations import apt, files, systemd, server
 
 
 @deploy("NTP server")
 def ntp_server():
     _ntp_service()
+    activate_rtc()
+
     config_file = _ntp_server_mode()
     systemd.service(
         name="Restart chrony service",
@@ -14,6 +16,28 @@ def ntp_server():
         restarted=True,
         _sudo=True,
         _if=config_file.did_change
+    )
+
+
+def activate_rtc():
+    apt.packages(
+        name="Install RTC tools",
+        packages=["i2c-tools"],
+        _sudo=True,
+    )
+
+    update_config = files.line(
+        name="Enable i2c firmware",
+        path="/boot/firmware/config.txt",
+        line="#dtparam=i2c_arm=off",
+        replace="dtparam=i2c_arm=on",
+        _sudo=True,
+    )
+    server.reboot(
+        name="Reboot after firmware change",
+        delay=0,  # otherwise exception
+        _sudo=True,
+        _if=update_config.did_change,
     )
 
 
