@@ -45,7 +45,11 @@ if "dut" in host.groups:
     stressors()
     compressors()
     test_user = "ctest"
-    add_user(test_user)
+    add_user(
+        name="Create user: %s" % test_user,
+        user=test_user,
+        _sudo=True,
+    )
     allow_user_telegraf_control(test_user)
     install_ssh_keys(test_user)
     unify_memory_size()

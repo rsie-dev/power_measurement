@@ -2,9 +2,11 @@ import crypt
 from io import StringIO
 from pathlib import Path
 
-from pyinfra.api import deploy
+from pyinfra import host
+from pyinfra.api import deploy, operation
 from pyinfra.operations import files
 from pyinfra.operations import server
+from pyinfra.facts.server import Users
 
 from ssh import install_ssh_key, read_ssh_key
 
@@ -29,15 +31,19 @@ def _collect_user_names():
     return users
 
 
+@operation()
 def add_user(user: str):
+    users = host.get_fact(Users, )
+    if user in users:
+        host.noop("user {0} already exist".format(user))
+        return
+
     hashed_pw = crypt.crypt(user, crypt.mksalt(crypt.METHOD_SHA512))
-    server.user(
-        name="Create user: %s" % user,
+    yield from server.user._inner(
         user=user,
         password=hashed_pw,
         shell="/bin/bash",
         create_home=True,
-        _sudo=True,
     )
 
 
