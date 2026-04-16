@@ -4,17 +4,19 @@ from io import StringIO
 
 
 from pyinfra import host
-from pyinfra import logger
-from pyinfra.api import deploy
+from pyinfra.api import deploy, operation
 from pyinfra.operations import files, systemd
 from pyinfra.operations import server
 from pyinfra.facts.files import Link
-from pyinfra.facts.server import Arch
+from pyinfra.facts.server import Arch, Mounts
 
 from fstab import FstabDirs
 from fstab import fstab_option
 from partition import Partition, add_partition
+from partition_entry import PartitionEntry
 from filesystem import format_partition
+from file import rename
+from fstab import fstab_add_entry
 
 
 @deploy("Switch to read only")
@@ -301,16 +303,91 @@ def _limit_kernel_memory(memory_limit_gb: int):
 def add_home_partition():
     device = "/dev/mmcblk0"
     add_partition(
+        name="Create home partition",
         device=device,
         part_number=3,
         _sudo=True,
     )
     partition = host.get_fact(Partition, device, 3)
-    if partition:
-        print("found partition: %s" % partition)
-    else:
-        logger.error("partition not found")
     format_partition(
-        partition,
+        name="Format home partition",
+        partition=partition,
+        _sudo=True,
+    )
+
+    fstab_add_entry(
+        name="Add fstab entry for /home",
+        device=str(partition.node),
+        mount_dir="/home",
+        fs_type="xfs",
+        _sudo=True,
+    )
+
+    files.directory(
+        name="Create temp mount folder",
+        path="/mnt/tmp",
+        _sudo=True,
+    )
+
+    _transfer_home(
+        name="Transfer home folder",
+        partition=partition,
+        _sudo=True,
+    )
+
+    files.directory(
+        name="Remove old home folder",
+        path="/home_",
+        present=False,
+        force=True,
+        force_backup=False,
+        _sudo=True,
+    )
+
+
+@operation()
+def _transfer_home(partition: PartitionEntry):
+    mounts = host.get_fact(Mounts, )
+    if "/home" in mounts:
+        host.noop("home folder already transferred")
+        return
+
+    yield from server.mount._inner(
+        name="Temporary mount new home partition",
+        path="/mnt/tmp",
+        device=str(partition.node),
+        fs_type="xfs",
+        _sudo=True,
+    )
+
+    yield from server.shell._inner(
+        name="Copy /home content",
+        commands=["cp -a /home/* /mnt/tmp/"],
+        _sudo=True,
+    )
+
+    yield from server.mount._inner(
+        name="Unmount new home partition",
+        path="/mnt/tmp",
+        mounted=False,
+        _sudo=True,
+    )
+
+    yield from rename._inner(
+        name="Rename existing home folder",
+        src="/home",
+        dest="/home_",
+        _sudo=True,
+    )
+
+    yield from files.directory._inner(
+        name="Create new home folder",
+        path="/home",
+        _sudo=True,
+    )
+
+    yield from server.mount._inner(
+        name="Mount new home partition",
+        path="/home",
         _sudo=True,
     )
