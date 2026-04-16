@@ -26,6 +26,17 @@ def activate_rtc():
         _sudo=True,
     )
 
+    content = """
+i2c-dev
+i2c-bcm2708    
+"""
+    add_config = files.put(
+        name="Enable auto load of i2c kernel modules",
+        src=StringIO(content),
+        dest="/etc/modules-load.d/rtc_i2c.conf",
+        _sudo=True,
+    )
+
     update_config = files.line(
         name="Enable i2c firmware",
         path="/boot/firmware/config.txt",
@@ -37,7 +48,7 @@ def activate_rtc():
         name="Reboot after firmware change",
         delay=0,  # otherwise exception
         _sudo=True,
-        _if=update_config.did_change,
+        _if=lambda: update_config.did_change() or add_config.did_change(),
     )
 
 
@@ -84,8 +95,8 @@ rtcsync
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=config_file.did_change or update_config.did_change() or add_config.did_change()
-            or update_dhcp_config.did_change()
+        _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
+                    update_dhcp_config.did_change()
     )
 
 
