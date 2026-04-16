@@ -3,7 +3,8 @@ from pyinfra import host
 
 from base import base, base_filesystem
 from develop import develop
-from network import base_network, router, ntp_client
+from network import base_network, router
+from ntp import ntp_server, ntp_client
 from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, unify_memory_size, add_home_partition
@@ -24,6 +25,7 @@ base_network()
 
 if "controller" in host.groups:
     develop()
+    ntp_server()
     router()
     base_filesystem()
     add_home_partition()
