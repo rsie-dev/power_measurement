@@ -302,24 +302,28 @@ def _limit_kernel_memory(memory_limit_gb: int):
 @deploy("Home partition")
 def add_home_partition():
     device = "/dev/mmcblk0"
+    part_number = 3
     add_partition(
         name="Create home partition",
         device=device,
-        part_number=3,
+        part_number=part_number,
         _sudo=True,
     )
-    partition = host.get_fact(Partition, device, 3)
     format_partition(
         name="Format home partition",
-        partition=partition,
+        device=device,
+        part_number=part_number,
         _sudo=True,
     )
 
+    part_device = f"{device}p{part_number}"
     fstab_add_entry(
         name="Add fstab entry for /home",
-        device=str(partition.node),
+        device=part_device,
         mount_dir="/home",
         fs_type="xfs",
+        dump=0,
+        fsck=0,
         _sudo=True,
     )
 
@@ -331,7 +335,7 @@ def add_home_partition():
 
     _transfer_home(
         name="Transfer home folder",
-        partition=partition,
+        part_device=part_device,
         _sudo=True,
     )
 
@@ -346,48 +350,36 @@ def add_home_partition():
 
 
 @operation()
-def _transfer_home(partition: PartitionEntry):
+def _transfer_home(part_device: str):
     mounts = host.get_fact(Mounts, )
     if "/home" in mounts:
         host.noop("home folder already transferred")
         return
 
     yield from server.mount._inner(
-        name="Temporary mount new home partition",
         path="/mnt/tmp",
-        device=str(partition.node),
+        device=part_device,
         fs_type="xfs",
-        _sudo=True,
     )
 
     yield from server.shell._inner(
-        name="Copy /home content",
         commands=["cp -a /home/* /mnt/tmp/"],
-        _sudo=True,
     )
 
     yield from server.mount._inner(
-        name="Unmount new home partition",
         path="/mnt/tmp",
         mounted=False,
-        _sudo=True,
     )
 
     yield from rename._inner(
-        name="Rename existing home folder",
         src="/home",
         dest="/home_",
-        _sudo=True,
     )
 
     yield from files.directory._inner(
-        name="Create new home folder",
         path="/home",
-        _sudo=True,
     )
 
     yield from server.mount._inner(
-        name="Mount new home partition",
         path="/home",
-        _sudo=True,
     )

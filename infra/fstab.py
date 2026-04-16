@@ -90,6 +90,8 @@ def fstab_add_entry(device: str,
                     mount_dir: str,
                     fs_type: str,
                     options=None,
+                    dump=None,
+                    fsck=None,
                     fstab=None,
                     ):
 
@@ -110,6 +112,8 @@ def fstab_add_entry(device: str,
             _device=device,
             _dir=mount_dir,
             _type=fs_type,
+            _dump=dump,
+            _fsck=fsck,
             _options=options if options else "defaults",
         )
         fstab_content.entries.append(entry)
