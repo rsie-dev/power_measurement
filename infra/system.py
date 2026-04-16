@@ -100,7 +100,8 @@ def prepare_for_ro():
     )
 
     arch = host.get_fact(Arch, )
-    adapt_fake_hwclock()
+    if "controller" not in host.groups:
+        adapt_fake_hwclock()
     disable_timers()
 
     if arch == "x86_64":
