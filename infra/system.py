@@ -1,6 +1,4 @@
 from pathlib import Path
-import crypt
-from io import StringIO
 
 
 from pyinfra import host
@@ -12,8 +10,7 @@ from pyinfra.facts.server import Arch, Mounts
 
 from fstab import FstabDirs
 from fstab import fstab_option
-from partition import Partition, add_partition
-from partition_entry import PartitionEntry
+from partition import add_partition
 from filesystem import format_partition
 from file import rename
 from fstab import fstab_add_entry
@@ -249,29 +246,6 @@ def set_kernel_ro_flag_raspi():
         path=str(cmd_path),
         text=r"rootfstype=ext4 rootwait",
         replace="rootfstype=ext4 ro rootwait",
-        _sudo=True,
-    )
-
-
-def add_user(user: str):
-    hashed_pw = crypt.crypt(user, crypt.mksalt(crypt.METHOD_SHA512))
-    server.user(
-        name="Create test user",
-        user=user,
-        password=hashed_pw,
-        shell="/bin/bash",
-        create_home=True,
-        _sudo=True,
-    )
-
-    lines = []
-    for op in ["status","start","stop","restart"]:
-        lines.append(f"{user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} telegraf@*.service")
-    content = StringIO("\n".join(lines) + "\n")
-    files.put(
-        name="Allow %s to control telegraf service" % user,
-        src=content,
-        dest="/etc/sudoers.d/%s" % user,
         _sudo=True,
     )
 
