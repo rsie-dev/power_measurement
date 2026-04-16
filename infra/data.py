@@ -12,10 +12,9 @@ def setup_data_folder():
         _sudo=True,
     )
 
-    # FIXME: copy data files
-    #files.sync(
-    #    name="Sync data folder",
-    #    src="data/",
-    #    dest="/data",
-    #    _sudo=True,
-    #)
+    files.sync(
+        name="Sync data folder",
+        src="data/",
+        dest="/data",
+        _sudo=True,
+    )
