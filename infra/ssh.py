@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pyinfra.operations import files
+from pyinfra.operations import files, systemd
 
 
 def install_ssh_keys(user: str):
@@ -79,3 +79,21 @@ def _collect_ssh_keys():
 def read_ssh_key(keyfile: Path) -> str:
     key = keyfile.read_text().strip()
     return key
+
+
+def prohibit_root_login():
+    changed = files.line(
+        name="Disable root login via ssh",
+        path="/etc/ssh/sshd_config.d/dietpi.conf",
+        line='PermitRootLogin yes',
+        replace='PermitRootLogin no',
+        _sudo=True,
+    )
+
+    systemd.service(
+        name="Restart ssh service",
+        service="ssh.service",
+        restarted=True,
+        _sudo=True,
+        _if=changed.did_change
+    )
