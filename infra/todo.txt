@@ -1,9 +1,9 @@
 ToDo:
-- controller: create README_pip.md
 - controller: disable ssh root login
 
 
 done:
+- controller: create README.md
 - controller: add stressors and compressors, too
 - controller: setup USB access for tester
 - controller: install users with lowercase
