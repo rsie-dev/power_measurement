@@ -12,7 +12,7 @@ def develop():
     )
     apt.packages(
         name="Install python",
-        packages=["python3", "python3-venv", "python3-pip"],
+        packages=["python3", "python3-venv", "python3-pip", "python3-socks"],
         no_recommends=True,
         _sudo=True,
     )
