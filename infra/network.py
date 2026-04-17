@@ -32,8 +32,21 @@ def router():
 
 
 def set_static_ip(ip: IPv4Address):
-    # fixme
-    pass
+    ethernet_if = _get_ethernet_device()
+    static_def = f"""
+# Static Ethernet
+#auto {ethernet_if}
+#iface {ethernet_if} inet static
+#        address {ip}
+"""
+    files.block(
+        name="Prepare static IP address",
+        path="/etc/network/interfaces",
+        content=static_def,
+        before=True,
+        line='# WiFi',
+        _sudo=True,
+    )
 
 
 def dhcp_server(ip: IPv4Address):
