@@ -181,6 +181,12 @@ measure_with_multimeter(serial_number: str) -> Self
 Enables measurement using a multimeter device.
 
 ```python
+control_temperature(temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self
+```
+Enables temperature monitoring during measurement.
+The measurement is aborted if the temperature raises above or below the temp_delta threshold for longer than min_duration.
+
+```python
 measure_runs(runs: int, tag: str = None) -> MeasurementExecutionBuilder
 ```
 Configures repeated measurement runs.
