@@ -4,8 +4,7 @@ from pathlib import Path
 
 from pyinfra import host
 from pyinfra.api import deploy, operation
-from pyinfra.operations import files
-from pyinfra.operations import server
+from pyinfra.operations import files, server
 from pyinfra.facts.server import Users
 
 from ssh import install_ssh_key, read_ssh_key
@@ -23,6 +22,12 @@ def add_users():
         key = read_ssh_key(keyfile)
         install_ssh_key(user, key)
         allow_user_power_control(user)
+        files.put(
+            name="Copy README file",
+            src="README_develop.md",
+            dest=f"/home/{user}/README.md",
+            _sudo=True,
+        )
 
 
 def _collect_user_names():
