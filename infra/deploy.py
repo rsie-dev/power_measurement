@@ -22,6 +22,8 @@ server.mount(
 
 base()
 base_network()
+stressors()
+compressors()
 
 if "controller" in host.groups:
     develop()
@@ -44,8 +46,6 @@ if "dut" in host.groups:
 
     ntp_client()
     telegraf()
-    stressors()
-    compressors()
     test_user = "ctest"
     add_user(
         name="Create user: %s" % test_user,

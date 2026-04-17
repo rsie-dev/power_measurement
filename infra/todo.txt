@@ -1,10 +1,10 @@
 ToDo:
 - controller: create README_pip.md
 - controller: disable ssh root login
-- controller: add stressors and compressors, too
 
 
 done:
+- controller: add stressors and compressors, too
 - controller: setup USB access for tester
 - controller: install users with lowercase
 - controller: configure dhcp-server
