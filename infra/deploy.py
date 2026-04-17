@@ -55,4 +55,5 @@ if "dut" in host.groups:
     allow_user_telegraf_control(test_user)
     install_ssh_keys(test_user)
     unify_memory_size()
-    switch_to_read_only()
+
+switch_to_read_only()
