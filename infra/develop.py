@@ -1,4 +1,4 @@
-from pyinfra.operations import apt
+from pyinfra.operations import apt, files, server
 from pyinfra.api import deploy
 
 
@@ -21,4 +21,18 @@ def develop():
         packages=["htop", "btop", "iotop", "sysstat"],
         no_recommends=True,
         _sudo=True,
+    )
+
+    synced = files.sync(
+        name="Sync udev rules",
+        src="udev/",
+        dest="/etc/udev/rules.d/",
+        _sudo=True,
+    )
+
+    server.shell(
+        name="Update udev rules",
+        commands=["udevadm control --reload-rules", "udevadm trigger"],
+        _sudo=True,
+        _if=synced.did_change,
     )

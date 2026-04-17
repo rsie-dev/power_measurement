@@ -12,11 +12,17 @@ from ssh import install_ssh_key, read_ssh_key
 
 @deploy("Add users")
 def add_users():
+    server.group(
+        name="Create usbmeter group",
+        group="usbmeter",
+        _sudo=True,
+    )
     users = _collect_user_names()
     for user, keyfile in users.items():
         add_user(
             name="Create user: %s" % user,
             user=user,
+            groups=["usbmeter"],
             _sudo=True,
         )
         key = read_ssh_key(keyfile)
@@ -41,7 +47,7 @@ def _collect_user_names():
 
 
 @operation()
-def add_user(user: str):
+def add_user(user: str, groups: list[str] | None = None):
     users = host.get_fact(Users, )
     if user in users:
         host.noop("user {0} already exist".format(user))
@@ -51,6 +57,7 @@ def add_user(user: str):
     yield from server.user._inner(
         user=user,
         password=hashed_pw,
+        groups=groups,
         shell="/bin/bash",
         create_home=True,
     )
