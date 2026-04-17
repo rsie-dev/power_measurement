@@ -1,8 +1,8 @@
 ToDo:
-- controller: disable ssh root login
 
 
 done:
+- disable ssh root login
 - controller: create README.md
 - controller: add stressors and compressors, too
 - controller: setup USB access for tester

@@ -8,7 +8,7 @@ from ntp import ntp_server, ntp_client
 from telegraf import telegraf
 from compressors import compressors, stressors
 from system import switch_to_read_only, unify_memory_size, add_home_partition
-from ssh import install_ssh_keys
+from ssh import install_ssh_keys, prohibit_root_login
 from data import setup_data_folder
 from users import add_user, add_users, allow_user_telegraf_control
 
@@ -24,6 +24,7 @@ base()
 base_network()
 stressors()
 compressors()
+prohibit_root_login()
 
 if "controller" in host.groups:
     develop()
