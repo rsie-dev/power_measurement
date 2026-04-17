@@ -36,7 +36,7 @@ def _collect_user_names():
     for path in ssh_folder.glob("*.pub"):
         if path.is_file():
             user = path.stem.split('_', 1)[0]
-            users[user] = path
+            users[user.lower()] = path
     return users
 
 

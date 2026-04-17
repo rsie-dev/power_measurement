@@ -1,9 +1,14 @@
 ToDo:
-- controller: configure ntp-server
-- controller: configure dhcp-server
+- controller: setup USB access for tester
+- controller: create README_pip.md
+- controller: disable ssh root login
+- controller: add stressors and compressors, too
 
 
 done:
+- controller: install users with lowercase
+- controller: configure dhcp-server
+- controller: configure ntp-server
 - controller: add accounts for tester
 - controller: add ssh-keys for tester
 - controller: enable sudo shutdown/restart for tester
