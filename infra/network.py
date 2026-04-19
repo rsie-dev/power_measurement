@@ -111,11 +111,13 @@ host {host.name} {{
     )
 
     ethernet_if = _get_ethernet_device()
-    files.line(
+    files.block(
         name="Prepare DHCP server standalone",
         path="/etc/default/isc-dhcp-server",
+        content=f'#INTERFACESv4="{ethernet_if}"',
+        try_prevent_shell_expansion=True,
+        after=True,
         line='INTERFACESv4=""',
-        replace=f'#INTERFACESv4="{ethernet_if}"',
         _sudo=True,
     )
 
