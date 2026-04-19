@@ -10,12 +10,13 @@ def ntp_server():
     activate_rtc()
 
     config_file = _ntp_server_mode()
+    update_config = _disable_default_sources()
     systemd.service(
         name="Restart chrony service",
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=config_file.did_change
+        _if=lambda: config_file.did_change() or update_config.did_change()
     )
 
 
@@ -64,14 +65,7 @@ i2c-bcm2708
 def ntp_client():
     _ntp_service()
     config_file = _ntp_server_mode()
-
-    update_config = files.line(
-        name="Disable default debian NTP pool",
-        path="/etc/chrony/chrony.conf",
-        line="pool 2.debian.pool.ntp.org iburst",
-        replace="#pool 2.debian.pool.ntp.org iburst",
-        _sudo=True,
-    )
+    update_config = _disable_default_sources()
 
     content = """
 minsamples 8
@@ -108,6 +102,17 @@ rtcsync
     )
 
 
+def _disable_default_sources():
+    update_config = files.line(
+        name="Disable default debian NTP pool",
+        path="/etc/chrony/chrony.conf",
+        line="pool 2.debian.pool.ntp.org iburst",
+        replace="#pool 2.debian.pool.ntp.org iburst",
+        _sudo=True,
+    )
+    return update_config
+
+
 def _ntp_service():
     apt.packages(
         name="Install NTP service",
@@ -117,9 +122,15 @@ def _ntp_service():
 
 
 def _ntp_server_mode():
+    content = """
+# set to allow working without upstream time sources
+local stratum 10
+
+allow all   
+"""
     config_file = files.put(
         name="Enable NTP server mode",
-        src=StringIO("allow all"),
+        src=StringIO(content),
         dest="/etc/chrony/conf.d/server.conf",
         _sudo=True,
     )
