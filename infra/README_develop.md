@@ -15,12 +15,16 @@ ssh -R 9999 -l <user> 192.168.5.1
 Create an virtual environment using the system packages:
 ```
 python3 -m venv --system-site-packages venv
+```
 
+Install packages using the local proxy:
+```
 venv/bin/pip install --proxy socks5h://localhost:9999 power-measurement-experiment
 ```
 
 ## git
 Add / update github entry in ~/.ssh/config
+to use the local proxy:
 ```
 Host github.com
   HostName github.com
