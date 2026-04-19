@@ -3,7 +3,7 @@
 ## Problem
 The controller has no internet connection.
 The only way to login is via ssh.
-But pip needs an internet connection to work.
+But pip / git need an internet connection to work.
 
 ## Solution
 Login to the controller via ssh while enabling the remote SOCKS5 proxy:
