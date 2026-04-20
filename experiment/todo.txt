@@ -1,9 +1,9 @@
 ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
-- fix multimeter info not in experiment.log
 
 v0.0.3
+- fix multimeter info not in experiment.log
 - log timestamps in local timezone
 - log temperature in separate logfile
 - add units to data files

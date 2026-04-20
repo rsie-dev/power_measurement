@@ -396,9 +396,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
-        device = device_manager.get_device()
         self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
-        self._measurement = MultimeterMeasurement(device, self._multimeter_dispatcher)
+        self._measurement = MultimeterMeasurement(device_manager, self._multimeter_dispatcher)
         return self
 
     def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:

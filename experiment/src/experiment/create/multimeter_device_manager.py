@@ -3,8 +3,10 @@ import logging
 from usb_multimeter import devices_by_serial_number
 from usb_multimeter.device import Device
 
+from experiment.common import DeviceManager
 
-class MultimeterDeviceManager:
+
+class MultimeterDeviceManager(DeviceManager):
     def __init__(self, serial_number: str):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._serial_number = serial_number
