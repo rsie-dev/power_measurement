@@ -36,9 +36,9 @@ class WarmupCommandStep(BaseHostCommandStep):
         self._commands: list[Command] = commands
 
     def _execute_commands(self, connection: Connection):
-        self._logger.info("on host: %s execute %d warmup command(s)", self._host.host, len(self._commands))
+        self._logger.info("On host: %s execute %d warmup command(s)", self._host.host, len(self._commands))
 
         for i, command in enumerate(self._commands):
             command.execute(i, connection)
 
-        self._logger.info("warmup commands executed")
+        self._logger.info("Warmup commands executed")
