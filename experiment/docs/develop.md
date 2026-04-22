@@ -11,7 +11,7 @@ venv/bin/pip install -e .[dev]
 
 ## Checks
 ```
-venv/bin/pylint src/experiment
+venv/bin/pylint src
 venv/bin/prospector
 ```
 
