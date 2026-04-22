@@ -49,6 +49,7 @@ optional-dependencies.test = { file = ["requirements-test.txt"] }
 [project.urls]
 Homepage = "https://github.com/rsie-dev/power_measurement/tree/master/experiment"
 Repository = "https://github.com/rsie-dev/power_measurement"
+Documentation = "https://github.com/rsie-dev/power_measurement/blob/master/experiment/docs/README.md"
 
 [tool.setuptools_scm]
 root = ".."
