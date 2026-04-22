@@ -1,6 +1,7 @@
 ToDo:
 - add external temp. sensor
 - collect SBC temperature, too
+- add link to docu
 
 v0.0.3
 - fix multimeter info not in experiment.log
