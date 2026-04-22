@@ -9,6 +9,8 @@ from usb_multimeter.device import Device
 
 from experiment.log_util import get_formatter_info
 
+from ._version import version, commit_id
+
 
 class ExperimentMain:
     def __init__(self):
@@ -113,12 +115,17 @@ class ExperimentMain:
                     return ip.ip
         return "127.0.0.1"
 
+    def _show_version(self, parser: argparse.ArgumentParser):
+        self._logger.error("%s v%s (%s)", parser.prog, version, commit_id)
+
     def main(self):
-        parser = argparse.ArgumentParser(prog="collector")
+        parser = argparse.ArgumentParser()
         default = ' (default: %(default)s)'
         parser.add_argument('-v', '--verbose', action='count', default=1, help="set the verbosity level" + default)
         parser.add_argument('-l', '--logFile', help="logfile name")
-        subparsers = parser.add_subparsers(required=True, dest="subcommand", title='subcommands',
+        parser.add_argument('--version', action='store_true', help="shows version information and exits")
+
+        subparsers = parser.add_subparsers(dest="subcommand", title='subcommands',
                                            description='valid subcommands', help='sub-command help')
 
         id_parser = argparse.ArgumentParser(add_help=False)
@@ -146,6 +153,12 @@ class ExperimentMain:
         parser_run.set_defaults(func=self._run_experiment)
 
         args = parser.parse_args()
+        if args.version:
+            self._show_version(parser)
+            return 0
+
+        if "func" not in args:
+            parser.error("the following arguments are required: subcommand")
 
         self._start_logging(args)
         try:
