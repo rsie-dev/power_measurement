@@ -28,6 +28,7 @@ def add_users():
         key = read_ssh_key(keyfile)
         install_ssh_key(user, key)
         allow_user_power_control(user)
+
         files.put(
             name="Copy README file",
             src="README_develop.md",
@@ -85,5 +86,17 @@ def allow_user_power_control(user: str):
         name="Allow %s to shut down / reboot the machine" % user,
         src=StringIO(content),
         dest="/etc/sudoers.d/%s_power" % user,
+        _sudo=True,
+    )
+
+
+def allow_user_cache_control(user: str):
+    content = f"""
+{user} ALL=(ALL) NOPASSWD: /usr/bin/tee /proc/sys/vm/drop_caches
+"""
+    files.put(
+        name="Allow %s to clear cache" % user,
+        src=StringIO(content),
+        dest="/etc/sudoers.d/%s_cache" % user,
         _sudo=True,
     )
