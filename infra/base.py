@@ -32,7 +32,8 @@ def base():
 
     apt.packages(
         name="Install base packages",
-        packages=["fish", "vim", "less", "tmux", "wget", "lm-sensors", "duf", "bat", "time", "ncdu", "tree"],
+        packages=["fish", "vim", "less", "tmux", "wget", "lm-sensors", "duf", "bat", "time", "ncdu",
+                  "tree", "hyperfine"],
         no_recommends=True,
         _sudo=True,
     )
