@@ -82,9 +82,12 @@ class ExecutorCommand(Command):
             for link in links:
                 link.finish(nr, self, connection)
 
-    def _do_execute(self, command: str, nr: int, connection: Connection) -> None: # pylint: disable=unused-argument
+    def _do_execute(self, command: str, nr: int, connection: Connection) -> None:  # pylint: disable=unused-argument
         self._logger.debug("remote execute: %s", command)
-        result = connection.run(command, hide=True)
+        kwargs = {
+            "shell": "/usr/bin/sh",
+        }
+        result = connection.run(command, hide=True, **kwargs)
         self._logger.debug("command returned with exit code: %d", result.return_code)
 
 
