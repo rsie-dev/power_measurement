@@ -1,4 +1,5 @@
 from .executor_command import ExecutorCommand, MeasuringCommand
+from .clear_cache_command import ClearCacheCommand
 from .delay_command import DelayCommand
 from .timed_pre_command import TimedCommandPreCommand
 from .composite_command import CompositeCommand
@@ -10,6 +11,7 @@ from .pipefail_pre_command import PipefailPreCommand
 
 __all__ = [
     "ExecutorCommand", "MeasuringCommand",
+    "ClearCacheCommand",
     "DelayCommand",
     "CompositeCommand",
     "FileStatCommand",

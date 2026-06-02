@@ -30,7 +30,7 @@ from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
-from experiment.create.commands import ExecutorCommand, MeasuringCommand
+from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
 from experiment.create.commands import DelayCommand, CompositeCommand, FileStatCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
@@ -238,8 +238,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
 
         commands = self._commands[:]
         if self._config.clear_cache:
-            clear_command = "sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null"
-            commands.insert(0, ExecutorCommand(clear_command, CommandConstructor.DEFAULT_SHELL))
+            commands.insert(0, ClearCacheCommand())
 
         if self._head_delay:
             commands.insert(0, DelayCommand(self._head_delay, "head"))
