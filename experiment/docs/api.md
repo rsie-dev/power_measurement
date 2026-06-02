@@ -181,6 +181,11 @@ with_warmup() -> WarmupExecutionBuilder
 Starts warmup execution configuration.
 
 ```python
+with_clear_cache(self) -> Self
+```
+Clears the file caches prior to command execution.
+
+```python
 measure_with_multimeter(serial_number: str) -> Self
 ```
 Enables measurement using a multimeter device.

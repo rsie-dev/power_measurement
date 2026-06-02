@@ -173,6 +173,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     class Config:
         runs: int
         tag: str
+        clear_cache: bool
 
     def __init__(self, parent: HostConstructor, host: SSHHost,
                  multimeter_dispatcher: LogDispatcher[ElectricalMeasurement],
@@ -236,6 +237,10 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(self._create_count_stream_log_provider())
 
         commands = self._commands[:]
+        if self._config.clear_cache:
+            clear_command = "sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null"
+            commands.insert(0, ExecutorCommand(clear_command, CommandConstructor.DEFAULT_SHELL))
+
         if self._head_delay:
             commands.insert(0, DelayCommand(self._head_delay, "head"))
         if self._tail_delay:
@@ -363,6 +368,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
         temp_delta: float | None = None
         temp_min_duration: float | None = None
+        clear_cache: bool = False
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
@@ -399,6 +405,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._config.host)
 
+    def with_clear_cache(self) -> Self:
+        self._context.clear_cache = True
+        return self
+
     def measure_with_multimeter(self, serial_number: str) -> Self:
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
@@ -421,7 +431,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if tag in self._tags:
             raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
         self._tags.add(tag)
-        config = MeasurementExecutionConstructor.Config(runs=runs, tag=tag)
+        config = MeasurementExecutionConstructor.Config(runs=runs, tag=tag, clear_cache=self._context.clear_cache)
 
         if not self._measurement:
             raise RuntimeError("no multimeter for measurement available")

@@ -111,6 +111,10 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def with_clear_cache(self) -> Self:
+        pass
+
+    @abstractmethod
     def measure_with_multimeter(self, serial_number: str) -> Self:
         pass
 
