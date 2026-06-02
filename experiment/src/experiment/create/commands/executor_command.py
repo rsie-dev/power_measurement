@@ -37,9 +37,10 @@ class PostCommand(CommandExtender):
 
 
 class ExecutorCommand(Command):
-    def __init__(self, command: str, work_dir: Optional[str] = None):
+    def __init__(self, command: str, shell: str, work_dir: Optional[str] = None):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
+        self._shell = shell
         self._work_dir = work_dir
         self._prepend_chain: list[PreCommand] = []
         self._append_chain: list[PostCommand] = []
@@ -85,15 +86,16 @@ class ExecutorCommand(Command):
     def _do_execute(self, command: str, nr: int, connection: Connection) -> None:  # pylint: disable=unused-argument
         self._logger.debug("remote execute: %s", command)
         kwargs = {
-            "shell": "/usr/bin/sh",
+            "hide": True,
+            "shell": self._shell,
         }
-        result = connection.run(command, hide=True, **kwargs)
+        result = connection.run(command, **kwargs)
         self._logger.debug("command returned with exit code: %d", result.return_code)
 
 
 class MeasuringCommand(ExecutorCommand):
-    def __init__(self, markers_logger: Logger[MarkersEntry], command: str, work_dir: Optional[str] = None):
-        super().__init__(command, work_dir)
+    def __init__(self, markers_logger: Logger[MarkersEntry], command: str, shell: str, work_dir: Optional[str] = None):
+        super().__init__(command, shell, work_dir)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._markers_logger = markers_logger
 

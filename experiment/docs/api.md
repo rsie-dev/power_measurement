@@ -47,6 +47,11 @@ with_work_dir(folder: str) -> Self
 Sets the working directory for the command.
 
 ```python
+with_shell(self, shell: str) -> Self
+```
+Sets the shell to execute the command.
+
+```python
 done() -> ExecutionBuilder
 ```
 Finalizes command configuration and returns to execution context.

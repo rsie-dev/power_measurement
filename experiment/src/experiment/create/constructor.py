@@ -55,18 +55,25 @@ class CompositeConstructor(Constructor):
 
 
 class CommandConstructor(Constructor, CommandBuilder):
+    DEFAULT_SHELL = "/bin/sh"
+
     def __init__(self, parent: ExecutionConstructor, command: str):
         super().__init__()
         self._parent = parent
         self._command = command
         self._work_dir = None
+        self._shell = self.DEFAULT_SHELL
 
     def with_work_dir(self, folder: str) -> Self:
         self._work_dir = folder
         return self
 
+    def with_shell(self, shell: str) -> Self:
+        self._shell = shell
+        return self
+
     def done(self) -> ExecutionBuilder:
-        command = ExecutorCommand(self._command, self._work_dir)
+        command = ExecutorCommand(self._command, self._shell, self._work_dir)
         self._parent.add_command(command)
         return self._parent
 
@@ -96,7 +103,7 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
 
     def done(self) -> ExecutionBuilder:
         markers_dispatcher = self._parent.allocate_markers_dispatcher()
-        command = MeasuringCommand(markers_dispatcher, self._command, self._work_dir)
+        command = MeasuringCommand(markers_dispatcher, self._command, self._shell, self._work_dir)
 
         if self._count_stdout:
             count_dispatcher = self._parent.allocate_count_stream_dispatcher()
@@ -127,7 +134,7 @@ class ExecutionConstructor(Constructor, ExecutionBuilder):
         self._commands: list[Command] = []
 
     def execute(self, command: str) -> Self:
-        self.add_command(ExecutorCommand(command))
+        self.add_command(ExecutorCommand(command, CommandConstructor.DEFAULT_SHELL))
         return self
 
     def execute_with(self, command: str) -> CommandBuilder:

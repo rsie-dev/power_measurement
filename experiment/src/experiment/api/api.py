@@ -17,6 +17,10 @@ class CommandBuilder(Builder):
         pass
 
     @abstractmethod
+    def with_shell(self, shell: str) -> Self:
+        pass
+
+    @abstractmethod
     def done(self) -> ExecutionBuilder:
         pass
 
