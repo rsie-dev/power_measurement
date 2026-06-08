@@ -100,3 +100,16 @@ def allow_user_cache_control(user: str):
         dest="/etc/sudoers.d/%s_cache" % user,
         _sudo=True,
     )
+
+
+def allow_user_timer_control(user: str):
+    lines = []
+    for op in ["start", "stop"]:
+        lines.append(f"{user} ALL=(ALL) NOPASSWD: /usr/bin/systemctl {op} *.timer")
+    content = StringIO("\n".join(lines) + "\n")
+    files.put(
+        name="Allow %s to start/stop timers" % user,
+        src=content,
+        dest="/etc/sudoers.d/%s_timer" % user,
+        _sudo=True,
+    )
