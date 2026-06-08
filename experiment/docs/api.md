@@ -197,6 +197,12 @@ Enables temperature monitoring during measurement.
 The measurement is aborted if the temperature raises above or below the temp_delta threshold for longer than min_duration.
 
 ```python
+disbale_timers() -> Self
+```
+Active systemd timer units are stopped during the measurements and restarted afterwards.
+
+
+```python
 measure_runs(runs: int, tag: str = None) -> MeasurementExecutionBuilder
 ```
 Configures repeated measurement runs.

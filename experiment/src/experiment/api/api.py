@@ -123,6 +123,10 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def disable_timers(self) -> Self:
+        pass
+
+    @abstractmethod
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         pass
 

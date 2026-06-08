@@ -9,6 +9,7 @@ from .upload_step import UploadStep
 from .download_step import DownloadStep
 from .delete_step import DeleteStep
 from .temp_monitor_step import TempMonitorStep
+from .disable_timers_step import DisableTimersStep
 
 __all__ = ["Step", "InitStep",
            "WarmupCommandStep",
@@ -19,4 +20,5 @@ __all__ = ["Step", "InitStep",
            "UploadStep", "DownloadStep",
            "DeleteStep",
            "TempMonitorStep",
+           "DisableTimersStep",
            ]

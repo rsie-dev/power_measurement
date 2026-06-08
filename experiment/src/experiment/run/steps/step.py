@@ -28,7 +28,7 @@ class Step(BaseStep):
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         pass
 
-    def start(self, executor: Executor) -> None:
+    def start(self, runtime: ExperimentRuntime, executor: Executor) -> None:
         pass
 
     def stop(self, runtime: ExperimentRuntime) -> None:

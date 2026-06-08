@@ -52,7 +52,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         pass
 
-    def start(self, executor: Executor) -> None:
+    def start(self, runtime: ExperimentRuntime, executor: Executor) -> None:
         self._logger.debug("temperature monitor start")
         self._log_dispatcher.register_logger(self)
 

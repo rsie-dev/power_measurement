@@ -20,7 +20,7 @@ from experiment.run.steps import SystemMetricsClientStep, TimeDeltaStep
 from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
-from experiment.run.steps import TempMonitorStep
+from experiment.run.steps import TempMonitorStep, DisableTimersStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -368,6 +368,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         temp_delta: float | None = None
         temp_min_duration: float | None = None
         clear_cache: bool = False
+        disable_timers: bool = False
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
@@ -424,6 +425,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._context.temp_min_duration = min_duration
         return self
 
+    def disable_timers(self) -> Self:
+        self._context.disable_timers = True
+        return self
+
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         if tag is None:
             tag = ""
@@ -446,6 +451,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if metrics_dispatcher:
             steps.append(TimeDeltaStep(self._config.host))
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
+
+        if self._context.disable_timers:
+            steps.append(DisableTimersStep(self._config.host))
 
         steps.extend(self._steps)
         if self._context.temp_delta is not None:
