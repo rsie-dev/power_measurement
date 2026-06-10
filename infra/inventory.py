@@ -24,7 +24,8 @@ dut = ([
         ('radxax4', {'ssh_hostname': '192.168.5.103', "MAC": "10:02:b5:86:04:b7"}),
         ('visionfive2', {'ssh_hostname': '192.168.5.104', "MAC": "6c:cf:39:00:85:3e"}),
         ('visionfive2lite', {'ssh_hostname': '192.168.5.105', "MAC": "6c:cf:39:00:88:a6", "install_cpupower": False}),
-        ],
-        _ssh_config
+       ],
+       _ssh_config | {
+           "use_proxy": True,
+       }
 )
-

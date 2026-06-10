@@ -1,4 +1,5 @@
 from pathlib import Path
+from io import StringIO
 
 
 from pyinfra import host
@@ -357,4 +358,17 @@ def _transfer_home(part_device: str):
 
     yield from server.mount._inner(
         path="/home",
+    )
+
+
+def set_apt_proxy(enable: bool):
+    enable_str = "" if enable else "#"
+    content = f"""
+{enable_str}Acquire::http::proxy "socks5h://localhost:9999";
+"""
+    files.put(
+        name="Prepare APT to use a proxy server",
+        src=StringIO(content),
+        dest="/etc/apt/apt.conf.d/12proxy",
+        _sudo=True,
     )
