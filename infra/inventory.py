@@ -12,11 +12,15 @@ _ssh_config = {
     "_sudo_password": PASSWORD,
 }
 
+_proxy_config = {
+    "use_proxy": True,
+}
+
 
 controller = ([
-        ('controller', {'ssh_hostname': '192.168.1.206'}),
+        ('controller', {'ssh_hostname': '192.168.5.1'}),
         ],
-        _ssh_config
+        _ssh_config | _proxy_config
 )
 
 dut = ([
@@ -25,7 +29,5 @@ dut = ([
         ('visionfive2', {'ssh_hostname': '192.168.5.104', "MAC": "6c:cf:39:00:85:3e"}),
         ('visionfive2lite', {'ssh_hostname': '192.168.5.105', "MAC": "6c:cf:39:00:88:a6", "install_cpupower": False}),
        ],
-       _ssh_config | {
-           "use_proxy": True,
-       }
+        _ssh_config | _proxy_config
 )

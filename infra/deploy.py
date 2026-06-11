@@ -20,9 +20,8 @@ server.mount(
     _sudo=True,
 )
 
-if "dut" in host.groups:
-    if host.data.get("use_proxy", False):
-        set_apt_proxy(True)
+if host.data.get("use_proxy", False):
+    set_apt_proxy(True)
 base()
 base_network()
 stressors()
@@ -63,6 +62,5 @@ if "dut" in host.groups:
     unify_memory_size()
 
 switch_to_read_only()
-if "dut" in host.groups:
-    if host.data.get("use_proxy", False):
-        set_apt_proxy(False)
+if host.data.get("use_proxy", False):
+    set_apt_proxy(False)
