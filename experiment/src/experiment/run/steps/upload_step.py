@@ -23,4 +23,7 @@ class UploadStep(Step):
     def execute(self, runtime: ExperimentRuntime):
         self._logger.info("Upload local file: %s to %s:%s", self._local, self._host.host, self._remote)
         connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
-        connection.put(local=str(self._local), remote=str(self._remote))
+        try:
+            connection.put(local=str(self._local), remote=str(self._remote))
+        except OSError as e:
+            raise OSError(f"unable to upload: {self._local}") from e

@@ -27,4 +27,7 @@ class DownloadStep(Step):
             local = str(self._local) + "/"
         else:
             local = str(self._local)
-        connection.get(remote=str(self._remote), local=local)
+        try:
+            connection.get(remote=str(self._remote), local=local)
+        except OSError as e:
+            raise OSError(f"unable to download: {self._remote}") from e
