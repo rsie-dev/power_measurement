@@ -14,6 +14,10 @@ class BaseStep(ABC):
     def name(self):
         return self._name
 
+    @property
+    def description(self):
+        return self.name
+
     def execute(self, runtime: ExperimentRuntime) -> None:
         pass
 

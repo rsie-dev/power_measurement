@@ -21,22 +21,22 @@ class ExperimentRunner:
 
         self._logger.info("Prepare all steps")
         for step in self._steps:
-            self._logger.debug("prepare step: %s", step.name)
+            self._logger.debug("prepare step: %s", step.description)
             step.prepare(environment, resources)
 
         try:
             self._logger.info("Starting all steps")
             for step in self._steps:
-                self._logger.debug("start step: %s", step.name)
+                self._logger.debug("start step: %s", step.description)
                 step.start(runtime, self._executor)
 
             for step in self._steps:
-                self._logger.debug("execute step: %s", step.name)
+                self._logger.debug("execute step: %s", step.description)
                 step.execute(runtime)
 
         finally:
             self._logger.info("Stopping all steps")
             for step in list(reversed(self._steps)):
-                self._logger.debug("stop step: %s", step.name)
+                self._logger.debug("stop step: %s", step.description)
                 step.stop(runtime)
             self._logger.info("Stopped all steps")

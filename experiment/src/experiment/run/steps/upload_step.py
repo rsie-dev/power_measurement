@@ -17,6 +17,9 @@ class UploadStep(Step):
         self._local = local
         self._remote = remote
 
+    def description(self):
+        return f"{self._name}: {self._local}"
+
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         environment.register_ssh_connection(self._host.ssh_user, self._host.host)
 
