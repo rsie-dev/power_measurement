@@ -3,6 +3,7 @@ venv
 __pycache__
 *.log
 *.csv
+*.py
 
 dist/
 *.egg-info/
@@ -10,4 +11,5 @@ dist/
 src/experiment/_version.py
 
 data
+data_gen
 resources
