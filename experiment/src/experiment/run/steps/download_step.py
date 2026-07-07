@@ -17,6 +17,10 @@ class DownloadStep(Step):
         self._remote = remote
         self._local = local
 
+    @property
+    def description(self):
+        return f"{self._name}: {self._remote}"
+
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources):
         environment.register_ssh_connection(self._host.ssh_user, self._host.host)
 

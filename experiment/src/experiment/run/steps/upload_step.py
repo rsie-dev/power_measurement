@@ -17,6 +17,7 @@ class UploadStep(Step):
         self._local = local
         self._remote = remote
 
+    @property
     def description(self):
         return f"{self._name}: {self._local}"
 
