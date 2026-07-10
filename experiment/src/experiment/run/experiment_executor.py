@@ -32,10 +32,7 @@ class ExperimentExecutor(Experiment):
 
             with ThreadPoolExecutor() as executor:
                 future = None
-                if self._metrics_dispatcher:
-                    metrics_server = MetricsServer(metrics_server_address)
-                else:
-                    metrics_server = nullcontext()
+                metrics_server = self._create_metrics_server(metrics_server_address)
                 try:
                     with metrics_server:
                         if self._metrics_dispatcher:
@@ -64,6 +61,11 @@ class ExperimentExecutor(Experiment):
             self._logger.info("Init step: %s", step.name)
             step.init(initial_environment)
             step.execute(runtime)
+
+    def _create_metrics_server(self, metrics_server_address: tuple[str, int]):
+        if self._metrics_dispatcher:
+            return MetricsServer(metrics_server_address)
+        return nullcontext()
 
     def _system_collector(self, metrics_server: MetricsServer, measurement_dispatcher: LogDispatcher[SystemMeasurement],
                           event: Event) -> None:
