@@ -4,7 +4,6 @@ from concurrent.futures import Executor
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from io import BytesIO
 
 from fabric import Connection
 
@@ -63,19 +62,11 @@ class SBCTemperatureMonitorStep(Step):
         entries.sort()
         for entry in entries:
             name_path = hwmon_folder / entry / "name"
-            name = self._read_remote_file(connection, name_path)
-            name = name.strip()
+            name = self._read_remote_file(connection, name_path).strip()
             self._logger.debug("entry %s = %s", name_path, name)
             if name in sensor_names:
                 return hwmon_folder / entry / "temp1_input"
         return None
-
-    def _read_remote_file(self, connection: Connection, remote_file: Path) -> str:
-        buf = BytesIO()
-        connection.get(str(remote_file), local=buf)
-        buf.seek(0)
-        content = buf.read().decode("utf-8")
-        return content
 
     def stop(self, runtime: ExperimentRuntime) -> None:
         self._logger.debug("Signal SBC temperature collector to shutdown")
@@ -105,11 +96,15 @@ class SBCTemperatureMonitorStep(Step):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_temperature(self, connection: Connection, kernel_temperature_file: Path):
-        result = connection.run(f"cat {kernel_temperature_file}", shell="/usr/bin/sh", hide=True)
-        str_value = result.stdout.strip()
+        str_value = self._read_remote_file(connection, kernel_temperature_file).strip()
         sbc_temp = float(str_value) / 1000.0
         entry = TemperatureEntry(
             timestamp=datetime.datetime.now(datetime.UTC),
             temperature=sbc_temp,
         )
         self._config.sbc_temp_dispatcher.log(entry)
+
+    def _read_remote_file(self, connection: Connection, remote_file: Path) -> str:
+        result = connection.run(f"cat {remote_file}", shell="/usr/bin/sh", hide=True)
+        content = result.stdout
+        return content
