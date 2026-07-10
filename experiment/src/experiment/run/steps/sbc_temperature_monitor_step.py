@@ -1,6 +1,7 @@
 import logging
 from threading import Event, Condition
 from concurrent.futures import Executor
+import datetime
 
 from fabric import Connection
 
@@ -8,15 +9,17 @@ from experiment.common import SSHHost
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
+from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
 
 
 class SBCTemperatureMonitorStep(Step):
-    def __init__(self, host: SSHHost):
+    def __init__(self, host: SSHHost, sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]):
         super().__init__("SBC temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._host = host
+        self._sbc_temp_dispatcher = sbc_temp_dispatcher
         self._condition = Condition()
         self._stop = False
         self._start_timeout = 3
@@ -60,3 +63,4 @@ class SBCTemperatureMonitorStep(Step):
         self._logger.warning("collecting SBC temp")
         result = connection.run('uname -s')
         self._logger.warning("got: %s", result.stdout.strip())
+        timestamp = datetime.datetime.now(datetime.UTC),

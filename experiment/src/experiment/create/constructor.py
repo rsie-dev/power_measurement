@@ -27,7 +27,7 @@ from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
 from experiment.run.log import MetricType, CSVMetricsLogger
 from experiment.run.log import CSVMultimeterLogger
-from experiment.run.log import CSVTemperatureLogger
+from experiment.run.log import CSVTemperatureLogger, TemperatureEntry
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
@@ -381,6 +381,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
         self._ambient_temp_dispatcher = None
+        self._sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
         self._context = HostConstructor.ExtraHostContext()
 
     @property
@@ -453,8 +454,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
-
-        steps.append(SBCTemperatureMonitorStep(self._config.host))
+        if self._sbc_temp_dispatcher:
+            steps.append(SBCTemperatureMonitorStep(self._config.host, self._sbc_temp_dispatcher))
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
