@@ -31,21 +31,22 @@ class ExperimentExecutor(Experiment):
             self._initialize(runtime, self._init_steps)
 
             with ThreadPoolExecutor() as executor:
-                future_metrics = None
+                futures = []
                 try:
                     with ExitStack() as stack:
                         if self._metrics_dispatcher:
-                            future_metrics = self._init_metrics_server(executor, stack, metrics_server_address)
+                            future = self._init_metrics_server(executor, stack, metrics_server_address)
+                            futures.append(future)
 
                         environment = Environment(ssh_manager, metrics_server_address)
                         runner = ExperimentRunner(executor, resources, self._steps)
                         runner.execute_runs(runtime, environment)
                 finally:
-                    if future_metrics:
-                        self._logger.info("Wait for metrics server")
-                        wait([future_metrics], return_when=FIRST_EXCEPTION)
-                        if future_metrics.done():
-                            future_metrics.result()
+                    if futures:
+                        self._logger.info("Wait for threads")
+                        done, _ = wait(futures, return_when=FIRST_EXCEPTION)
+                        for future in done:
+                            future.result()
 
     def _init_metrics_server(self, executor: ThreadPoolExecutor, stack: ExitStack, server_address: tuple[str, int]):
         metrics_server = stack.enter_context(MetricsServer(server_address))
