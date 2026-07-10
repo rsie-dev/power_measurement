@@ -72,7 +72,6 @@ class SBCTemperatureMonitorStep(Step):
     def _collect_temperature(self, connection: Connection):
         result = connection.run(f"/usr/bin/sensors -J {self._path_tokens[0]}", shell="/usr/bin/sh", hide=True)
         sbc_temp = self._extract_sbc_temperature(result.stdout.strip())
-        self._logger.warning("SBC temp: %f", sbc_temp)
         entry = TemperatureEntry(
             timestamp=datetime.datetime.now(datetime.UTC),
             temperature=sbc_temp,

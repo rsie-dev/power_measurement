@@ -485,9 +485,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             else:
                 command_configs = self._context.command_configs[:]
             aborter = monitor_step
-            temp_log_provider = self._create_ambient_temperature_log_provider()
+            log_providers = []
+            log_providers.append(self._create_ambient_temperature_log_provider())
+            if self._sbc_temp_dispatcher:
+                log_providers.append(self._create_sbc_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
-                                            log_providers=[temp_log_provider])
+                                            log_providers=log_providers)
             step = MeasurementStep(self._config.host, self._measurement, config, aborter)
 
             steps.append(step)
@@ -510,6 +513,18 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         log_provider = GenericLogProvider(self._ambient_temp_dispatcher, temp_logger_factory)
         return log_provider
 
+    def _create_sbc_temperature_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+
+        def temp_logger_factory(path: Path):
+            log_folder = path / self._config.host.host_name
+            log_folder.mkdir(parents=True, exist_ok=True)
+            logger = CSVTemperatureLogger(log_folder / "temperature_sbc.csv", formatter)
+            return logger
+
+        log_provider = GenericLogProvider(self._sbc_temp_dispatcher, temp_logger_factory)
+        return log_provider
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     @dataclass(frozen=True)
