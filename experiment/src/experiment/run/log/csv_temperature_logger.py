@@ -39,6 +39,6 @@ class CSVTemperatureLogger(CSVBaseLogger, Logger[TemperatureEntry]):
         formatted_time = self._format_time(data.timestamp)
         entry = {
             "timestamp": f"{formatted_time}",
-            "temperature": f"{data.temperature:3.2f}",
+            "temperature": f"{data.temperature: 3.2f}",
         }
         self._writer.writerow(entry)
