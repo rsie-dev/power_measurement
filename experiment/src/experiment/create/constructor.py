@@ -455,7 +455,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps = []
         if self._sbc_temp_dispatcher:
-            steps.append(SBCTemperatureMonitorStep(self._config.host, self._sbc_temp_dispatcher))
+            config = SBCTemperatureMonitorStep.Config(
+                host=self._config.host,
+                sbc_temp_dispatcher=self._sbc_temp_dispatcher,
+                path="cpu_thermal-virtual-0/temp1/input/value"
+            )
+            steps.append(SBCTemperatureMonitorStep(config))
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:

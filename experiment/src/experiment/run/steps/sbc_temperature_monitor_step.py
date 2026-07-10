@@ -2,6 +2,8 @@ import logging
 from threading import Event, Condition
 from concurrent.futures import Executor
 import datetime
+import json
+from dataclasses import dataclass
 
 from fabric import Connection
 
@@ -15,23 +17,28 @@ from .step import Step
 
 
 class SBCTemperatureMonitorStep(Step):
-    def __init__(self, host: SSHHost, sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]):
+    @dataclass(frozen=True)
+    class Config:
+        host: SSHHost
+        sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
+        path: str
+
+    def __init__(self, config: Config):
         super().__init__("SBC temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._host = host
-        self._sbc_temp_dispatcher = sbc_temp_dispatcher
+        self._config = config
         self._condition = Condition()
         self._stop = False
         self._start_timeout = 3
         self._update_interval = 1
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
-        environment.register_ssh_connection(self._host.ssh_user, self._host.host)
+        environment.register_ssh_connection(self._config.host.ssh_user, self._config.host.host)
 
     def start(self, runtime: ExperimentRuntime, executor: Executor) -> None:
         self._logger.debug("temperature monitor start")
         event = Event()
-        connection = runtime.get_ssh_connection(self._host.ssh_user, self._host.host)
+        connection = runtime.get_ssh_connection(self._config.host.ssh_user, self._config.host.host)
         executor.submit(self._run, connection, event)
         event.wait(self._start_timeout)
 
@@ -56,11 +63,24 @@ class SBCTemperatureMonitorStep(Step):
 
                     if self._stop:
                         break
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self._logger.exception("Error: %s", e)
         finally:
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_temperature(self, connection: Connection):
-        self._logger.warning("collecting SBC temp")
-        result = connection.run('uname -s')
-        self._logger.warning("got: %s", result.stdout.strip())
-        timestamp = datetime.datetime.now(datetime.UTC),
+        result = connection.run('/usr/bin/sensors -J', shell="/usr/bin/sh", hide=True)
+        sbc_temp = self._extract_sbc_temperature(result.stdout.strip())
+        self._logger.warning("SBC temp: %f", sbc_temp)
+        entry = TemperatureEntry(
+            timestamp=datetime.datetime.now(datetime.UTC),
+            temperature=sbc_temp,
+        )
+        self._config.sbc_temp_dispatcher.log(entry)
+
+    def _extract_sbc_temperature(self, stdout: str) -> float:
+        data = json.loads(stdout.strip())
+        value = data
+        for key in self._config.path.split("/"):
+            value = value[key]
+        return float(value)
