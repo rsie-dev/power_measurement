@@ -375,7 +375,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     @dataclass
     class SBCContext:
-        temp_path: str | None = None
         update_interval: float | None = None
 
     @dataclass
@@ -417,8 +416,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def shutdown(self) -> ShutdownBuilder:
         return ShutdownConstructor(self, self._config.host)
 
-    def with_sbc_monitoring(self, path: str, update_interval: float = 1) -> Self:
-        self._sbc_context.temp_path = path
+    def with_sbc_monitoring(self, update_interval: float = 1) -> Self:
         self._sbc_context.update_interval = update_interval
         self._dispatcher.sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
         return self
@@ -476,7 +474,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 host=self._config.host,
                 sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
                 log_provider=log_provider,
-                path=self._sbc_context.temp_path,
                 update_interval=self._sbc_context.update_interval
             )
             steps.append(SBCTemperatureMonitorStep(config))

@@ -107,7 +107,7 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def with_sbc_monitoring(self, path: str, update_interval: float = 1) -> Self:
+    def with_sbc_monitoring(self, update_interval: float = 1) -> Self:
         pass
 
     @abstractmethod

@@ -176,10 +176,9 @@ shutdown() -> ShutdownBuilder
 Begins shutdown phase.
 
 ```python
-with_sbc_monitoring(path: str, update_interval: float = 1)
+with_sbc_monitoring(update_interval: float = 1)
 ```
-Enables the monitoring of the SBC CPU temperature using the 
-given slash separated path.
+Enables the monitoring of the SBC CPU temperature.
 Acquires the temperature every update_interval seconds.
 
 ```python
