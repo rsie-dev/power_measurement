@@ -27,6 +27,7 @@ class SBCTemperatureMonitorStep(Step):
         super().__init__("SBC temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
+        self._path_tokens = self._config.path.split("/")
         self._condition = Condition()
         self._stop = False
         self._start_timeout = 3
@@ -69,7 +70,7 @@ class SBCTemperatureMonitorStep(Step):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_temperature(self, connection: Connection):
-        result = connection.run('/usr/bin/sensors -J', shell="/usr/bin/sh", hide=True)
+        result = connection.run(f"/usr/bin/sensors -J {self._path_tokens[0]}", shell="/usr/bin/sh", hide=True)
         sbc_temp = self._extract_sbc_temperature(result.stdout.strip())
         self._logger.warning("SBC temp: %f", sbc_temp)
         entry = TemperatureEntry(
@@ -81,6 +82,6 @@ class SBCTemperatureMonitorStep(Step):
     def _extract_sbc_temperature(self, stdout: str) -> float:
         data = json.loads(stdout.strip())
         value = data
-        for key in self._config.path.split("/"):
+        for key in self._path_tokens:
             value = value[key]
         return float(value)
