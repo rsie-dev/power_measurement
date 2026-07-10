@@ -1,23 +1,22 @@
 import logging
 from concurrent.futures import Executor
-from typing import List
 import datetime
 from dataclasses import dataclass
 
-from usb_multimeter import ElectricalMeasurement
 from humanize import naturaldelta
 
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
 from experiment.run.log import LogDispatcher, Logger
+from experiment.run.log import TemperatureEntry
 from experiment.log_util import TimeThrottleFilter
 
 from .step import Step
 from .measurement_step import MeasurementAbort
 
 
-class TempMonitorStep(Step, Logger, MeasurementAbort):
+class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
     TEMP_UPDATE_LOG_NAME = None
 
     @dataclass
@@ -27,7 +26,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         start_time: datetime.datetime | None = None
         abort_flag: bool = False
 
-    def __init__(self, log_dispatcher: LogDispatcher[ElectricalMeasurement], max_temp_delta: float,
+    def __init__(self, log_dispatcher: LogDispatcher[TemperatureEntry], max_temp_delta: float,
                  min_duration: datetime.timedelta | None = None, now=datetime.datetime.now):
         super().__init__("temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -60,7 +59,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
         self._log_dispatcher.unregister_logger(self)
         self._logger.debug("temperature monitor stop")
 
-    def _log_measurement(self, data: ElectricalMeasurement) -> None:
+    def _log_measurement(self, data: TemperatureEntry) -> None:
         if self._context.abort_flag:
             return
 
@@ -121,5 +120,7 @@ class TempMonitorStep(Step, Logger, MeasurementAbort):
     def _format_temp(self, temp: float) -> str:
         return f"{temp:2.2f}°C"
 
-    def log(self, data: List[ElectricalMeasurement]) -> None:
+    def log(self, data: TemperatureEntry | list[TemperatureEntry]) -> None:
+        if not isinstance(data, list):
+            data = [data]
         self._log_measurement(data[-1])

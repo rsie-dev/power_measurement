@@ -1,9 +1,8 @@
 import datetime
-from unittest.mock import Mock
 
 import pytest
-from usb_multimeter import ElectricalMeasurement, Device
 
+from experiment.run.log import TemperatureEntry
 from .temp_monitor_step import TempMonitorStep
 
 # pylint: disable=redefined-outer-name
@@ -30,15 +29,8 @@ def test_step(test_now):
 
 
 def measurement(temperature: float):
-    device = Mock(spec=Device)
     timestamp = datetime.datetime.now()
-    return ElectricalMeasurement(device=device,
-                                 timestamp=timestamp,
-                                 voltage=0, current=0,
-                                 dp=0, dn=0,
-                                 temperature=temperature,
-                                 energy=0,
-                                 capacity=0)
+    return TemperatureEntry(timestamp=timestamp, temperature=temperature)
 
 
 def test_in_range_high(test_step):

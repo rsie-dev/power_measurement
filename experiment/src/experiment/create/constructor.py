@@ -463,7 +463,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
         if self._context.temp_delta is not None:
             max_temp_delta = self._context.temp_delta
-            monitor_step = TempMonitorStep(self._multimeter_dispatcher, max_temp_delta, self._context.temp_min_duration)
+            monitor_step = TempMonitorStep(self._ambient_temp_dispatcher, max_temp_delta,
+                                           self._context.temp_min_duration)
             steps.append(monitor_step)
         else:
             monitor_step = None
