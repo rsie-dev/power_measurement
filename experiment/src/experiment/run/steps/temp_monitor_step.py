@@ -107,10 +107,10 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
                                   self._format_temp(data.temperature)))
         else:
             if self._context.start_time:
-                self._logger.warning("Temp %s is back in range: %s -- %s",
-                                     self._format_temp(data.temperature),
+                self._logger.warning("Temp is back in range: %s -- %s: %s",
                                      self._format_temp(self._context.threshold_low),
-                                     self._format_temp(self._context.threshold_high))
+                                     self._format_temp(self._context.threshold_high),
+                                     self._format_temp(data.temperature))
             self._context.start_time = None
 
     def _log_update(self, state):
