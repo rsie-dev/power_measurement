@@ -26,7 +26,7 @@ from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
 from experiment.run.log import MetricType, CSVMetricsLogger
 from experiment.run.log import CSVMultimeterLogger
-from experiment.run.log import CSVAmbientTemperatureLogger
+from experiment.run.log import CSVTemperatureLogger
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
@@ -490,8 +490,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         def temp_logger_factory(path: Path):
             log_folder = path / self._config.host.host_name
             log_folder.mkdir(parents=True, exist_ok=True)
-            ambient_logger = CSVAmbientTemperatureLogger(log_folder / "temperature_ambient.csv", formatter)
-
+            ambient_logger = CSVTemperatureLogger(log_folder / "temperature_ambient.csv", formatter)
             log_proxy = AmbientLogProxy(formatter, ambient_logger)
             return log_proxy
 

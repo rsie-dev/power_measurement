@@ -13,7 +13,7 @@ class TemperatureEntry:
     temperature: float
 
 
-class CSVAmbientTemperatureLogger(CSVBaseLogger, Logger[TemperatureEntry]):
+class CSVTemperatureLogger(CSVBaseLogger, Logger[TemperatureEntry]):
     FIELD_NAMES = ["timestamp", "temperature"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool = False):

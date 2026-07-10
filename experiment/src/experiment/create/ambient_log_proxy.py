@@ -3,11 +3,11 @@ import logging
 from usb_multimeter import ElectricalMeasurement
 
 from experiment.run.log import Logger, BaseLogger
-from experiment.run.log import CSVAmbientTemperatureLogger, TemperatureEntry
+from experiment.run.log import CSVTemperatureLogger, TemperatureEntry
 
 
 class AmbientLogProxy(BaseLogger, Logger[ElectricalMeasurement]):
-    def __init__(self, formatter: logging.Formatter, logger: CSVAmbientTemperatureLogger, latest_only: bool = False):
+    def __init__(self, formatter: logging.Formatter, logger: CSVTemperatureLogger, latest_only: bool = False):
         super().__init__(formatter)
         self._logger = logger
         self._latest_only = latest_only
