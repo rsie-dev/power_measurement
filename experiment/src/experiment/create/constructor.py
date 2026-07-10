@@ -40,7 +40,7 @@ from experiment.system_meter import SystemMeasurement
 from .multimeter_device_manager import MultimeterDeviceManager
 from .metrics_log_dispatcher import MetricsLogDispatcher
 from .command_config_shuffle import command_config_shuffle
-from .ambient_log_proxy import AmbientLogProxy
+from .ambient_temp_log_dispatcher import AmbientTempLogDispatcher
 
 
 class Constructor(Builder):
@@ -379,6 +379,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
         self._multimeter_dispatcher = None
+        self._ambient_temp_dispatcher = None
         self._context = HostConstructor.ExtraHostContext()
 
     @property
@@ -416,6 +417,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
         self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
+        self._ambient_temp_dispatcher = AmbientTempLogDispatcher()
+        self._multimeter_dispatcher.register_logger(self._ambient_temp_dispatcher)
         self._measurement = MultimeterMeasurement(device_manager, self._multimeter_dispatcher)
         return self
 
@@ -491,10 +494,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             log_folder = path / self._config.host.host_name
             log_folder.mkdir(parents=True, exist_ok=True)
             ambient_logger = CSVTemperatureLogger(log_folder / "temperature_ambient.csv", formatter)
-            log_proxy = AmbientLogProxy(formatter, ambient_logger)
-            return log_proxy
+            return ambient_logger
 
-        log_provider = GenericLogProvider(self._multimeter_dispatcher, temp_logger_factory)
+        log_provider = GenericLogProvider(self._ambient_temp_dispatcher, temp_logger_factory)
         return log_provider
 
 

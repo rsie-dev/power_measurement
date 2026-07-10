@@ -2,21 +2,16 @@ import logging
 
 from usb_multimeter import ElectricalMeasurement
 
-from experiment.run.log import Logger, BaseLogger
-from experiment.run.log import CSVTemperatureLogger, TemperatureEntry
+from experiment.run.log import Logger
+from experiment.run.log import LogDispatcher
+from experiment.run.log import TemperatureEntry
 
 
-class AmbientLogProxy(BaseLogger, Logger[ElectricalMeasurement]):
-    def __init__(self, formatter: logging.Formatter, logger: CSVTemperatureLogger, latest_only: bool = False):
-        super().__init__(formatter)
-        self._logger = logger
+class AmbientTempLogDispatcher(LogDispatcher[TemperatureEntry], Logger[ElectricalMeasurement]):
+    def __init__(self, latest_only: bool = False):
+        super().__init__()
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._latest_only = latest_only
-
-    def init(self) -> None:
-        self._logger.init()
-
-    def close(self) -> None:
-        self._logger.close()
 
     def log(self, data: ElectricalMeasurement | list[ElectricalMeasurement]) -> None:
         if not isinstance(data, list):
@@ -32,4 +27,4 @@ class AmbientLogProxy(BaseLogger, Logger[ElectricalMeasurement]):
             timestamp=data.timestamp,
             temperature=data.temperature
         )
-        self._logger.log(te)
+        super().log(te)
