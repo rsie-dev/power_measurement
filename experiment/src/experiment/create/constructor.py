@@ -374,10 +374,15 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         disable_timers: bool = False
 
     @dataclass
+    class SBCContext:
+        temp_path: str | None = None
+        update_interval: float | None = None
+
+    @dataclass
     class Dispatcher:
         multimeter_dispatcher: LogDispatcher[ElectricalMeasurement] | None = None
         ambient_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = None
-        sbc_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = LogDispatcher[TemperatureEntry]()
+        sbc_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = None
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
@@ -387,6 +392,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement: MultimeterMeasurement | None = None
         self._dispatcher = HostConstructor.Dispatcher()
         self._context = HostConstructor.ExtraHostContext()
+        self._sbc_context = HostConstructor.SBCContext()
 
     @property
     def collect_metrics(self) -> MetricsLogDispatcher:
@@ -410,6 +416,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     def shutdown(self) -> ShutdownBuilder:
         return ShutdownConstructor(self, self._config.host)
+
+    def with_sbc_monitoring(self, path: str, update_interval: float = 1) -> Self:
+        self._sbc_context.temp_path = path
+        self._sbc_context.update_interval = update_interval
+        self._dispatcher.sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
+        return self
 
     def with_warmup(self) -> WarmupExecutionBuilder:
         return WarmupExecutionConstructor(self, self._config.host)
@@ -464,7 +476,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 host=self._config.host,
                 sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
                 log_provider=log_provider,
-                path="cpu_thermal-virtual-0/temp1/input/value"
+                path=self._sbc_context.temp_path,
+                update_interval=self._sbc_context.update_interval
             )
             steps.append(SBCTemperatureMonitorStep(config))
 

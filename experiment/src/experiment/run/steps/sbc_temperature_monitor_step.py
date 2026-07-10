@@ -25,7 +25,7 @@ class SBCTemperatureMonitorStep(Step):
         sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
         log_provider: LogProvider
         path: str
-        update_interval: float = 1
+        update_interval: float
         start_timeout: float = 3
 
     @dataclass

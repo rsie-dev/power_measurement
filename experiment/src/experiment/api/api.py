@@ -107,6 +107,10 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
+    def with_sbc_monitoring(self, path: str, update_interval: float = 1) -> Self:
+        pass
+
+    @abstractmethod
     def with_warmup(self) -> WarmupExecutionBuilder:
         pass
 
