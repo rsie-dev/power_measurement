@@ -4,6 +4,7 @@ from concurrent.futures import Executor
 import datetime
 import json
 from dataclasses import dataclass
+from pathlib import Path
 
 from fabric import Connection
 
@@ -24,28 +25,34 @@ class SBCTemperatureMonitorStep(Step):
         sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
         log_provider: LogProvider
         path: str
+        update_interval: float = 1
+        start_timeout: float = 3
+
+    @dataclass
+    class RunContext:
+        path_tokens: list[str]
+        resources_path: Path | None = None
 
     def __init__(self, config: Config):
         super().__init__("SBC temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
-        self._path_tokens = self._config.path.split("/")
+        self._context = SBCTemperatureMonitorStep.RunContext(
+            path_tokens=self._config.path.split("/"),
+        )
         self._condition = Condition()
         self._stop = False
-        self._start_timeout = 3
-        self._update_interval = 1
-        self._resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         environment.register_ssh_connection(self._config.host.ssh_user, self._config.host.host)
-        self._resources_path = resources.resources_path()
+        self._context.resources_path = resources.resources_path()
 
     def start(self, runtime: ExperimentRuntime, executor: Executor) -> None:
         self._logger.debug("temperature monitor start")
         event = Event()
         connection = runtime.get_ssh_connection(self._config.host.ssh_user, self._config.host.host)
         executor.submit(self._run, connection, event)
-        event.wait(self._start_timeout)
+        event.wait(self._config.start_timeout)
 
     def stop(self, runtime: ExperimentRuntime) -> None:
         self._logger.debug("Signal SBC temperature collector to shutdown")
@@ -60,11 +67,11 @@ class SBCTemperatureMonitorStep(Step):
         self._logger.debug("SBC temperature collector start")
         try:
             event.set()
-            with self._config.log_provider.start_log(self._resources_path):
+            with self._config.log_provider.start_log(self._context.resources_path):
                 while True:
                     with self._condition:
                         while not self._stop:
-                            if not self._condition.wait(timeout=self._update_interval):
+                            if not self._condition.wait(timeout=self._config.update_interval):
                                 self._collect_temperature(connection)
 
                         if self._stop:
@@ -75,7 +82,8 @@ class SBCTemperatureMonitorStep(Step):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_temperature(self, connection: Connection):
-        result = connection.run(f"/usr/bin/sensors -J {self._path_tokens[0]}", shell="/usr/bin/sh", hide=True)
+        chip = self._context.path_tokens[0]
+        result = connection.run(f"/usr/bin/sensors -J {chip}", shell="/usr/bin/sh", hide=True)
         sbc_temp = self._extract_sbc_temperature(result.stdout.strip())
         entry = TemperatureEntry(
             timestamp=datetime.datetime.now(datetime.UTC),
@@ -86,6 +94,6 @@ class SBCTemperatureMonitorStep(Step):
     def _extract_sbc_temperature(self, stdout: str) -> float:
         data = json.loads(stdout.strip())
         value = data
-        for key in self._path_tokens:
+        for key in self._context.path_tokens:
             value = value[key]
         return float(value)
