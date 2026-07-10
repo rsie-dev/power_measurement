@@ -377,7 +377,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     class Dispatcher:
         multimeter_dispatcher: LogDispatcher[ElectricalMeasurement] | None = None
         ambient_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = None
-        sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
+        sbc_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = LogDispatcher[TemperatureEntry]()
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
