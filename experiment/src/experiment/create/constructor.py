@@ -373,15 +373,19 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         clear_cache: bool = False
         disable_timers: bool = False
 
+    @dataclass
+    class Dispatcher:
+        multimeter_dispatcher: LogDispatcher[ElectricalMeasurement] | None = None
+        ambient_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = None
+        sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
+
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
         self._parent = parent
         self._config = config
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
-        self._multimeter_dispatcher = None
-        self._ambient_temp_dispatcher = None
-        self._sbc_temp_dispatcher = LogDispatcher[TemperatureEntry]()
+        self._dispatcher = HostConstructor.Dispatcher()
         self._context = HostConstructor.ExtraHostContext()
 
     @property
@@ -418,10 +422,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
-        self._multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
-        self._ambient_temp_dispatcher = AmbientTempLogDispatcher()
-        self._multimeter_dispatcher.register_logger(self._ambient_temp_dispatcher)
-        self._measurement = MultimeterMeasurement(device_manager, self._multimeter_dispatcher)
+        self._dispatcher.multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
+        self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
+        self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
+        self._measurement = MultimeterMeasurement(device_manager, self._dispatcher.multimeter_dispatcher)
         return self
 
     def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:
@@ -447,17 +451,17 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if not self._measurement:
             raise RuntimeError("no multimeter for measurement available")
 
-        return MeasurementExecutionConstructor(self, self._config.host, self._multimeter_dispatcher, config)
+        return MeasurementExecutionConstructor(self, self._config.host, self._dispatcher.multimeter_dispatcher, config)
 
     def done(self) -> ExperimentBuilder:
         if "" in self._tags and len(self._tags) > 1:
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
-        if self._sbc_temp_dispatcher:
+        if self._dispatcher.sbc_temp_dispatcher:
             config = SBCTemperatureMonitorStep.Config(
                 host=self._config.host,
-                sbc_temp_dispatcher=self._sbc_temp_dispatcher,
+                sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
                 path="cpu_thermal-virtual-0/temp1/input/value"
             )
             steps.append(SBCTemperatureMonitorStep(config))
@@ -473,7 +477,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
         if self._context.temp_delta is not None:
             max_temp_delta = self._context.temp_delta
-            monitor_step = TempMonitorStep(self._ambient_temp_dispatcher, max_temp_delta,
+            monitor_step = TempMonitorStep(self._dispatcher.ambient_temp_dispatcher, max_temp_delta,
                                            self._context.temp_min_duration)
             steps.append(monitor_step)
         else:
@@ -487,7 +491,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             aborter = monitor_step
             log_providers = []
             log_providers.append(self._create_ambient_temperature_log_provider())
-            if self._sbc_temp_dispatcher:
+            if self._dispatcher.sbc_temp_dispatcher:
                 log_providers.append(self._create_sbc_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
                                             log_providers=log_providers)
@@ -510,7 +514,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             ambient_logger = CSVTemperatureLogger(log_folder / "temperature_ambient.csv", formatter)
             return ambient_logger
 
-        log_provider = GenericLogProvider(self._ambient_temp_dispatcher, temp_logger_factory)
+        log_provider = GenericLogProvider(self._dispatcher.ambient_temp_dispatcher, temp_logger_factory)
         return log_provider
 
     def _create_sbc_temperature_log_provider(self) -> LogProvider:
@@ -523,7 +527,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             logger = CSVTemperatureLogger(log_folder / "temperature_sbc.csv", formatter)
             return logger
 
-        log_provider = GenericLogProvider(self._sbc_temp_dispatcher, temp_logger_factory)
+        log_provider = GenericLogProvider(self._dispatcher.sbc_temp_dispatcher, temp_logger_factory)
         return log_provider
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
