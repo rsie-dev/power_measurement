@@ -8,7 +8,7 @@ from .csv_base_logger import CSVBaseLogger
 from .logger import Logger
 
 
-class CSVTemperatureLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
+class CSVAmbientTemperatureLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
     FIELD_NAMES = ["timestamp", "temperature"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool = False):

@@ -3,7 +3,7 @@ from .base_logger import BaseLogger, logger
 from .log_dispatcher import LogDispatcher
 from .log_provider import LogProvider, LoggerFactory, GenericLogProvider
 from .csv_multimeter_logger import CSVMultimeterLogger
-from .csv_temperature_logger import CSVTemperatureLogger
+from .csv_ambient_temperature_logger import CSVAmbientTemperatureLogger
 from .csv_metrics_logger import MetricType, CSVMetricsLogger
 from .csv_timing_logger import TimingEntry, CSVTimingLogger
 from .csv_file_stats_logger import FileStatsEntry, CSVFileStatLogger
@@ -15,7 +15,7 @@ __all__ = [
     "BaseLogger",
     "LogProvider", "LoggerFactory", "GenericLogProvider",
     "CSVMultimeterLogger",
-    "CSVTemperatureLogger",
+    "CSVAmbientTemperatureLogger",
     "MetricType", "CSVMetricsLogger",
     "CSVTimingLogger", "TimingEntry",
     "FileStatsEntry", "CSVFileStatLogger",
