@@ -3,7 +3,7 @@ from typing import List
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 from threading import Event
-from contextlib import nullcontext
+from contextlib import ExitStack
 
 from experiment.api import Experiment
 from experiment.system_meter import MetricsServer, SystemMeasurement
@@ -31,25 +31,25 @@ class ExperimentExecutor(Experiment):
             self._initialize(runtime, self._init_steps)
 
             with ThreadPoolExecutor() as executor:
-                future = None
-                metrics_server = self._create_metrics_server(metrics_server_address)
+                future_metrics = None
                 try:
-                    with metrics_server:
+                    with ExitStack() as stack:
                         if self._metrics_dispatcher:
+                            metrics_server = stack.enter_context(MetricsServer(metrics_server_address))
                             event = Event()
-                            future = executor.submit(self._system_collector, metrics_server,
-                                                     self._metrics_dispatcher, event)
+                            future_metrics = executor.submit(self._system_collector, metrics_server,
+                                                             self._metrics_dispatcher, event)
                             event.wait(self._metrics_server_start_timeout)
 
                         environment = Environment(ssh_manager, metrics_server_address)
                         runner = ExperimentRunner(executor, resources, self._steps)
                         runner.execute_runs(runtime, environment)
                 finally:
-                    if future:
+                    if future_metrics:
                         self._logger.info("Wait for metrics server")
-                        wait([future], return_when=FIRST_EXCEPTION)
-                        if future.done():
-                            future.result()
+                        wait([future_metrics], return_when=FIRST_EXCEPTION)
+                        if future_metrics.done():
+                            future_metrics.result()
 
     def _initialize(self, runtime: Runtime, init_steps: List[InitStep]) -> None:
         if not init_steps:
@@ -61,11 +61,6 @@ class ExperimentExecutor(Experiment):
             self._logger.info("Init step: %s", step.name)
             step.init(initial_environment)
             step.execute(runtime)
-
-    def _create_metrics_server(self, metrics_server_address: tuple[str, int]):
-        if self._metrics_dispatcher:
-            return MetricsServer(metrics_server_address)
-        return nullcontext()
 
     def _system_collector(self, metrics_server: MetricsServer, measurement_dispatcher: LogDispatcher[SystemMeasurement],
                           event: Event) -> None:
