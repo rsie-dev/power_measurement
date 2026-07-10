@@ -1,14 +1,19 @@
 from pathlib import Path
-from typing import List
 import logging
-
-from usb_multimeter import ElectricalMeasurement
+from dataclasses import dataclass
+import datetime
 
 from .csv_base_logger import CSVBaseLogger
 from .logger import Logger
 
 
-class CSVAmbientTemperatureLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
+@dataclass(frozen=True)
+class TemperatureEntry:
+    timestamp: datetime.datetime
+    temperature: float
+
+
+class CSVAmbientTemperatureLogger(CSVBaseLogger, Logger[TemperatureEntry]):
     FIELD_NAMES = ["timestamp", "temperature"]
 
     def __init__(self, path: Path, formatter: logging.Formatter, latest_only: bool = False):
@@ -23,18 +28,17 @@ class CSVAmbientTemperatureLogger(CSVBaseLogger, Logger[ElectricalMeasurement]):
         }
         self._writer.writerow(entry)
 
-    def _log_measurement(self, data: ElectricalMeasurement) -> None:
-        formatted_time = self._format_time(data.timestamp)
+    def log(self, data: TemperatureEntry | list[TemperatureEntry]) -> None:
+        if not isinstance(data, list):
+            data = [data]
 
+        for measurement in data:
+            self._log(measurement)
+
+    def _log(self, data: TemperatureEntry) -> None:
+        formatted_time = self._format_time(data.timestamp)
         entry = {
             "timestamp": f"{formatted_time}",
             "temperature": f"{data.temperature:3.2f}",
         }
         self._writer.writerow(entry)
-
-    def log(self, data: List[ElectricalMeasurement]) -> None:
-        if self._latest_only:
-            self._log_measurement(data[-1])
-        else:
-            for measurement in data:
-                self._log_measurement(measurement)
