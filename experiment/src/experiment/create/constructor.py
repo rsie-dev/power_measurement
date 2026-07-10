@@ -21,6 +21,7 @@ from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
 from experiment.run.steps import TempMonitorStep, DisableTimersStep
+from experiment.run.steps import SBCTemperatureMonitorStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -452,6 +453,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
+
+        steps.append(SBCTemperatureMonitorStep(self._config.host))
+
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
             steps.append(TimeDeltaStep(self._config.host))

@@ -7,7 +7,6 @@ from contextlib import ExitStack
 
 from experiment.api import Experiment
 from experiment.system_meter import MetricsServer, SystemMeasurement
-from experiment.system_meter import SBCTemperatureCollector
 from experiment.ssh import SSHManager, SSHConnectionManager, ConnectionFactory
 from .steps import Step, InitStep
 from .log import LogDispatcher
@@ -39,9 +38,6 @@ class ExperimentExecutor(Experiment):
                             future = self._init_metrics_server(executor, stack, metrics_server_address)
                             futures.append(future)
 
-                        future = self._init_sbc_temp_monitor(executor, stack, ssh_manager)
-                        futures.append(future)
-
                         environment = Environment(ssh_manager, metrics_server_address)
                         runner = ExperimentRunner(executor, resources, self._steps)
                         runner.execute_runs(runtime, environment)
@@ -56,15 +52,6 @@ class ExperimentExecutor(Experiment):
         metrics_server = stack.enter_context(MetricsServer(server_address))
         event = Event()
         future = executor.submit(self._system_collector, metrics_server, self._metrics_dispatcher, event)
-        event.wait(self._server_start_timeout)
-        return future
-
-    def _init_sbc_temp_monitor(self, executor: ThreadPoolExecutor, stack: ExitStack, ssh_manager: SSHManager):
-        from experiment.common import SSHHost
-        ssh_host = SSHHost(host_name="raspi5", host="192.168.5.102", ssh_user="ctest")
-        collector = stack.enter_context(SBCTemperatureCollector(ssh_host, ssh_manager))
-        event = Event()
-        future = executor.submit(collector.run, None, event)
         event.wait(self._server_start_timeout)
         return future
 
