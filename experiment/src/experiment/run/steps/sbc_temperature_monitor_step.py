@@ -11,6 +11,7 @@ from experiment.common import SSHHost
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
+from experiment.run.log import LogProvider
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
@@ -21,6 +22,7 @@ class SBCTemperatureMonitorStep(Step):
     class Config:
         host: SSHHost
         sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
+        log_provider: LogProvider
         path: str
 
     def __init__(self, config: Config):
@@ -32,9 +34,11 @@ class SBCTemperatureMonitorStep(Step):
         self._stop = False
         self._start_timeout = 3
         self._update_interval = 1
+        self._resources_path = None
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         environment.register_ssh_connection(self._config.host.ssh_user, self._config.host.host)
+        self._resources_path = resources.resources_path()
 
     def start(self, runtime: ExperimentRuntime, executor: Executor) -> None:
         self._logger.debug("temperature monitor start")
@@ -56,14 +60,15 @@ class SBCTemperatureMonitorStep(Step):
         self._logger.debug("SBC temperature collector start")
         try:
             event.set()
-            while True:
-                with self._condition:
-                    while not self._stop:
-                        if not self._condition.wait(timeout=self._update_interval):
-                            self._collect_temperature(connection)
+            with self._config.log_provider.start_log(self._resources_path):
+                while True:
+                    with self._condition:
+                        while not self._stop:
+                            if not self._condition.wait(timeout=self._update_interval):
+                                self._collect_temperature(connection)
 
-                    if self._stop:
-                        break
+                        if self._stop:
+                            break
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception("Error: %s", e)
         finally:

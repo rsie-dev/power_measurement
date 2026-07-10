@@ -459,9 +459,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps = []
         if self._dispatcher.sbc_temp_dispatcher:
+            log_provider = self._create_sbc_temperature_log_provider()
             config = SBCTemperatureMonitorStep.Config(
                 host=self._config.host,
                 sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
+                log_provider=log_provider,
                 path="cpu_thermal-virtual-0/temp1/input/value"
             )
             steps.append(SBCTemperatureMonitorStep(config))
@@ -491,8 +493,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             aborter = monitor_step
             log_providers = []
             log_providers.append(self._create_ambient_temperature_log_provider())
-            if self._dispatcher.sbc_temp_dispatcher:
-                log_providers.append(self._create_sbc_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
                                             log_providers=log_providers)
             step = MeasurementStep(self._config.host, self._measurement, config, aborter)
@@ -529,6 +529,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         log_provider = GenericLogProvider(self._dispatcher.sbc_temp_dispatcher, temp_logger_factory)
         return log_provider
+
 
 class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     @dataclass(frozen=True)
