@@ -84,12 +84,11 @@ class SBCTemperatureMonitorStep(Step):
             with self._config.log_provider.start_log(self._context.resources_path):
                 while True:
                     with self._condition:
-                        while not self._stop:
-                            if not self._condition.wait(timeout=self._config.update_interval):
-                                self._collect_temperature(connection, kernel_temperature_file)
-
+                        timed_out = not self._condition.wait(timeout=self._config.update_interval)
                         if self._stop:
                             break
+                    if not self._stop and timed_out:
+                        self._collect_temperature(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception("Error: %s", e)
         finally:
