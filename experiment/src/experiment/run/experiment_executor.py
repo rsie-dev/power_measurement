@@ -7,7 +7,7 @@ from contextlib import ExitStack
 
 from experiment.api import Experiment
 from experiment.system_meter import MetricsServer, SystemMeasurement
-from experiment.ssh import SSHManager, SSHConnectionManager, ConnectionFactory
+from experiment.ssh import SSHConnectionManager, ConnectionFactory
 from .steps import Step, InitStep
 from .log import LogDispatcher
 from .environment import Environment, InitialEnvironment
