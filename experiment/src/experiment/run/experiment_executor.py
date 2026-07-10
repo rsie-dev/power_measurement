@@ -35,11 +35,7 @@ class ExperimentExecutor(Experiment):
                 try:
                     with ExitStack() as stack:
                         if self._metrics_dispatcher:
-                            metrics_server = stack.enter_context(MetricsServer(metrics_server_address))
-                            event = Event()
-                            future_metrics = executor.submit(self._system_collector, metrics_server,
-                                                             self._metrics_dispatcher, event)
-                            event.wait(self._metrics_server_start_timeout)
+                            future_metrics = self._init_metrics_server(executor, stack, metrics_server_address)
 
                         environment = Environment(ssh_manager, metrics_server_address)
                         runner = ExperimentRunner(executor, resources, self._steps)
@@ -50,6 +46,14 @@ class ExperimentExecutor(Experiment):
                         wait([future_metrics], return_when=FIRST_EXCEPTION)
                         if future_metrics.done():
                             future_metrics.result()
+
+    def _init_metrics_server(self, executor: ThreadPoolExecutor, stack: ExitStack, server_address: tuple[str, int]):
+        metrics_server = stack.enter_context(MetricsServer(server_address))
+        event = Event()
+        future_metrics = executor.submit(self._system_collector, metrics_server,
+                                         self._metrics_dispatcher, event)
+        event.wait(self._metrics_server_start_timeout)
+        return future_metrics
 
     def _initialize(self, runtime: Runtime, init_steps: List[InitStep]) -> None:
         if not init_steps:
