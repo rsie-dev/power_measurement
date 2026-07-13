@@ -33,7 +33,8 @@ from experiment.run.log import TimingEntry, CSVTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
 from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
-from experiment.create.commands import DelayCommand, CompositeCommand, FileStatCommand
+from experiment.create.commands import CompositeCommand, FileStatCommand
+from experiment.create.commands import DelayCommand, DynamicTailDelayCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
@@ -244,9 +245,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             commands.insert(0, ClearCacheCommand())
 
         if self._head_delay:
-            commands.insert(0, DelayCommand(self._head_delay, "head"))
+            commands.insert(0, DelayCommand(timedelta(seconds=self._head_delay), "head"))
         if self._tail_delay:
-            commands.append(DelayCommand(self._tail_delay, "tail"))
+            commands.append(DelayCommand(timedelta(seconds=self._tail_delay), "tail"))
 
         if metrics_dispatcher:
             commands.append(WaitMetricsCommand(metrics_dispatcher))
