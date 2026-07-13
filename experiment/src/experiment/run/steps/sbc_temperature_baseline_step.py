@@ -5,6 +5,7 @@ from statistics import mean
 
 import humanize
 
+from experiment.common import TemperatureProvider
 from experiment.run.base import ExperimentRuntime
 from experiment.run.log import Logger
 from experiment.run.log import LogDispatcher, TemperatureEntry
@@ -13,7 +14,7 @@ from .step import Step
 from .time_format import format_temp
 
 
-class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
+class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry], TemperatureProvider):
     MIN_SAMPLES = 20
 
     def __init__(self, sbc_temp_dispatcher: LogDispatcher[TemperatureEntry], sample_time: timedelta):
@@ -56,3 +57,8 @@ class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
         readings = [t.temperature for t in samples]
         baseline_temp = mean(readings)
         return baseline_temp
+
+    def get_temp(self) -> float:
+        if self._baseline_temperature is None:
+            raise RuntimeError("baseline temperature not yet established")
+        return self._baseline_temperature
