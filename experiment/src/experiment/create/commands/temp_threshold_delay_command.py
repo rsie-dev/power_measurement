@@ -2,6 +2,7 @@ import logging
 import datetime
 from threading import Condition
 from collections import deque
+from dataclasses import dataclass
 
 import humanize
 
@@ -16,23 +17,32 @@ def format_temp(temp: float) -> str:
 
 
 class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
-    def __init__(self, delay: datetime.timedelta, kind: str, temp_dispatcher: LogDispatcher[TemperatureEntry],
-                 min_delay: datetime.timedelta, threshold: float):
-        super().__init__(min_delay, kind)
+    @dataclass(frozen=True)
+    class Config:
+        min_delay: datetime.timedelta
+        max_delay: datetime.timedelta
+        kind: str
+        temp_dispatcher: LogDispatcher[TemperatureEntry]
+        threshold: float
+        wait_timeout: float = 5
+
+    def __init__(self, config: Config):
+        super().__init__(config.min_delay, config.kind)
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._temp_dispatcher = temp_dispatcher
-        self._max_delay = delay
-        self._threshold = threshold
-        self._wait_timeout = 5
+        self._config = config
+        #self._temp_dispatcher = temp_dispatcher
+        #self._max_delay = delay
+        #self._threshold = threshold
+        #self._wait_timeout = 5
         self._condition = Condition()
         self._history: deque[TemperatureEntry] = deque()
 
     def execute(self, nr: int, connection) -> None:
         kind = self._kind[:1].upper() + self._kind[1:]
         self._logger.info("%s delay till temperature equilibrium (min: %s max: %s)", kind,
-                          humanize.naturaldelta(self._delay), humanize.naturaldelta(self._max_delay))
+                          humanize.naturaldelta(self._config.min_delay), humanize.naturaldelta(self._config.max_delay))
         self._history = deque()
-        self._temp_dispatcher.register_logger(self)
+        self._config.temp_dispatcher.register_logger(self)
         try:
             start = datetime.datetime.now(datetime.UTC)
             new_equilibrium = self._wait_for_thermal_equilibrium()
@@ -43,15 +53,15 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
                                   humanize.naturaldelta(duration), format_temp(new_equilibrium))
             else:
                 self._logger.warning("Max delay of %s elapsed before temperature equilibrium reached",
-                                     humanize.naturaldelta(self._max_delay))
+                                     humanize.naturaldelta(self._config.max_delay))
         finally:
-            self._temp_dispatcher.unregister_logger(self)
+            self._config.temp_dispatcher.unregister_logger(self)
 
     def _wait_for_thermal_equilibrium(self) -> float | None:
         start = end = datetime.datetime.now(datetime.UTC)
-        while end - start < self._max_delay:
+        while end - start < self._config.max_delay:
             with self._condition:
-                self._condition.wait(timeout=self._wait_timeout)
+                self._condition.wait(timeout=self._config.wait_timeout)
                 history = self._history.copy()
 
             if self._equilibrium_reached(history):
@@ -72,7 +82,7 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
             return False
         readings = [t.temperature for t in history]
         temp_delta = max(readings) - min(readings)
-        if temp_delta > self._threshold:
+        if temp_delta > self._config.threshold:
             return False
         return True
 
