@@ -10,6 +10,7 @@ from experiment.run.log import Logger
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
+from .time_format import format_temp
 
 
 class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
@@ -30,7 +31,7 @@ class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
             self._wait_for_samples(self._sample_time)
             self._baseline_temperature = self._calculate_baseline(self._samples)
             self._logger.info("SBC baseline temperature established at: %s",
-                              self._format_temp(self._baseline_temperature))
+                              format_temp(self._baseline_temperature))
         finally:
             self._sbc_temp_dispatcher.unregister_logger(self)
 
@@ -55,6 +56,3 @@ class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
         readings = [t.temperature for t in samples]
         baseline_temp = mean(readings)
         return baseline_temp
-
-    def _format_temp(self, temp: float) -> str:
-        return f"{temp:2.2f}°C"
