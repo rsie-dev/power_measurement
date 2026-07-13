@@ -117,6 +117,16 @@ with_tail_delay(delay: int) -> Self
 Adds delay after execution completes.
 
 ```python
+with_temp_stabilized_head_delay(min_delay: int, max_delay: int, threshold: float = 1) -> Self
+```
+Adds a temperature stabilized delay before execution starts.
+
+```python
+with_temp_stabilized_tail_delay(min_delay: int, max_delay: int, threshold: float = 1) -> Self
+```
+Adds a temperature stabilized delay after execution completes.
+
+```python
 execute_with(command: str) -> MeasuredCommandBuilder
 ```
 Starts configuring a measurable command.

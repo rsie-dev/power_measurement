@@ -34,7 +34,7 @@ from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
 from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
 from experiment.create.commands import CompositeCommand, FileStatCommand
-from experiment.create.commands import DelayCommand
+from experiment.create.commands import DelayCommand, TemperatureThresholdDelayCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
@@ -178,6 +178,13 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         runs: int
         tag: str
         clear_cache: bool
+        sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
+
+    @dataclass(frozen=True)
+    class Delay:
+        min_delay: timedelta
+        max_delay: timedelta
+        threshold: float | None = None
 
     def __init__(self, parent: HostConstructor, host: SSHHost,
                  multimeter_dispatcher: LogDispatcher[ElectricalMeasurement],
@@ -185,8 +192,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         super().__init__(host)
         self._parent = parent
         self._config = config
-        self._head_delay = None
-        self._tail_delay = None
+        self._head_delay: MeasurementExecutionConstructor.Delay | None = None
+        self._tail_delay: MeasurementExecutionConstructor.Delay | None = None
         self._log_dispatcher: dict[object, LogDispatcher] = {}
         self._log_dispatcher[ElectricalMeasurement] = multimeter_dispatcher
 
@@ -211,11 +218,37 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return self._log_dispatcher[FileStatsEntry]
 
     def with_head_delay(self, delay: int) -> Self:
-        self._head_delay = delay
+        head_delay = MeasurementExecutionConstructor.Delay(
+            min_delay=timedelta(seconds=delay),
+            max_delay=timedelta(seconds=delay),
+        )
+        self._head_delay = head_delay
         return self
 
     def with_tail_delay(self, delay: int) -> Self:
-        self._tail_delay = delay
+        tail_delay = MeasurementExecutionConstructor.Delay(
+            min_delay=timedelta(seconds=delay),
+            max_delay=timedelta(seconds=delay),
+        )
+        self._tail_delay = tail_delay
+        return self
+
+    def with_temp_stabilized_head_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+        head_delay = MeasurementExecutionConstructor.Delay(
+            min_delay=timedelta(seconds=min_delay),
+            max_delay=timedelta(seconds=max_delay),
+            threshold=threshold,
+        )
+        self._head_delay = head_delay
+        return self
+
+    def with_temp_stabilized_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+        tail_delay = MeasurementExecutionConstructor.Delay(
+            min_delay=timedelta(seconds=min_delay),
+            max_delay=timedelta(seconds=max_delay),
+            threshold=threshold,
+        )
+        self._tail_delay = tail_delay
         return self
 
     def execute_with(self, command: str) -> MeasuredCommandBuilder:
@@ -245,9 +278,11 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             commands.insert(0, ClearCacheCommand())
 
         if self._head_delay:
-            commands.insert(0, DelayCommand(timedelta(seconds=self._head_delay), "head"))
+            command = self._create_delay_command("head", self._head_delay)
+            commands.insert(0, command)
         if self._tail_delay:
-            commands.append(DelayCommand(timedelta(seconds=self._tail_delay), "tail"))
+            command = self._create_delay_command("tail", self._tail_delay)
+            commands.append(command)
 
         if metrics_dispatcher:
             commands.append(WaitMetricsCommand(metrics_dispatcher))
@@ -260,6 +295,18 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._parent.add_command_configs(command_configs)
 
         return self._parent
+
+    def _create_delay_command(self, kind: str, delay: Delay) -> Command:
+        if delay.threshold is None:
+            return DelayCommand(delay.min_delay, kind)
+        config = TemperatureThresholdDelayCommand.Config(
+            min_delay=delay.min_delay,
+            max_delay=delay.max_delay,
+            threshold=delay.threshold,
+            kind=kind,
+            temp_dispatcher=self._config.sbc_temp_dispatcher,
+        )
+        return TemperatureThresholdDelayCommand(config)
 
     def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> list[LogProvider]:
         log_providers: list[LogProvider] = []
@@ -457,7 +504,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if tag in self._tags:
             raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
         self._tags.add(tag)
-        config = MeasurementExecutionConstructor.Config(runs=runs, tag=tag, clear_cache=self._context.clear_cache)
+        config = MeasurementExecutionConstructor.Config(
+            runs=runs,
+            tag=tag,
+            clear_cache=self._context.clear_cache,
+            sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
+        )
 
         if not self._measurement:
             raise RuntimeError("no multimeter for measurement available")

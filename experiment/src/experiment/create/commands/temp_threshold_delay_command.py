@@ -30,10 +30,6 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
         super().__init__(config.min_delay, config.kind)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
-        #self._temp_dispatcher = temp_dispatcher
-        #self._max_delay = delay
-        #self._threshold = threshold
-        #self._wait_timeout = 5
         self._condition = Condition()
         self._history: deque[TemperatureEntry] = deque()
 
