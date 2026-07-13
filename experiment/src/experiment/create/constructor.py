@@ -21,7 +21,7 @@ from experiment.run.steps import WarmupCommandStep, MeasurementStep
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
 from experiment.run.steps import TempMonitorStep, DisableTimersStep
-from experiment.run.steps import SBCTemperatureMonitorStep, SBCTemperatureBaselineStep
+from experiment.run.steps import SBCTemperatureMonitorStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -488,10 +488,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(DisableTimersStep(self._config.host))
 
         steps.extend(self._steps)
-        if self._dispatcher.sbc_temp_dispatcher:
-            sample_time = timedelta(seconds=SBCTemperatureBaselineStep.MIN_SAMPLES * self._sbc_context.update_interval)
-            sample_time = max(sample_time, timedelta(seconds=5))
-            steps.append(SBCTemperatureBaselineStep(self._dispatcher.sbc_temp_dispatcher, sample_time))
         if self._context.temp_delta is not None:
             max_temp_delta = self._context.temp_delta
             monitor_step = TempMonitorStep(self._dispatcher.ambient_temp_dispatcher, max_temp_delta,
