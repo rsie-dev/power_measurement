@@ -34,7 +34,7 @@ from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
 from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
 from experiment.create.commands import CompositeCommand, FileStatCommand
-from experiment.create.commands import DelayCommand, DynamicTailDelayCommand
+from experiment.create.commands import DelayCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
