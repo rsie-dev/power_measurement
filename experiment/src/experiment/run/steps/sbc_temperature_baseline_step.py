@@ -13,6 +13,8 @@ from .step import Step
 
 
 class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
+    MIN_SAMPLES = 20
+
     def __init__(self, sbc_temp_dispatcher: LogDispatcher[TemperatureEntry], sample_time: timedelta):
         super().__init__("SBC temperature baseline")
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -48,8 +50,8 @@ class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry]):
 
     def _calculate_baseline(self, samples):
         self._logger.debug("collected %d temperature samples", len(samples))
-        if len(samples) < 10:
-            raise RuntimeError(f"Too few samples ({len(samples)}) collected")
+        if len(samples) < self.MIN_SAMPLES:
+            raise RuntimeError(f"Too few samples {len(samples)} (min {self.MIN_SAMPLES}) collected")
         readings = [t.temperature for t in samples]
         baseline_temp = mean(readings)
         return baseline_temp

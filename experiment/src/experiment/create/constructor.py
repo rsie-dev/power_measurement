@@ -488,7 +488,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps.extend(self._steps)
         if self._dispatcher.sbc_temp_dispatcher:
-            steps.append(SBCTemperatureBaselineStep(self._dispatcher.sbc_temp_dispatcher, timedelta(seconds=20)))
+            sample_time = timedelta(seconds=SBCTemperatureBaselineStep.MIN_SAMPLES * self._sbc_context.update_interval)
+            steps.append(SBCTemperatureBaselineStep(self._dispatcher.sbc_temp_dispatcher, sample_time))
         if self._context.temp_delta is not None:
             max_temp_delta = self._context.temp_delta
             monitor_step = TempMonitorStep(self._dispatcher.ambient_temp_dispatcher, max_temp_delta,
