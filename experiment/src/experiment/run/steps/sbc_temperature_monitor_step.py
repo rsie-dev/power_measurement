@@ -4,6 +4,7 @@ from concurrent.futures import Executor
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
+import time
 
 from fabric import Connection
 
@@ -89,13 +90,18 @@ class SBCTemperatureMonitorStep(Step):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_loop(self, connection: Connection, kernel_temperature_file: Path) -> None:
+        next_run = time.monotonic()
         while True:
+            next_run += self._config.update_interval
             with self._condition:
-                timed_out = not self._condition.wait(timeout=self._config.update_interval)
-                if self._stop:
-                    break
-            if not self._stop and timed_out:
-                self._collect_temperature(connection, kernel_temperature_file)
+                while True:
+                    timeout = next_run - time.monotonic()
+                    if timeout <= 0:
+                        break
+                    self._condition.wait(timeout=timeout)
+                    if self._stop:
+                        return
+            self._collect_temperature(connection, kernel_temperature_file)
 
     def _collect_temperature(self, connection: Connection, kernel_temperature_file: Path):
         str_value = self._read_remote_file(connection, kernel_temperature_file).strip()
