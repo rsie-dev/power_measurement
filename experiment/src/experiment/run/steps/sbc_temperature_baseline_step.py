@@ -5,13 +5,12 @@ from statistics import mean
 
 import humanize
 
-from experiment.common import TemperatureProvider
+from experiment.common import TemperatureProvider, format_temp
 from experiment.run.base import ExperimentRuntime
 from experiment.run.log import Logger
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
-from .temperature_format import format_temp
 
 
 class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry], TemperatureProvider):

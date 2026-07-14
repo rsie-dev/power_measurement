@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from humanize import naturaldelta
 
+from experiment.common import format_temp
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
@@ -14,7 +15,6 @@ from experiment.log_util import TimeThrottleFilter
 
 from .step import Step
 from .measurement_step import MeasurementAbort
-from .temperature_format import format_temp
 
 
 class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
