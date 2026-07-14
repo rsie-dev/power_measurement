@@ -20,8 +20,8 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
         max_delay: datetime.timedelta
         kind: str
         temp_dispatcher: LogDispatcher[TemperatureEntry]
-        threshold: float
-        wait_timeout: float = 5
+        slope_threshold: float
+        wait_timeout: float = 1
 
     def __init__(self, config: Config):
         super().__init__(config.min_delay, config.kind)
@@ -60,27 +60,43 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
             if self._equilibrium_reached(history):
                 return history[-1].temperature
             end = datetime.datetime.now(datetime.UTC)
+
         return None
 
     def _equilibrium_reached(self, history: deque[TemperatureEntry]) -> bool:
         if len(history) < 2:
             return False
-        #print()
-        #for entry in history:
-        #    print(f"{entry.timestamp}: {entry.temperature:2.2f}")
-        #readings = [t.temperature for t in history]
-        #temp_delta = max(readings) - min(readings)
-        #self._logger.warning(f"sample # {len(history)} min: {min(readings)} max: {max(readings)} delta: {temp_delta}")
+
         history_start = history[0].timestamp
         history_end = history[-1].timestamp
         history_time = history_end - history_start
         if history_time < self._delay:
             return False
+
         readings = [t.temperature for t in history]
-        temp_delta = max(readings) - min(readings)
-        if temp_delta > self._config.threshold:
+
+        slope = self._slope(readings)
+        if abs(slope) > self._config.slope_threshold:
             return False
+
         return True
+
+    def _slope(self, readings: list[float]) -> float:
+        """Least-squares slope (°C/sample)."""
+        n = len(readings)
+
+        x_mean = (n - 1) / 2
+        y_mean = sum(readings) / n
+
+        num = 0.0
+        den = 0.0
+
+        for i, y in enumerate(readings):
+            dx = i - x_mean
+            num += dx * (y - y_mean)
+            den += dx * dx
+
+        return num / den
 
     def log(self, data: TemperatureEntry | list[TemperatureEntry]) -> None:
         if not isinstance(data, list):

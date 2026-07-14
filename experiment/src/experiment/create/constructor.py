@@ -184,7 +184,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     class Delay:
         min_delay: timedelta
         max_delay: timedelta
-        threshold: float | None = None
+        slope_threshold: float | None = None
 
     def __init__(self, parent: HostConstructor, host: SSHHost,
                  multimeter_dispatcher: LogDispatcher[ElectricalMeasurement],
@@ -233,20 +233,20 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._tail_delay = tail_delay
         return self
 
-    def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+    def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 0.2) -> Self:
         head_delay = MeasurementExecutionConstructor.Delay(
             min_delay=timedelta(seconds=min_delay),
             max_delay=timedelta(seconds=max_delay),
-            threshold=threshold,
+            slope_threshold=threshold,
         )
         self._head_delay = head_delay
         return self
 
-    def with_stable_temp_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+    def with_stable_temp_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 0.2) -> Self:
         tail_delay = MeasurementExecutionConstructor.Delay(
             min_delay=timedelta(seconds=min_delay),
             max_delay=timedelta(seconds=max_delay),
-            threshold=threshold,
+            slope_threshold=threshold,
         )
         self._tail_delay = tail_delay
         return self
@@ -297,12 +297,12 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return self._parent
 
     def _create_delay_command(self, kind: str, delay: Delay) -> Command:
-        if delay.threshold is None:
+        if delay.slope_threshold is None:
             return DelayCommand(delay.min_delay, kind)
         config = StableTemperatureDelayCommand.Config(
             min_delay=delay.min_delay,
             max_delay=delay.max_delay,
-            threshold=delay.threshold,
+            slope_threshold=delay.slope_threshold,
             kind=kind,
             temp_dispatcher=self._config.sbc_temp_dispatcher,
         )
