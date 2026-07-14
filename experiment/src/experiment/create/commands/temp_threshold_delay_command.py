@@ -65,7 +65,7 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
             end = datetime.datetime.now(datetime.UTC)
         return None
 
-    def _equilibrium_reached(self, history: deque[TemperatureEntry]):
+    def _equilibrium_reached(self, history: deque[TemperatureEntry]) -> bool:
         if len(history) < 2:
             return False
         readings = [t.temperature for t in history]
