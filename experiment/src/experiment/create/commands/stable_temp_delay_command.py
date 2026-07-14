@@ -6,14 +6,11 @@ from dataclasses import dataclass
 
 import humanize
 
+from experiment.common import format_temp
 from experiment.run.log import Logger
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .delay_command import DelayCommand
-
-
-def format_temp(temp: float) -> str:
-    return f"{temp:2.2f}°C"
 
 
 class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
