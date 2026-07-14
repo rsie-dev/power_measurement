@@ -82,17 +82,20 @@ class SBCTemperatureMonitorStep(Step):
         try:
             event.set()
             with self._config.log_provider.start_log(self._context.resources_path):
-                while True:
-                    with self._condition:
-                        timed_out = not self._condition.wait(timeout=self._config.update_interval)
-                        if self._stop:
-                            break
-                    if not self._stop and timed_out:
-                        self._collect_temperature(connection, kernel_temperature_file)
+                self._collect_loop(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception("Error: %s", e)
         finally:
             self._logger.debug("SBC temperature collector shut down")
+
+    def _collect_loop(self, connection: Connection, kernel_temperature_file: Path) -> None:
+        while True:
+            with self._condition:
+                timed_out = not self._condition.wait(timeout=self._config.update_interval)
+                if self._stop:
+                    break
+            if not self._stop and timed_out:
+                self._collect_temperature(connection, kernel_temperature_file)
 
     def _collect_temperature(self, connection: Connection, kernel_temperature_file: Path):
         str_value = self._read_remote_file(connection, kernel_temperature_file).strip()
