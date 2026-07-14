@@ -203,15 +203,29 @@ def config():
     return config
 
 
-def test_stable(config, history_stable):
-    command = StableTemperatureDelayCommand(config)
+@pytest.fixture
+def command(config):
+    return StableTemperatureDelayCommand(config)
+
+
+def test_append_ensure_timespan(command):
+    data = _read_data(STABLE1)
+
+    command._append_data(data)
+
+    history_start = command._history[0].timestamp
+    history_end = command._history[-1].timestamp
+    history_time = history_end - history_start
+    assert history_time >= command._config.min_delay
+
+
+def test_stable(command, history_stable):
     command._append_data(history_stable)
 
     assert command._equilibrium_reached(command._history)
 
 
-def test_unstable(config, history_unstable):
-    command = StableTemperatureDelayCommand(config)
+def test_unstable(command, history_unstable):
     command._append_data(history_unstable)
 
     assert not command._equilibrium_reached(command._history)

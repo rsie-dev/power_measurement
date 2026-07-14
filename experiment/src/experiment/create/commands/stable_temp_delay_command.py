@@ -68,8 +68,11 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
     def _equilibrium_reached(self, history: deque[TemperatureEntry]) -> bool:
         if len(history) < 2:
             return False
-        readings = [t.temperature for t in history]
-        temp_delta = max(readings) - min(readings)
+        #print()
+        #for entry in history:
+        #    print(f"{entry.timestamp}: {entry.temperature:2.2f}")
+        #readings = [t.temperature for t in history]
+        #temp_delta = max(readings) - min(readings)
         #self._logger.warning(f"sample # {len(history)} min: {min(readings)} max: {max(readings)} delta: {temp_delta}")
         history_start = history[0].timestamp
         history_end = history[-1].timestamp
@@ -91,6 +94,9 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
 
     def _append_data(self, data: list[TemperatureEntry]):
         self._history.extend(data)
-        cutoff = data[-1].timestamp - (self._delay + datetime.timedelta(seconds=1))
-        while self._history and self._history[0].timestamp < cutoff:
+        history_end = self._history[-1].timestamp
+        while len(self._history) > 1:
+            next_oldest = self._history[1].timestamp
+            if history_end - next_oldest < self._delay:
+                break
             self._history.popleft()
