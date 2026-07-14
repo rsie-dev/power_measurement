@@ -11,7 +11,7 @@ from experiment.run.log import Logger
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
-from .time_format import format_temp
+from .temperature_format import format_temp
 
 
 class SBCTemperatureBaselineStep(Step, Logger[TemperatureEntry], TemperatureProvider):

@@ -14,7 +14,7 @@ from experiment.log_util import TimeThrottleFilter
 
 from .step import Step
 from .measurement_step import MeasurementAbort
-from .time_format import format_temp
+from .temperature_format import format_temp
 
 
 class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
