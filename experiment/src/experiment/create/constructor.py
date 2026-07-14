@@ -34,7 +34,7 @@ from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
 from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
 from experiment.create.commands import CompositeCommand, FileStatCommand
-from experiment.create.commands import DelayCommand, TemperatureThresholdDelayCommand
+from experiment.create.commands import DelayCommand, StableTemperatureDelayCommand
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
@@ -299,14 +299,14 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def _create_delay_command(self, kind: str, delay: Delay) -> Command:
         if delay.threshold is None:
             return DelayCommand(delay.min_delay, kind)
-        config = TemperatureThresholdDelayCommand.Config(
+        config = StableTemperatureDelayCommand.Config(
             min_delay=delay.min_delay,
             max_delay=delay.max_delay,
             threshold=delay.threshold,
             kind=kind,
             temp_dispatcher=self._config.sbc_temp_dispatcher,
         )
-        return TemperatureThresholdDelayCommand(config)
+        return StableTemperatureDelayCommand(config)
 
     def _create_metrics(self, metrics_dispatcher: LogDispatcher[SystemMeasurement]) -> list[LogProvider]:
         log_providers: list[LogProvider] = []

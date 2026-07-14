@@ -1,7 +1,7 @@
 from .executor_command import ExecutorCommand, MeasuringCommand
 from .clear_cache_command import ClearCacheCommand
 from .delay_command import DelayCommand
-from .temp_threshold_delay_command import TemperatureThresholdDelayCommand
+from .stable_temp_delay_command import StableTemperatureDelayCommand
 from .timed_pre_command import TimedCommandPreCommand
 from .composite_command import CompositeCommand
 from .file_stat_command import FileStatCommand
@@ -13,7 +13,7 @@ from .pipefail_pre_command import PipefailPreCommand
 __all__ = [
     "ExecutorCommand", "MeasuringCommand",
     "ClearCacheCommand",
-    "DelayCommand", "TemperatureThresholdDelayCommand",
+    "DelayCommand", "StableTemperatureDelayCommand",
     "CompositeCommand",
     "FileStatCommand",
     "WaitMetricsCommand", "MetricsNotificator",

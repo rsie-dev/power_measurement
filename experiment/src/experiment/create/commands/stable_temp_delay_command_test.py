@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from experiment.run.log import LogDispatcher, TemperatureEntry
-from .temp_threshold_delay_command import TemperatureThresholdDelayCommand
+from .stable_temp_delay_command import StableTemperatureDelayCommand
 
 # pylint: disable=redefined-outer-name, protected-access
 
@@ -154,7 +154,7 @@ def _read_data(data: str) -> list[TemperatureEntry]:
 
 def _create_config(min_delay: float, max_delay: float, threshold: float):
     dispatcher = Mock(spec=LogDispatcher[TemperatureEntry])
-    return TemperatureThresholdDelayCommand.Config(
+    return StableTemperatureDelayCommand.Config(
         min_delay=timedelta(seconds=min_delay),
         max_delay=timedelta(seconds=max_delay),
         kind="test",
@@ -170,14 +170,14 @@ def config():
 
 
 def test_stable(config, history_stable):
-    command = TemperatureThresholdDelayCommand(config)
+    command = StableTemperatureDelayCommand(config)
     command._append_data(history_stable)
 
     assert command._equilibrium_reached(command._history)
 
 
 def test_unstable(config, history_unstable):
-    command = TemperatureThresholdDelayCommand(config)
+    command = StableTemperatureDelayCommand(config)
     command._append_data(history_unstable)
 
     assert not command._equilibrium_reached(command._history)

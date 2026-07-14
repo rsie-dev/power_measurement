@@ -16,7 +16,7 @@ def format_temp(temp: float) -> str:
     return f"{temp:2.2f}°C"
 
 
-class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
+class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
     @dataclass(frozen=True)
     class Config:
         min_delay: datetime.timedelta
@@ -35,7 +35,7 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
 
     def execute(self, nr: int, connection) -> None:
         kind = self._kind[:1].upper() + self._kind[1:]
-        self._logger.info("%s delay till temperature equilibrium (min: %s max: %s)", kind,
+        self._logger.info("%s delay till stable temperature (min: %s max: %s)", kind,
                           humanize.naturaldelta(self._config.min_delay), humanize.naturaldelta(self._config.max_delay))
         self._history = deque()
         self._config.temp_dispatcher.register_logger(self)
@@ -45,10 +45,10 @@ class TemperatureThresholdDelayCommand(DelayCommand, Logger[TemperatureEntry]):
             end = datetime.datetime.now(datetime.UTC)
             duration = end - start
             if new_equilibrium is not None:
-                self._logger.info("Temperature equilibrium reached after %s at: %s",
+                self._logger.info("Stable temperature reached after %s at: %s",
                                   humanize.naturaldelta(duration), format_temp(new_equilibrium))
             else:
-                self._logger.warning("Max delay of %s elapsed before temperature equilibrium reached",
+                self._logger.warning("Max delay of %s elapsed before stable temperature reached",
                                      humanize.naturaldelta(self._config.max_delay))
         finally:
             self._config.temp_dispatcher.unregister_logger(self)
