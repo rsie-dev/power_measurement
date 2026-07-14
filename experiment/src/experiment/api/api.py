@@ -65,11 +65,11 @@ class MeasurementExecutionBuilder(ExecutionBuilder):
         pass
 
     @abstractmethod
-    def with_temp_stabilized_head_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+    def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
         pass
 
     @abstractmethod
-    def with_temp_stabilized_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
+    def with_stable_temp_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 1) -> Self:
         pass
 
     @abstractmethod
