@@ -369,7 +369,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         shutdown_steps: list[Step] = field(default_factory=list)
         command_configs: list[MeasurementStep.CommandConfig] = field(default_factory=list)
         temp_delta: float | None = None
-        temp_min_duration: float | None = None
+        temp_min_duration: timedelta | None = None
         clear_cache: bool = False
         disable_timers: bool = False
 
@@ -488,9 +488,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps.extend(self._steps)
         if self._context.temp_delta is not None:
-            max_temp_delta = self._context.temp_delta
-            monitor_step = TempMonitorStep(self._dispatcher.ambient_temp_dispatcher, max_temp_delta,
-                                           self._context.temp_min_duration)
+            config = TempMonitorStep.Config(
+                log_dispatcher=self._dispatcher.ambient_temp_dispatcher,
+                max_temp_delta=self._context.temp_delta,
+                min_duration=self._context.temp_min_duration,
+            )
+            monitor_step = TempMonitorStep(config)
             steps.append(monitor_step)
         else:
             monitor_step = None

@@ -23,8 +23,17 @@ def test_now():
 
 
 @pytest.fixture
-def test_step(test_now):
-    test_step = TempMonitorStep(log_dispatcher=None, max_temp_delta=1.0, now=test_now)
+def config():
+    return TempMonitorStep.Config(
+        log_dispatcher=None,
+        max_temp_delta=1.0,
+        min_duration=datetime.timedelta(seconds=2),
+    )
+
+
+@pytest.fixture
+def test_step(config, test_now):
+    test_step = TempMonitorStep(config, now=test_now)
     return test_step
 
 
