@@ -25,6 +25,7 @@ def test_now():
 @pytest.fixture
 def config():
     return TempMonitorStep.Config(
+        kind="test",
         log_dispatcher=None,
         max_temp_delta=1.0,
         min_duration=datetime.timedelta(seconds=2),

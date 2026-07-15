@@ -489,6 +489,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
         if self._context.temp_delta is not None:
             config = TempMonitorStep.Config(
+                kind="ambient",
                 log_dispatcher=self._dispatcher.ambient_temp_dispatcher,
                 max_temp_delta=self._context.temp_delta,
                 min_duration=self._context.temp_min_duration,
