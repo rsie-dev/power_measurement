@@ -12,7 +12,7 @@ from pyinfra.facts.server import Arch, Mounts
 from fstab import FstabDirs
 from fstab import fstab_option
 from partition import add_partition
-from filesystem import format_partition
+from filesystem import format_partition, remount_rw
 from file import rename
 from fstab import fstab_add_entry
 
@@ -273,6 +273,44 @@ def _limit_kernel_memory(memory_limit_gb: int):
         replace=f"rootwait mem={memory_limit_gb}G earlycon",
         _sudo=True,
     )
+
+
+def unify_fan_speed():
+    arch = host.get_fact(Arch, )
+    if arch == "x86_64":
+        pass
+    elif arch == "riscv64":
+        pass
+    elif arch == "aarch64":
+        _set_raspi5_fan_speed(
+            name="Configure fixed fan speed",
+            _sudo=True,
+        )
+    else:
+        raise RuntimeError("unsupported architecture: %s" % arch)
+
+
+@operation()
+def _set_raspi5_fan_speed():
+    fan_block = """
+# ---------Fan---------
+dtparam=fan_temp0=0
+dtparam=fan_temp0_hyst=0
+dtparam=fan_temp0_speed=175
+"""
+    commands = list(
+        files.block._inner(
+            path="/boot/firmware/config.txt",
+            content=fan_block,
+        )
+    )
+    if not commands:
+        return
+
+    yield from remount_rw._inner(
+        path="/boot/firmware"
+    )
+    yield from commands
 
 
 @deploy("Home partition")

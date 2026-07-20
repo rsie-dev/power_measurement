@@ -6,6 +6,7 @@ from pyinfra import host
 from pyinfra.api import FactBase
 from pyinfra.api import operation
 from pyinfra.api import StringCommand
+from pyinfra.operations import server
 
 from filesystem_entry import FilesystemEntry
 
@@ -49,3 +50,11 @@ def format_partition(device: str, part_number: int):
     part_device = Path(f"{device}p{part_number}")
     logger.info("Format partition: {0}".format(part_device))
     yield StringCommand("/sbin/mkfs.xfs", part_device)
+
+
+@operation()
+def remount_rw(path: str):
+    yield from server.mount._inner(
+        path=path,
+        options=["remount", "rw"],
+    )
