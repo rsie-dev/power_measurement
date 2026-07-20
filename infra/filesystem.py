@@ -52,10 +52,9 @@ def format_partition(device: str, part_number: int):
     yield StringCommand("/sbin/mkfs.xfs", part_device)
 
 
+@operation()
 def remount_rw(path: str):
-    server.mount(
-        name=f"Ensure {path} is mounted RW",
+    yield from server.mount._inner(
         path=path,
         options=["remount", "rw"],
-        _sudo=True,
     )

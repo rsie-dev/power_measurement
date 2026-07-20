@@ -8,12 +8,16 @@ from network import base_network, router
 from ntp import ntp_server, ntp_client
 from telegraf import telegraf
 from compressors import compressors, stressors
-from system import switch_to_read_only, unify_memory_size, add_home_partition, set_apt_proxy
+from system import switch_to_read_only, unify_memory_size, unify_fan_speed, add_home_partition, set_apt_proxy
 from ssh import install_ssh_keys, prohibit_root_login
 from data import setup_data_folder
 from users import add_user, add_users, allow_user_telegraf_control, allow_user_cache_control, allow_user_timer_control
 
-remount_rw("/")
+remount_rw(
+    name=f"Ensure / is mounted RW",
+    path="/",
+    _sudo=True,
+)
 
 if host.data.get("use_proxy", False):
     set_apt_proxy(True)
@@ -55,6 +59,7 @@ if "dut" in host.groups:
     allow_user_timer_control(test_user)
     install_ssh_keys(test_user)
     unify_memory_size()
+    unify_fan_speed()
 
 switch_to_read_only()
 if host.data.get("use_proxy", False):
