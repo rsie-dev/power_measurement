@@ -233,7 +233,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._tail_delay = tail_delay
         return self
 
-    def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 0.2) -> Self:
+    def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 0.05) -> Self:
         head_delay = MeasurementExecutionConstructor.Delay(
             min_delay=timedelta(seconds=min_delay),
             max_delay=timedelta(seconds=max_delay),
@@ -242,7 +242,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         self._head_delay = head_delay
         return self
 
-    def with_stable_temp_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 0.2) -> Self:
+    def with_stable_temp_tail_delay(self, min_delay: int, max_delay: int, threshold: float = 0.05) -> Self:
         tail_delay = MeasurementExecutionConstructor.Delay(
             min_delay=timedelta(seconds=min_delay),
             max_delay=timedelta(seconds=max_delay),
