@@ -50,8 +50,9 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
                 self._logger.info("Stable temperature reached after %s at: %s",
                                   humanize.naturaldelta(duration), format_temp(state.temperature))
             else:
-                self._logger.warning("Max delay of %s elapsed before stable temperature reached",
-                                     humanize.naturaldelta(self._config.max_delay))
+                self._logger.warning("Max delay of %s elapsed before stable temperature reached (current: %s)",
+                                     humanize.naturaldelta(self._config.max_delay),
+                                     format_temp(state.temperature))
         finally:
             self._config.temp_dispatcher.unregister_logger(self)
 
