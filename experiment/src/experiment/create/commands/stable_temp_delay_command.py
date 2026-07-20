@@ -23,6 +23,11 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
         slope_threshold: float
         wait_timeout: float = 1
 
+    @dataclass(frozen=True)
+    class State:
+        stable: bool
+        temperature: float
+
     def __init__(self, config: Config):
         super().__init__(config.min_delay, config.kind)
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -38,19 +43,19 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
         self._config.temp_dispatcher.register_logger(self)
         try:
             start = datetime.datetime.now(datetime.UTC)
-            new_equilibrium = self._wait_for_thermal_equilibrium()
+            state = self._wait_for_thermal_equilibrium()
             end = datetime.datetime.now(datetime.UTC)
             duration = end - start
-            if new_equilibrium is not None:
+            if state.stable:
                 self._logger.info("Stable temperature reached after %s at: %s",
-                                  humanize.naturaldelta(duration), format_temp(new_equilibrium))
+                                  humanize.naturaldelta(duration), format_temp(state.temperature))
             else:
                 self._logger.warning("Max delay of %s elapsed before stable temperature reached",
                                      humanize.naturaldelta(self._config.max_delay))
         finally:
             self._config.temp_dispatcher.unregister_logger(self)
 
-    def _wait_for_thermal_equilibrium(self) -> float | None:
+    def _wait_for_thermal_equilibrium(self) -> State:
         start = end = datetime.datetime.now(datetime.UTC)
         while end - start < self._config.max_delay:
             with self._condition:
@@ -58,10 +63,16 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
                 history = self._history.copy()
 
             if self._equilibrium_reached(history):
-                return history[-1].temperature
+                return StableTemperatureDelayCommand.State(
+                    stable=True,
+                    temperature=history[-1].temperature
+                )
             end = datetime.datetime.now(datetime.UTC)
 
-        return None
+        return StableTemperatureDelayCommand.State(
+            stable=False,
+            temperature=history[-1].temperature
+        )
 
     def _equilibrium_reached(self, history: deque[TemperatureEntry]) -> bool:
         if len(history) < 2:
