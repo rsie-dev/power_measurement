@@ -1,6 +1,7 @@
-from pyinfra.operations import apt, server
+from pyinfra.operations import apt
 from pyinfra import host
 
+from filesystem import remount_rw
 from base import base, base_filesystem
 from develop import develop
 from network import base_network, router
@@ -12,13 +13,7 @@ from ssh import install_ssh_keys, prohibit_root_login
 from data import setup_data_folder
 from users import add_user, add_users, allow_user_telegraf_control, allow_user_cache_control, allow_user_timer_control
 
-
-server.mount(
-    name="Ensure / is mounted RW",
-    path="/",
-    options=["remount", "rw"],
-    _sudo=True,
-)
+remount_rw("/")
 
 if host.data.get("use_proxy", False):
     set_apt_proxy(True)
