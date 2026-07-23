@@ -202,9 +202,10 @@ with_clear_cache(self) -> Self
 Clears the file caches prior to command execution.
 
 ```python
-measure_with_multimeter(serial_number: str) -> Self
+measure_with_multimeter(serial_number: str, temp_offset: float = 0.0) -> Self
 ```
 Enables measurement using a multimeter device.
+Optionally set an offset for temperature readings.
 
 ```python
 control_temperature(temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self

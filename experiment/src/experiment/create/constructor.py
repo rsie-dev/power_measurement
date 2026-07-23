@@ -476,7 +476,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._context.clear_cache = True
         return self
 
-    def measure_with_multimeter(self, serial_number: str) -> Self:
+    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0.0) -> Self:
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
@@ -486,6 +486,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         config = MultimeterMeasurement.Config(
             device_manager=device_manager,
             log_dispatcher=self._dispatcher.multimeter_dispatcher,
+            temp_offset=temp_offset
         )
         self._measurement = MultimeterMeasurement(config)
         return self

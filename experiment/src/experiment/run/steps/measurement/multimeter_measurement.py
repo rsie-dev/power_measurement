@@ -8,6 +8,7 @@ from usb_multimeter import USBMeter, ElectricalMeasurement
 from experiment.run.log import LogDispatcher
 from experiment.run.base import ExperimentEnvironment
 from experiment.common import DeviceManager
+from experiment.common import format_temp
 
 from .measurement import Measurement
 from .signal_stop_provider import SignalStopProvider
@@ -18,6 +19,7 @@ class MultimeterMeasurement(Measurement):
     class Config:
         device_manager: DeviceManager
         log_dispatcher: LogDispatcher[ElectricalMeasurement]
+        temp_offset: float
 
     def __init__(self, config: Config):
         super().__init__("multimeter")
@@ -36,12 +38,16 @@ class MultimeterMeasurement(Measurement):
         self._future = future
 
     def _prepare(self):
+        if self._config.temp_offset:
+            self._logger.info("Using temperature offset of: %s", format_temp(self._config.temp_offset))
+
         self._stop_provider = SignalStopProvider()
         device = self._config.device_manager.get_device()
         config = USBMeter.Config(
             device=device,
             stop_provider=self._stop_provider,
             use_crc=True,
+            temp_offset=self._config.temp_offset,
         )
         self._usb_meter = USBMeter(config)
         self._usb_meter.setup_device()

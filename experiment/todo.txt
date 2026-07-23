@@ -1,9 +1,9 @@
 ToDo:
 - add external temp. sensor
 - ensure download folder exists prior to download if ends with /
-- add optional temperature offset for ambient temperature
 
 v1.1.0
+- add optional temperature offset for multimeter temperature
 - added temperature stabilized delay based on CPU/system temperature
 - added support to collect SBC temperature, too
 - enhanced descriptions of measurement steps
