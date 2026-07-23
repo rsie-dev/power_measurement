@@ -33,7 +33,12 @@ class MultimeterMeasurement(Measurement):
     def _prepare(self):
         self._stop_provider = SignalStopProvider()
         device = self._device_manager.get_device()
-        self._usb_meter = USBMeter(device=device, stop_provider=self._stop_provider, use_crc=True)
+        config = USBMeter.Config(
+            device=device,
+            stop_provider=self._stop_provider,
+            use_crc=True,
+        )
+        self._usb_meter = USBMeter(config)
         self._usb_meter.setup_device()
 
     def _electric_collector(self, usb_meter: USBMeter, event: Event) -> None:
