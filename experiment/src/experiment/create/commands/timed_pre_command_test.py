@@ -30,7 +30,7 @@ def test_annotations_sleep():
 
     actual_annotations = command._get_timings_annotations(timings)
 
-    assert actual_annotations == []
+    assert not actual_annotations
 
 
 def test_annotations_multithreaded():
