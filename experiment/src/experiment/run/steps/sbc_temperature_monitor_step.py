@@ -19,6 +19,12 @@ from .step import Step
 
 
 class SBCTemperatureMonitorStep(Step):
+    SENSOR_NAMES = [
+        "cpu_thermal",  # raspberry pi 5
+        "coretemp",     # radxa x4
+        "sfctemp"       # visionfive 2
+    ]
+
     @dataclass(frozen=True)
     class Config:
         host: SSHHost
@@ -55,7 +61,6 @@ class SBCTemperatureMonitorStep(Step):
         event.wait(self._config.start_timeout)
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:
-        sensor_names = ["cpu_thermal", "coretemp", "sfctemp"]
         hwmon_folder = Path("/sys/class/hwmon")
         self._logger.debug("searching for sbc temperature file")
         result = connection.run(f"ls -1 {hwmon_folder}", hide=True)
@@ -65,7 +70,7 @@ class SBCTemperatureMonitorStep(Step):
             name_path = hwmon_folder / entry / "name"
             name = self._read_remote_file(connection, name_path).strip()
             self._logger.debug("entry %s = %s", name_path, name)
-            if name in sensor_names:
+            if name in self.SENSOR_NAMES:
                 return hwmon_folder / entry / "temp1_input"
         return None
 
