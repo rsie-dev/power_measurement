@@ -38,7 +38,7 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
     def execute(self, nr: int, connection) -> None:
         kind = self._kind[:1].upper() + self._kind[1:]
         self._logger.info("%s delay till stable temperature (min: %s max: %s)", kind,
-                          humanize.naturaldelta(self._config.min_delay), humanize.naturaldelta(self._config.max_delay))
+                          humanize.precisedelta(self._config.min_delay), humanize.precisedelta(self._config.max_delay))
         self._history = deque()
         self._config.temp_dispatcher.register_logger(self)
         try:
@@ -48,10 +48,10 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
             duration = end - start
             if state.stable:
                 self._logger.info("Stable temperature reached after %s at: %s",
-                                  humanize.naturaldelta(duration), format_temp(state.temperature))
+                                  humanize.precisedelta(duration), format_temp(state.temperature))
             else:
                 self._logger.warning("Max delay of %s elapsed before stable temperature reached (current: %s)",
-                                     humanize.naturaldelta(self._config.max_delay),
+                                     humanize.precisedelta(self._config.max_delay),
                                      format_temp(state.temperature))
         finally:
             self._config.temp_dispatcher.unregister_logger(self)
