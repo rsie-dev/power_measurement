@@ -55,7 +55,7 @@ class SBCTemperatureMonitorStep(Step):
         event.wait(self._config.start_timeout)
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:
-        sensor_names = ["cpu_thermal", "coretemp"]
+        sensor_names = ["cpu_thermal", "coretemp", "sfctemp"]
         hwmon_folder = Path("/sys/class/hwmon")
         self._logger.debug("searching for sbc temperature file")
         result = connection.run(f"ls -1 {hwmon_folder}", hide=True)
