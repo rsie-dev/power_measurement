@@ -1,8 +1,8 @@
 from datetime import timedelta
 from unittest.mock import Mock
 
-from .timed_pre_command import _parse_time_line, TimedCommandPreCommand
 from experiment.run.log import TimingEntry, Logger
+from .timed_pre_command import _parse_time_line, TimedCommandPreCommand
 
 # pylint: disable=redefined-outer-name, protected-access
 
