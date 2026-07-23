@@ -483,7 +483,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._dispatcher.multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
         self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
         self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
-        self._measurement = MultimeterMeasurement(device_manager, self._dispatcher.multimeter_dispatcher)
+        config = MultimeterMeasurement.Config(
+            device_manager=device_manager,
+            log_dispatcher=self._dispatcher.multimeter_dispatcher,
+        )
+        self._measurement = MultimeterMeasurement(config)
         return self
 
     def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:

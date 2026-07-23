@@ -1,6 +1,7 @@
 import logging
 from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
+from dataclasses import dataclass
 
 from usb_multimeter import USBMeter, ElectricalMeasurement
 
@@ -13,15 +14,19 @@ from .signal_stop_provider import SignalStopProvider
 
 
 class MultimeterMeasurement(Measurement):
-    def __init__(self, device_manager: DeviceManager, log_dispatcher: LogDispatcher[ElectricalMeasurement]):
+    @dataclass(frozen=True)
+    class Config:
+        device_manager: DeviceManager
+        log_dispatcher: LogDispatcher[ElectricalMeasurement]
+
+    def __init__(self, config: Config):
         super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._device_manager = device_manager
+        self._config = config
         self._usb_meter = None
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
-        self._log_dispatcher = log_dispatcher
 
     def start(self, environment: ExperimentEnvironment, executor: Executor):
         self._prepare()
@@ -32,7 +37,7 @@ class MultimeterMeasurement(Measurement):
 
     def _prepare(self):
         self._stop_provider = SignalStopProvider()
-        device = self._device_manager.get_device()
+        device = self._config.device_manager.get_device()
         config = USBMeter.Config(
             device=device,
             stop_provider=self._stop_provider,
@@ -45,7 +50,7 @@ class MultimeterMeasurement(Measurement):
         self._logger.debug("multimeter thread running")
         event.set()
         try:
-            usb_meter.run(self._log_dispatcher)
+            usb_meter.run(self._config.log_dispatcher)
         finally:
             self._logger.debug("multimeter thread stopped")
 
