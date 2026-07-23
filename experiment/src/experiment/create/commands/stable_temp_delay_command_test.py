@@ -90,7 +90,7 @@ def _create_config(min_delay: float, max_delay: float, threshold: float):
 
 @pytest.fixture
 def config():
-    config = _create_config(5, 20, 0.05)
+    config = _create_config(5, 20, 0.1)
     return config
 
 
