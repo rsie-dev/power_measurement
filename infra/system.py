@@ -292,11 +292,15 @@ def unify_fan_speed():
 
 @operation()
 def _set_raspi5_fan_speed():
-    fan_block = """
+    speed = 192
+    fan_block = f"""
 # ---------Fan---------
 dtparam=fan_temp0=0
 dtparam=fan_temp0_hyst=0
-dtparam=fan_temp0_speed=175
+dtparam=fan_temp0_speed={speed}
+dtparam=fan_temp1_speed={speed}
+dtparam=fan_temp2_speed={speed}
+dtparam=fan_temp3_speed={speed}
 """
     commands = list(
         files.block._inner(
