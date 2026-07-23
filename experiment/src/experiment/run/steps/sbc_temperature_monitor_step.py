@@ -4,6 +4,7 @@ from concurrent.futures import Executor
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
+import time
 
 from fabric import Connection
 
@@ -18,6 +19,12 @@ from .step import Step
 
 
 class SBCTemperatureMonitorStep(Step):
+    SENSOR_NAMES = [
+        "cpu_thermal",  # raspberry pi 5
+        "coretemp",     # radxa x4
+        "sfctemp"       # visionfive 2
+    ]
+
     @dataclass(frozen=True)
     class Config:
         host: SSHHost
@@ -54,7 +61,6 @@ class SBCTemperatureMonitorStep(Step):
         event.wait(self._config.start_timeout)
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:
-        sensor_names = ["cpu_thermal", "coretemp"]
         hwmon_folder = Path("/sys/class/hwmon")
         self._logger.debug("searching for sbc temperature file")
         result = connection.run(f"ls -1 {hwmon_folder}", hide=True)
@@ -64,7 +70,7 @@ class SBCTemperatureMonitorStep(Step):
             name_path = hwmon_folder / entry / "name"
             name = self._read_remote_file(connection, name_path).strip()
             self._logger.debug("entry %s = %s", name_path, name)
-            if name in sensor_names:
+            if name in self.SENSOR_NAMES:
                 return hwmon_folder / entry / "temp1_input"
         return None
 
@@ -82,17 +88,25 @@ class SBCTemperatureMonitorStep(Step):
         try:
             event.set()
             with self._config.log_provider.start_log(self._context.resources_path):
-                while True:
-                    with self._condition:
-                        timed_out = not self._condition.wait(timeout=self._config.update_interval)
-                        if self._stop:
-                            break
-                    if not self._stop and timed_out:
-                        self._collect_temperature(connection, kernel_temperature_file)
+                self._collect_loop(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception("Error: %s", e)
         finally:
             self._logger.debug("SBC temperature collector shut down")
+
+    def _collect_loop(self, connection: Connection, kernel_temperature_file: Path) -> None:
+        next_run = time.monotonic()
+        while True:
+            next_run += self._config.update_interval
+            with self._condition:
+                while True:
+                    timeout = next_run - time.monotonic()
+                    if timeout <= 0:
+                        break
+                    self._condition.wait(timeout=timeout)
+                    if self._stop:
+                        return
+            self._collect_temperature(connection, kernel_temperature_file)
 
     def _collect_temperature(self, connection: Connection, kernel_temperature_file: Path):
         str_value = self._read_remote_file(connection, kernel_temperature_file).strip()

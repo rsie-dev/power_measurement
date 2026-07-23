@@ -14,6 +14,9 @@ def _parse_time_line(line) -> tuple[str, datetime.timedelta]:
 
 
 class TimedCommandPreCommand(PreCommand):
+    MULTITHREADED = "multithreaded"
+    IO_BOUND = "I/O bound"
+
     def __init__(self, timing_logger: Logger[TimingEntry]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._count_logger = timing_logger
@@ -45,7 +48,7 @@ class TimedCommandPreCommand(PreCommand):
             f"user: {timing_entry.user.total_seconds():.2f} "
             f"sys: {timing_entry.sys.total_seconds():.2f} "
         )
-        extra = self._analysze_timings(timing_entry)
+        extra = self._analyze_timings(timing_entry)
         self._logger.info("Execution times:\t%s%s", timings, extra)
         self._timing_logger.log(timing_entry)
 
@@ -64,18 +67,22 @@ class TimedCommandPreCommand(PreCommand):
                            sys=entries["sys"],
                            command=command.command)
 
-    def _analysze_timings(self, timing_entry):
+    def _analyze_timings(self, timing_entry: TimingEntry):
+        result = self._get_timings_annotations(timing_entry)
+        if not result:
+            return ""
+        return " [%s]" % ", ".join(result)
+
+    def _get_timings_annotations(self, timing_entry: TimingEntry) -> list[str]:
         result = []
         # multithread (user + sys >> real) and I/O bound (user + sys << real)
         process_time = timing_entry.user + timing_entry.sys - timing_entry.real
         if timing_entry.user + timing_entry.sys > timing_entry.real:
             if process_time > self._threshold:
-                result.append("multithreaded")
-        wait_time = timing_entry.real - timing_entry.user - timing_entry.sys
-        if timing_entry.user + timing_entry.sys < timing_entry.real:
-            if wait_time > self._threshold:
-                result.append("I/O bound")
-
-        if not result:
-            return ""
-        return " [%s]" % ", ".join(result)
+                result.append(self.MULTITHREADED)
+        if timing_entry.sys > self._threshold:
+            wait_time = timing_entry.real - timing_entry.user - timing_entry.sys
+            if timing_entry.user + timing_entry.sys < timing_entry.real:
+                if wait_time > self._threshold:
+                    result.append(self.IO_BOUND)
+        return result

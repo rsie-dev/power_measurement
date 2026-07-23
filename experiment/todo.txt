@@ -1,9 +1,9 @@
 ToDo:
 - add external temp. sensor
 - ensure download folder exists prior to download if ends with /
-- add tail delay based on CPU/system temperature back within start temp. range + fixed delay
 
 v1.0.2
+- added temperature stabilized delay based on CPU/system temperature
 - added support to collect SBC temperature, too
 - enhanced descriptions of measurement steps
 - upload/download should show which file failed
