@@ -21,6 +21,8 @@ def install_telegraf():
         arch = host.get_fact(Arch, )
         if arch == "aarch64":
             return "arm64"
+        if arch == "armv6l":
+            return "armhf"
         elif arch == "x86_64":
             return "amd64"
         return arch
