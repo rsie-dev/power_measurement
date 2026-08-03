@@ -32,10 +32,16 @@ def install_telegraf():
     telegraf_package_path = Path("/var/tmp") / telegraf_package
     package = host.get_fact(File, str(telegraf_package_path))
     if package is None:
+        curl_args = {}
+        if host.data.get("use_proxy", False):
+            curl_args = {
+                "--proxy": "socks5h://127.0.0.1:9999",
+            }
         files.download(
             name="Download telgraf package",
             src="https://dl.influxdata.com/telegraf/releases/%s" % telegraf_package,
             dest=str(telegraf_package_path),
+            extra_curl_args=curl_args,
         )
     apt.deb(
         name="Install telegraf",
