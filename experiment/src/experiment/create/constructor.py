@@ -234,6 +234,9 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return self
 
     def with_stable_temp_head_delay(self, min_delay: int, max_delay: int, threshold: float = 0.05) -> Self:
+        if not self._config.sbc_temp_dispatcher:
+            raise RuntimeError("no SBC temperature available")
+
         head_delay = MeasurementExecutionConstructor.Delay(
             min_delay=timedelta(seconds=min_delay),
             max_delay=timedelta(seconds=max_delay),
