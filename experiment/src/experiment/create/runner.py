@@ -2,6 +2,9 @@ import logging
 from pathlib import Path
 from contextlib import contextmanager
 import shutil
+import datetime as dt
+
+import humanize
 
 from experiment.ssh import ConnectionFactory
 from experiment._version import version, commit_id
@@ -31,12 +34,16 @@ class Runner:
             self._do_run(experiment_module, args, experiment, resources)
 
     def _do_run(self, experiment_module: Path, args, experiment, resources: Path):
-        self._logger.info("Start experiment: %s", experiment_module.stem)
+        self._logger.info("Experiment start: %s", experiment_module.stem)
+        metrics_server_address = (args.host, args.port)
+        start = dt.datetime.now()
         try:
-            metrics_server_address = (args.host, args.port)
             experiment.run(resources, metrics_server_address)
         finally:
-            self._logger.info("Experiment finished: %s", experiment_module.stem)
+            elapsed = dt.datetime.now() - start
+            elapsed_seconds = dt.timedelta(seconds=int(elapsed.total_seconds()))
+            elapsed_str = humanize.precisedelta(elapsed_seconds, minimum_unit="seconds")
+            self._logger.info("Experiment finished in %s: %s", elapsed_str, experiment_module.stem)
 
     def _create_connection_factory(self, args) -> ConnectionFactory:
         if args.ssh_key:
