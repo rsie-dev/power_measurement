@@ -75,7 +75,7 @@ class MeasurementStep(BaseHostCommandStep):
                 progress_context = nullcontext
             with progress_context():
                 if self._config.show_progress:
-                    bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt} {rate_fmt}"
+                    bar_format = "{elapsed} {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {rate_fmt}"
                     configs = tqdm(self._config.command_configs, colour="green", bar_format=bar_format,
                                    unit="cmd", smoothing=0)
                 else:
