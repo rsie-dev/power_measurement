@@ -5,6 +5,7 @@ ToDo:
 - add collecting of thermal throtteling
 
 v1.1.0
+- log RNG seed and allow to pass it as parameter
 - add optional temperature offset for multimeter temperature
 - added temperature stabilized delay based on CPU/system temperature
 - added support to collect SBC temperature, too

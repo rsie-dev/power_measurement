@@ -30,9 +30,12 @@ class ExperimentLoader:
             raise FileNotFoundError(path)
 
         if not args.no_shuffle:
-            seed = secrets.randbits(128)
+            if args.seed is not None:
+                seed = args.seed
+            else:
+                seed = secrets.randbits(128)
             rng = random.Random(seed)
-            self._logger.info("RNG starting seed: %d", seed)
+            self._logger.debug("RNG starting seed: %d", seed)
         else:
             rng = None
 
