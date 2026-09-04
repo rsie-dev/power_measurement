@@ -5,6 +5,8 @@ import logging
 from typing import List, Self
 from dataclasses import dataclass, field
 from pathlib import Path
+import random
+import secrets
 
 from usb_multimeter import ElectricalMeasurement
 
@@ -436,6 +438,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._parent = parent
         self._config = config
         self._tags: set[str] = set()
@@ -562,7 +565,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         if self._context.command_configs:
             if self._config.shuffle_measurement_sets:
-                command_configs = command_config_shuffle(self._context.command_configs)
+                seed = secrets.randbits(128)
+                rng = random.Random(seed)
+                self._logger.info("RNG starting seed: %d", seed)
+                command_configs = command_config_shuffle(self._context.command_configs, rng=rng)
             else:
                 command_configs = self._context.command_configs[:]
             aborter = monitor_step
