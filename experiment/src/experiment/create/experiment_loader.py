@@ -4,6 +4,8 @@ import importlib
 import sys
 from pathlib import Path
 from typing import Optional
+import random
+import secrets
 
 from experiment.api import set_experiment_builder
 from experiment.ssh import ConnectionFactory
@@ -27,8 +29,15 @@ class ExperimentLoader:
         if not path.exists():
             raise FileNotFoundError(path)
 
+        if not args.no_shuffle:
+            seed = secrets.randbits(128)
+            rng = random.Random(seed)
+            self._logger.info("RNG starting seed: %d", seed)
+        else:
+            rng = None
+
         arguments = ExperimentConstructor.Arguments(ssh_user=args.ssh_user,
-                                                    shuffle_measurement_sets=not args.no_shuffle,
+                                                    rng=rng,
                                                     show_progress=not args.no_progress,
                                                     )
         builder = ExperimentConstructor(self._formatter_info, connection_factory, arguments)

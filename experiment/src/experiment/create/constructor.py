@@ -6,7 +6,6 @@ from typing import List, Self
 from dataclasses import dataclass, field
 from pathlib import Path
 import random
-import secrets
 
 from usb_multimeter import ElectricalMeasurement
 
@@ -412,9 +411,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     @dataclass(frozen=True)
     class Config:
         host: SSHHost
-        shuffle_measurement_sets: bool
         show_progress: bool
         multimeter_coordinator: MultimeterCoordinator
+        rng: random.Random | None
 
     @dataclass
     class ExtraHostContext:
@@ -438,7 +437,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     def __init__(self, parent: ExperimentConstructor, config: Config):
         super().__init__()
-        self._logger = logging.getLogger(self.__class__.__name__)
         self._parent = parent
         self._config = config
         self._tags: set[str] = set()
@@ -564,11 +562,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             monitor_step = None
 
         if self._context.command_configs:
-            if self._config.shuffle_measurement_sets:
-                seed = secrets.randbits(128)
-                rng = random.Random(seed)
-                self._logger.info("RNG starting seed: %d", seed)
-                command_configs = command_config_shuffle(self._context.command_configs, rng=rng)
+            if self._config.rng:
+                command_configs = command_config_shuffle(self._context.command_configs, rng=self._config.rng)
             else:
                 command_configs = self._context.command_configs[:]
             aborter = monitor_step
@@ -616,7 +611,7 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
     @dataclass(frozen=True)
     class Arguments:
         ssh_user: str
-        shuffle_measurement_sets: bool
+        rng: random.Random | None
         show_progress: bool
 
     def __init__(self, formatter_info: tuple[type, dict], connection_factory: ConnectionFactory, arguments: Arguments):
@@ -645,9 +640,9 @@ class ExperimentConstructor(CompositeConstructor, ExperimentBuilder):
         self._init_steps.append(HostnameValidationStep(ssh_host))
         self._init_steps.append(HostnameInfoStep(ssh_host))
         config = HostConstructor.Config(host=ssh_host,
-                                        shuffle_measurement_sets=self._arguments.shuffle_measurement_sets,
                                         show_progress=self._arguments.show_progress,
-                                        multimeter_coordinator=self._multimeter_coordinator
+                                        multimeter_coordinator=self._multimeter_coordinator,
+                                        rng=self._arguments.rng,
                                         )
         return HostConstructor(self, config=config)
 
