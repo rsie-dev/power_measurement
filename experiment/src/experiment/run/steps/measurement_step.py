@@ -26,6 +26,26 @@ class MeasurementAbort(ABC):
         pass
 
 
+class TotalTimeTqdm(tqdm):
+    @property
+    def format_dict(self):
+        d = super().format_dict
+
+        completed = d["n"] - d["initial"]
+        elapsed = d["elapsed"]
+
+        if completed > 0 and elapsed > 0 and d["total"] is not None:
+            average_rate = completed / elapsed
+            remaining_units = max(d["total"] - d["n"], 0)
+            remaining = remaining_units  / average_rate
+            estimated_total = elapsed + remaining
+            d["estimated_total"] = self.format_interval(estimated_total)
+        else:
+            d["estimated_total"] = "?"
+
+        return d
+
+
 class MeasurementStep(BaseHostCommandStep):
     @dataclass(frozen=True)
     class CommandConfig:
@@ -75,9 +95,9 @@ class MeasurementStep(BaseHostCommandStep):
                 progress_context = nullcontext
             with progress_context():
                 if self._config.show_progress:
-                    bar_format = "{elapsed} {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {rate_fmt}"
-                    configs = tqdm(self._config.command_configs, colour="green", bar_format=bar_format,
-                                   unit="cmd", smoothing=0)
+                    bar_format = "{elapsed}/{estimated_total} {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {rate_fmt}"
+                    configs = TotalTimeTqdm(self._config.command_configs, colour="green", bar_format=bar_format,
+                                            unit="cmd", smoothing=0)
                 else:
                     configs = self._config.command_configs
                 for command_config in configs:
