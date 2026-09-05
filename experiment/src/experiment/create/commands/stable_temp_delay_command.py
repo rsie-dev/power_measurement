@@ -37,7 +37,7 @@ class StableTemperatureDelayCommand(DelayCommand, Logger[TemperatureEntry]):
 
     def execute(self, nr: int, connection) -> None:
         kind = self._kind[:1].upper() + self._kind[1:]
-        self._logger.info("%s delay till stable temperature (min: %s max: %s)", kind,
+        self._logger.info("%s delay till stable temperature: min: %s max: %s", kind,
                           humanize.precisedelta(self._config.min_delay), humanize.precisedelta(self._config.max_delay))
         self._history = deque()
         self._config.temp_dispatcher.register_logger(self)
