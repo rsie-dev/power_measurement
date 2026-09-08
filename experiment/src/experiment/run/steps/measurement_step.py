@@ -4,7 +4,6 @@ from contextlib import ExitStack, nullcontext
 from pathlib import Path
 from concurrent.futures import Executor
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
 
 from fabric import Connection
 from tqdm import tqdm
@@ -18,12 +17,7 @@ from experiment.run.steps.measurement import measure, Measurement
 from experiment.run.log import LogProvider
 from .host_command_step import BaseHostCommandStep
 from .log_redirect import logging_redirect_tqdm
-
-
-class MeasurementAbort(ABC):
-    @abstractmethod
-    def abort_measurement(self) -> bool:
-        pass
+from .measurement_abort import MeasurementAbort
 
 
 class TotalTimeTqdm(tqdm):
