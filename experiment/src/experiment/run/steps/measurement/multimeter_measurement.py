@@ -57,6 +57,8 @@ class MultimeterMeasurement(Measurement):
         event.set()
         try:
             usb_meter.run(self._config.log_dispatcher)
+        except Exception:   # pylint: disable=broad-exception-caught
+            self._logger.exception("USB failure")
         finally:
             self._logger.debug("multimeter thread stopped")
 
