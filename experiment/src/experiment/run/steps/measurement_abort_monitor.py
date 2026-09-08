@@ -1,6 +1,6 @@
 import logging
 
-from .measurement_abort import MeasurementAbort
+from experiment.common import MeasurementAbort
 
 
 class MeasurementAbortMonitor(MeasurementAbort):

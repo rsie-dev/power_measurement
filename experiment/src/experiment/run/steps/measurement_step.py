@@ -17,7 +17,7 @@ from experiment.run.steps.measurement import measure, Measurement
 from experiment.run.log import LogProvider
 from .host_command_step import BaseHostCommandStep
 from .log_redirect import logging_redirect_tqdm
-from .measurement_abort import MeasurementAbort
+from experiment.common import MeasurementAbort
 
 
 class TotalTimeTqdm(tqdm):
