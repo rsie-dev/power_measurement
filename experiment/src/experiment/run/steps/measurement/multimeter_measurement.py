@@ -1,5 +1,5 @@
 import logging
-from threading import Event
+from threading import Event, RLock
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 from dataclasses import dataclass
 
@@ -9,26 +9,41 @@ from experiment.run.log import LogDispatcher
 from experiment.run.base import ExperimentEnvironment
 from experiment.common import DeviceManager
 from experiment.common import format_temp
+from experiment.common import MeasurementAbort
 
 from .measurement import Measurement
 from .signal_stop_provider import SignalStopProvider
 
 
-class MultimeterMeasurement(Measurement):
+class MultimeterMeasurement(Measurement, MeasurementAbort):
     @dataclass(frozen=True)
     class Config:
         device_manager: DeviceManager
         log_dispatcher: LogDispatcher[ElectricalMeasurement]
         temp_offset: float
 
+    @dataclass
+    class Context:
+        failure: Exception | None = None
+        failure_lock = RLock()
+
     def __init__(self, config: Config):
         super().__init__("multimeter")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
+        self._context = MultimeterMeasurement.Context()
         self._usb_meter = None
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
+
+    def get_abort_reason(self) -> Exception | None:
+        with self._context.failure_lock:
+            return self._context.failure
+
+    def _set_failure(self, failure: Exception) -> None:
+        with self._context.failure_lock:
+            self._context.failure = failure
 
     def start(self, environment: ExperimentEnvironment, executor: Executor):
         self._prepare()
@@ -57,8 +72,9 @@ class MultimeterMeasurement(Measurement):
         event.set()
         try:
             usb_meter.run(self._config.log_dispatcher)
-        except Exception:   # pylint: disable=broad-exception-caught
-            self._logger.exception("USB failure")
+        except Exception as e:   # pylint: disable=broad-exception-caught
+            self._logger.fatal("%s -> abort", e)
+            self._set_failure(e)
         finally:
             self._logger.debug("multimeter thread stopped")
 

@@ -3,9 +3,9 @@ ToDo:
 - ensure download folder exists prior to download if ends with /
 - extend timings collection to include total number of CPU-seconds, percentage of the CPU
 - add collecting of thermal throtteling
-- add detetion of missing measurements
 
 v1.1.0
+- added detetion of measurement failures
 - log RNG seed and allow to pass it as parameter
 - add optional temperature offset for multimeter temperature
 - added temperature stabilized delay based on CPU/system temperature

@@ -569,6 +569,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             aborter = MeasurementAbortMonitor()
             if monitor_step:
                 aborter.add_aborter(monitor_step)
+            if self._measurement:
+                aborter.add_aborter(self._measurement)
 
             log_providers = []
             log_providers.append(self._create_ambient_temperature_log_provider())
