@@ -94,8 +94,9 @@ class MeasurementStep(BaseHostCommandStep):
                 else:
                     configs = self._config.command_configs
                 for command_config in configs:
-                    if self._aborter.abort_measurement():
-                        raise RuntimeError("measurement was aborted")
+                    reason = self._aborter.get_abort_reason()
+                    if reason is not None:
+                        raise reason
                     resources_path = self._resources_path / self._host.host_name / command_config.tag
                     resources_path.mkdir(parents=True, exist_ok=True)
                     self._execute_run(command_config, resources_path, connection)

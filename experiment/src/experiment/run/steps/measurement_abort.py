@@ -3,10 +3,12 @@ from abc import ABC, abstractmethod
 
 
 class MeasurementAbort(ABC):
-    @abstractmethod
     def abort_measurement(self) -> bool:
-        pass
+        return self.get_abort_reason() is not None
 
+    @abstractmethod
+    def get_abort_reason(self) -> Exception | None:
+        pass
 
 class MeasurementAbortMonitor(MeasurementAbort):
     def __init__(self):
@@ -16,8 +18,9 @@ class MeasurementAbortMonitor(MeasurementAbort):
     def add_aborter(self, aborter: MeasurementAbort) -> None:
         self._aborter.append(aborter)
 
-    def abort_measurement(self) -> bool:
+    def get_abort_reason(self) -> Exception | None:
         for aborter in self._aborter:
-            if aborter.abort_measurement():
-                return True
-        return False
+            reason = aborter.get_abort_reason()
+            if reason is not None:
+                return reason
+        return None

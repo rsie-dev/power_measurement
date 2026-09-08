@@ -32,7 +32,7 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
         threshold_high: float | None = None
         threshold_low: float | None = None
         start_time: datetime.datetime | None = None
-        abort_flag: bool = False
+        abort_reason: Exception | None = None
 
     def __init__(self, config: Config, now=datetime.datetime.now):
         super().__init__("temperature monitor")
@@ -45,8 +45,8 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
             logger = logging.getLogger(TempMonitorStep.TEMP_UPDATE_LOG_NAME)
             logger.addFilter(TimeThrottleFilter(datetime.timedelta(seconds=30)))
 
-    def abort_measurement(self) -> bool:
-        return self._context.abort_flag
+    def get_abort_reason(self) -> Exception | None:
+        return self._context.abort_reason
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         pass
@@ -63,10 +63,13 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
         self._logger.debug("%s temperature monitor stop", self._config.kind)
 
     def _signal_abort(self, reason: str) -> None:
-        self._context.abort_flag = True
+        try:
+            raise RuntimeError(reason)
+        except RuntimeError as e:
+            self._context.abort_reason = e
 
     def _log_measurement(self, data: TemperatureEntry) -> None:
-        if self._context.abort_flag:
+        if self.abort_measurement():
             return
 
         if self._context.threshold_high is None:
