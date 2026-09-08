@@ -4,10 +4,12 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 import ifaddr
-from usb_multimeter import all_devices, devices_by_vid_pid, devices_by_serial_number
+from usb_multimeter import devices_by_vid_pid, devices_by_serial_number
+from usb_multimeter import all_devices as all_mm_devices
 from usb_multimeter.device import Device
 
 from experiment.log_util import get_formatter_info
+from experiment.sensor import all_sensor_devices
 
 from ._version import version, commit_id
 
@@ -73,8 +75,8 @@ class ExperimentMain:
         return device
 
     def _device_list(self, _args):
-        devices = all_devices()
-        self._logger.info("Available devices:")
+        devices = all_mm_devices()
+        self._logger.info("Available multimeter devices:")
         for device in devices:
             try:
                 device.access_check()
@@ -89,6 +91,12 @@ class ExperimentMain:
                 extra = " (%s)" % e
             self._logger.info("- %x:%x %s %s (type: %s SN: %s)%s", device.device_info.vid, device.device_info.pid,
                               manufacturer, product, device.device_info.model.name, sn, extra)
+
+        sensor_devices = all_sensor_devices()
+        self._logger.info("Available sensor devices:")
+        for device in sensor_devices:
+            info = device.device_info
+            self._logger.info("- %s %s (type: %s rom: %s)", info.bus, info.name, info.model.name, info.rom_code)
 
     def _device_show(self, args):
         device = self._find_device(args)

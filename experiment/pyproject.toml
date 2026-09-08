@@ -27,6 +27,7 @@ dependencies = [
 	"python-dotenv==1.2.1",
 	"isodate==0.7.2",
 	"tqdm==4.67.3",
+	"pydigitemp==1.4.1",
 	"usb-multimeter==3.0.0",
 ]
 
