@@ -3,6 +3,7 @@ ToDo:
 - ensure download folder exists prior to download if ends with /
 - extend timings collection to include total number of CPU-seconds, percentage of the CPU
 - add collecting of thermal throtteling
+- add detetion of missing measurements
 
 v1.1.0
 - log RNG seed and allow to pass it as parameter
