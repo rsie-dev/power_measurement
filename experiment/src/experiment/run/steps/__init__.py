@@ -1,7 +1,7 @@
 from .step import Step, InitStep
 from .host_command_step import WarmupCommandStep
 from .measurement_step import MeasurementStep
-from .measurement_abort import MeasurementAbortMonitor
+from .measurement_abort_monitor import MeasurementAbortMonitor
 from .system_metrics_step import SystemMetricsClientStep
 from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
