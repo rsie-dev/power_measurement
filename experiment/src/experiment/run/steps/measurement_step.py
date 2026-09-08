@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from experiment.api import Command
 from experiment.common import SSHHost
+from experiment.common import MeasurementAbort
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentResources
 from experiment.run.base import ExperimentRuntime
@@ -17,7 +18,6 @@ from experiment.run.steps.measurement import measure, Measurement
 from experiment.run.log import LogProvider
 from .host_command_step import BaseHostCommandStep
 from .log_redirect import logging_redirect_tqdm
-from experiment.common import MeasurementAbort
 
 
 class TotalTimeTqdm(tqdm):
