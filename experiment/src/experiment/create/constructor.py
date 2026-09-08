@@ -18,7 +18,8 @@ from experiment.common import SSHHost
 from experiment.ssh import ConnectionFactory
 from experiment.run.steps import Step, InitStep
 from experiment.run.steps import SystemMetricsClientStep, TimeDeltaStep
-from experiment.run.steps import WarmupCommandStep, MeasurementStep
+from experiment.run.steps import WarmupCommandStep
+from experiment.run.steps import MeasurementStep, MeasurementAbortMonitor
 from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
 from experiment.run.steps import TempMonitorStep, DisableTimersStep
@@ -44,7 +45,6 @@ from .multimeter_device_manager import MultimeterDeviceManager
 from .metrics_log_dispatcher import MetricsLogDispatcher
 from .command_config_shuffle import command_config_shuffle
 from .ambient_temp_log_dispatcher import AmbientTempLogDispatcher
-
 
 class Constructor(Builder):
     pass
@@ -566,7 +566,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 command_configs = command_config_shuffle(self._context.command_configs, rng=self._config.rng)
             else:
                 command_configs = self._context.command_configs[:]
-            aborter = monitor_step
+            aborter = MeasurementAbortMonitor()
+            if monitor_step:
+                aborter.add_aborter(monitor_step)
+
             log_providers = []
             log_providers.append(self._create_ambient_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,

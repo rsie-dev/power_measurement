@@ -1,6 +1,7 @@
 from .step import Step, InitStep
 from .host_command_step import WarmupCommandStep
 from .measurement_step import MeasurementStep
+from .measurement_abort import MeasurementAbortMonitor
 from .system_metrics_step import SystemMetricsClientStep
 from .time_delta_step import TimeDeltaStep
 from .hostname_validation_step import HostnameValidationStep
@@ -15,7 +16,7 @@ from .sbc_temperature_baseline_step import SBCTemperatureBaselineStep
 
 __all__ = ["Step", "InitStep",
            "WarmupCommandStep",
-           "MeasurementStep",
+           "MeasurementStep", "MeasurementAbortMonitor",
            "SystemMetricsClientStep",
            "TimeDeltaStep",
            "HostnameValidationStep", "HostnameInfoStep",
