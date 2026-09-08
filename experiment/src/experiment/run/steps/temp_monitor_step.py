@@ -62,6 +62,9 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
         self._config.log_dispatcher.unregister_logger(self)
         self._logger.debug("%s temperature monitor stop", self._config.kind)
 
+    def _signal_abort(self):
+        self._context.abort_flag = True
+
     def _log_measurement(self, data: TemperatureEntry) -> None:
         if self._context.abort_flag:
             return
@@ -89,7 +92,7 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
                 self._logger.fatal("%s temp is below lower threshold %s for more than %s -> abort", kind,
                                    format_temp(self._context.threshold_low),
                                    naturaldelta(self._config.min_duration))
-                self._context.abort_flag = True
+                self._signal_abort()
             else:
                 self._log_update("%s temp is still below lower threshold (%s): %s" %
                                  (kind, format_temp(self._context.threshold_low),
@@ -104,7 +107,7 @@ class TempMonitorStep(Step, Logger[TemperatureEntry], MeasurementAbort):
                 self._logger.fatal("%s temp is above upper threshold %s for more than %s -> abort", kind,
                                    format_temp(self._context.threshold_high),
                                    naturaldelta(self._config.min_duration))
-                self._context.abort_flag = True
+                self._signal_abort()
             else:
                 self._log_update("%s temp is still above upper threshold (%s): %s" %
                                  (kind, format_temp(self._context.threshold_high),
