@@ -86,12 +86,13 @@ class TempSensorStep(Step, MeasurementAbort):
             self._logger.debug("temperature sensor thread on %s stopped", self._config.bus_name)
 
     def _temperature_loop(self, sensor_device: SensorDevice) -> None:
-        interval = 1 / 5  # 5 calls per second
+        interval = 1 / 2  # 5 calls per second
         next_run = time.monotonic()
 
         while not self._context.stop_event.is_set():
             temperature = sensor_device.get_temperature()
             temperature += self._config.temp_offset
+            self._logger.warning("read temp: %.3f", temperature)
             timestamp = datetime.datetime.now(datetime.timezone.utc)
             te = TemperatureEntry(
                 timestamp=timestamp,

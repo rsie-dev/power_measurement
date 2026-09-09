@@ -39,8 +39,8 @@ class SensorDevice:
 
     def open(self) -> None:
         self._logger.debug("open sensor device: %s", self._device_info.bus)
-        # Allows up to 5 Hz
-        self._sensor.set_resolution(DS18B20.RES_10_BIT)
+        # Allows up to 2 Hz
+        self._sensor.set_resolution(DS18B20.RES_11_BIT)
 
     def close(self) -> None:
         self._logger.debug("close sensor device: %s", self._device_info.bus)
