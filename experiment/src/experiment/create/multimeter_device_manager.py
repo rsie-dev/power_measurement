@@ -12,6 +12,10 @@ class MultimeterDeviceManager(DeviceManager):
         self._serial_number = serial_number
         self._device = None
 
+    @property
+    def serial_number(self) -> str:
+        return self._serial_number
+
     def get_device(self) -> Device:
         if not self._device:
             device = self._find_device()

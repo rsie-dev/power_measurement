@@ -37,6 +37,10 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
         self._start_timeout = 3
         self._future = None
 
+    @property
+    def serial_number(self) -> str:
+        return self._config.device_manager.serial_number
+
     def set_temp_offset(self, temp_offset: float | int) -> None:
         self._context.temp_offset = temp_offset
 

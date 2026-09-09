@@ -503,7 +503,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def with_ambient_temperature_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
         if not self._measurement:
             raise RuntimeError("no multimeter for measurement specified")
-        # ToDo: validate serial number
+        if serial_number != self._measurement.serial_number:
+            raise ValueError("serial number for multimeter temperature must match multimeter serial number")
         if self._dispatcher.ambient_temp_dispatcher:
             raise RuntimeError("ambient temperature input already specified")
 
