@@ -9,6 +9,8 @@ from .sensor_device import SensorModel, SensorDevice, DeviceInfo
 
 def _build_device(adapter: UART_Adapter, rom: str | None = None):
     sensor = TemperatureSensor(adapter, rom=rom)
+    if rom is None:
+        rom = sensor.rom
     family_code = sensor.FAMILY_CODE
     model = SensorModel(family_code)
     name = sensor._device_name(family_code)  # pylint: disable=protected-access
