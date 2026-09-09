@@ -24,6 +24,7 @@ from experiment.run.steps import HostnameValidationStep, HostnameInfoStep
 from experiment.run.steps import UploadStep, DownloadStep, DeleteStep
 from experiment.run.steps import TempMonitorStep, DisableTimersStep
 from experiment.run.steps import SBCTemperatureMonitorStep
+from experiment.run.steps import TempSensorStep
 from experiment.run.steps.measurement import MultimeterMeasurement
 from experiment.run.experiment_executor import ExperimentExecutor
 from experiment.run.log import LogProvider, LoggerFactory, GenericLogProvider, LogDispatcher
@@ -40,6 +41,7 @@ from experiment.create.commands import DelayCommand, StableTemperatureDelayComma
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
 from experiment.system_meter import SystemMeasurement
+from experiment.sensor import get_sensor_device
 
 from .multimeter_device_manager import MultimeterDeviceManager
 from .metrics_log_dispatcher import MetricsLogDispatcher
@@ -430,6 +432,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         update_interval: float | None = None
 
     @dataclass
+    class TemperatureContext:
+        serial_device: str | None = None
+        temp_offset: float= 0
+
+    @dataclass
     class Dispatcher:
         multimeter_dispatcher: LogDispatcher[ElectricalMeasurement] | None = None
         ambient_temp_dispatcher: LogDispatcher[TemperatureEntry] | None = None
@@ -443,6 +450,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement: MultimeterMeasurement | None = None
         self._dispatcher = HostConstructor.Dispatcher()
         self._context = HostConstructor.ExtraHostContext()
+        self._temp_context = HostConstructor.TemperatureContext()
         self._sbc_context = HostConstructor.SBCContext()
 
     @property
@@ -480,13 +488,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._context.clear_cache = True
         return self
 
-    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0.0) -> Self:
+    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
         self._dispatcher.multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
-        self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
-        self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
+        #self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
+        #self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
         config = MultimeterMeasurement.Config(
             device_manager=device_manager,
             log_dispatcher=self._dispatcher.multimeter_dispatcher,
@@ -495,9 +503,17 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._measurement = MultimeterMeasurement(config)
         return self
 
+    def with_ambient_temperature_sensor(self, serial_device: str, temp_offset: float = 0) -> Self:
+        if self._dispatcher.ambient_temp_dispatcher:
+            raise RuntimeError("ambient temperature input already specified")
+        self._dispatcher.ambient_temp_dispatcher = LogDispatcher[TemperatureEntry]()
+        self._temp_context.serial_device = serial_device
+        self._temp_context.temp_offset = temp_offset
+        return self
+
     def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:
-        if not self._measurement:
-            raise RuntimeError("no temperature input available")
+        if not self._dispatcher.ambient_temp_dispatcher:
+            raise RuntimeError("no ambient temperature input available")
 
         self._context.temp_delta = temp_delta
         self._context.temp_min_duration = min_duration
@@ -530,6 +546,18 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
+        if self._temp_context.serial_device:
+            sensor_device = get_sensor_device(self._temp_context.serial_device)
+            config = TempSensorStep.Config(
+                sensor_device=sensor_device,
+                log_dispatcher=self._dispatcher.ambient_temp_dispatcher,
+                temp_offset=self._temp_context.temp_offset,
+            )
+            temp_sensor_step = TempSensorStep(config)
+            steps.append(temp_sensor_step)
+        else:
+            temp_sensor_step = None
+
         if self._dispatcher.sbc_temp_dispatcher:
             log_provider = self._create_sbc_temperature_log_provider()
             config = SBCTemperatureMonitorStep.Config(
@@ -567,6 +595,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             else:
                 command_configs = self._context.command_configs[:]
             aborter = MeasurementAbortMonitor()
+            if temp_sensor_step:
+                aborter.add_aborter(temp_sensor_step)
             if monitor_step:
                 aborter.add_aborter(monitor_step)
             if self._measurement:

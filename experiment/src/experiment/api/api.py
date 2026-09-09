@@ -127,7 +127,11 @@ class HostBuilder(Builder):
         pass
 
     @abstractmethod
-    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0.0) -> Self:
+    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
+        pass
+
+    @abstractmethod
+    def with_ambient_temperature_sensor(self, serial_device: str, temp_offset: float = 0) -> Self:
         pass
 
     @abstractmethod

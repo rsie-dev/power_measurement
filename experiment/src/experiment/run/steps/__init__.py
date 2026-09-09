@@ -13,6 +13,7 @@ from .temp_monitor_step import TempMonitorStep
 from .disable_timers_step import DisableTimersStep
 from .sbc_temperature_monitor_step import SBCTemperatureMonitorStep
 from .sbc_temperature_baseline_step import SBCTemperatureBaselineStep
+from .temp_sensor_step import TempSensorStep
 
 __all__ = ["Step", "InitStep",
            "WarmupCommandStep",
@@ -25,4 +26,5 @@ __all__ = ["Step", "InitStep",
            "TempMonitorStep",
            "DisableTimersStep",
            "SBCTemperatureMonitorStep", "SBCTemperatureBaselineStep",
+           "TempSensorStep",
            ]
