@@ -1,7 +1,7 @@
 import logging
 from threading import Event, RLock
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import time
 import datetime
 
@@ -23,6 +23,14 @@ class TempSensorStep(Step, MeasurementAbort):
         sensor_device: SensorDevice
         log_dispatcher: LogDispatcher[TemperatureEntry]
         temp_offset: float
+        bus_name: str = field(init=False)
+
+        def __post_init__(self) -> None:
+            object.__setattr__(
+                self,
+                "bus_name",
+                self.sensor_device.device_info.bus,
+            )
 
     @dataclass
     class Context:
@@ -61,19 +69,21 @@ class TempSensorStep(Step, MeasurementAbort):
 
     def _prepare(self):
         if self._config.temp_offset:
-            self._logger.info("Using temperature offset of: %s", format_temp(self._config.temp_offset))
+            self._logger.info("Using temperature offset on %s of: %s",
+                              self._config.bus_name,
+                              format_temp(self._config.temp_offset))
 
     def _temperature_collector(self, start_event: Event) -> None:
-        self._logger.debug("temperature sensor thread running")
+        self._logger.debug("temperature sensor thread on %s running", self._config.bus_name)
         start_event.set()
         try:
             with self._config.sensor_device as device:
                 self._temperature_loop(device)
         except Exception as e:   # pylint: disable=broad-exception-caught
-            self._logger.fatal("%s -> abort", e)
+            self._logger.fatal("%s on %s -> abort", e, self._config.bus_name)
             self._set_failure(e)
         finally:
-            self._logger.debug("temperature sensor thread stopped")
+            self._logger.debug("temperature sensor thread on %s stopped", self._config.bus_name)
 
     def _temperature_loop(self, sensor_device: SensorDevice) -> None:
         interval = 1 / 5  # 5 calls per second
@@ -81,18 +91,17 @@ class TempSensorStep(Step, MeasurementAbort):
 
         while not self._context.stop_event.is_set():
             temperature = sensor_device.get_temperature()
-            self._logger.warning("read temperature: %.2f", temperature)
+            temperature += self._config.temp_offset
             timestamp = datetime.datetime.now(datetime.timezone.utc)
             te = TemperatureEntry(
                 timestamp=timestamp,
-                temperature=temperature + self._config.temp_offset,
+                temperature=temperature,
             )
             self._config.log_dispatcher.log(te)
 
             next_run += interval
             remaining = max(0, next_run - time.monotonic())
 
-            # Returns True immediately when stop_event is set
             if self._context.stop_event.wait(remaining):
                 break
 
