@@ -96,7 +96,7 @@ class ExperimentMain:
         self._logger.info("Available sensor devices:")
         for device in sensor_devices:
             info = device.device_info
-            self._logger.info("- %s %s (type: %s rom: %s)", info.bus, info.name, info.model.name, info.rom_code)
+            self._logger.info("- %s %s (type: %s rom: %s)", info.bus, info.name, info.model.name, info.rom)
 
     def _device_show(self, args):
         device = self._find_device(args)

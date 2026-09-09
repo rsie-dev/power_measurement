@@ -15,7 +15,7 @@ class SensorModel(IntEnum):
 @dataclass(frozen=True)
 class DeviceInfo:
     bus: str
-    rom_code: str
+    rom: str
     model: SensorModel
     name: str
 

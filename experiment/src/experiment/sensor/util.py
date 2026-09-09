@@ -17,7 +17,7 @@ def _build_device(adapter: UART_Adapter, rom: str | None = None):
     name = name.partition(" - ")[2]
     info = DeviceInfo(
         bus=adapter.name,
-        rom_code=rom,
+        rom=rom,
         model=model,
         name=name,
     )
