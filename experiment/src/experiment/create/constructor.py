@@ -488,19 +488,29 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._context.clear_cache = True
         return self
 
-    def measure_with_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
+    def measure_with_multimeter(self, serial_number: str) -> Self:
         if self._measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
         self._dispatcher.multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
-        #self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
-        #self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
         config = MultimeterMeasurement.Config(
             device_manager=device_manager,
             log_dispatcher=self._dispatcher.multimeter_dispatcher,
-            temp_offset=temp_offset
         )
         self._measurement = MultimeterMeasurement(config)
+        return self
+
+    def with_ambient_temperature_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
+        if not self._measurement:
+            raise RuntimeError("no multimeter for measurement specified")
+        # ToDo: validate serial number
+        if self._dispatcher.ambient_temp_dispatcher:
+            raise RuntimeError("ambient temperature input already specified")
+
+        self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
+        self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
+        self._measurement.set_temp_offset(temp_offset)
+
         return self
 
     def with_ambient_temperature_sensor(self, serial_device: str, temp_offset: float = 0) -> Self:

@@ -20,12 +20,12 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
     class Config:
         device_manager: DeviceManager
         log_dispatcher: LogDispatcher[ElectricalMeasurement]
-        temp_offset: float
 
     @dataclass
     class Context:
         failure: Exception | None = None
         failure_lock = RLock()
+        temp_offset: float| int = 0
 
     def __init__(self, config: Config):
         super().__init__("multimeter")
@@ -36,6 +36,9 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
         self._stop_provider = None
         self._start_timeout = 3
         self._future = None
+
+    def set_temp_offset(self, temp_offset: float | int) -> None:
+        self._context.temp_offset = temp_offset
 
     def get_abort_reason(self) -> Exception | None:
         with self._context.failure_lock:
@@ -53,8 +56,8 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
         self._future = future
 
     def _prepare(self):
-        if self._config.temp_offset:
-            self._logger.info("Using temperature offset of: %s", format_temp(self._config.temp_offset))
+        if self._context.temp_offset:
+            self._logger.info("Using temperature offset of: %s", format_temp(self._context.temp_offset))
 
         self._stop_provider = SignalStopProvider()
         device = self._config.device_manager.get_device()
@@ -62,7 +65,7 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
             device=device,
             stop_provider=self._stop_provider,
             use_crc=True,
-            temp_offset=self._config.temp_offset,
+            temp_offset=self._context.temp_offset,
         )
         self._usb_meter = USBMeter(config)
         self._usb_meter.setup_device()

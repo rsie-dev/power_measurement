@@ -202,15 +202,26 @@ with_clear_cache(self) -> Self
 Clears the file caches prior to command execution.
 
 ```python
-measure_with_multimeter(serial_number: str, temp_offset: float = 0.0) -> Self
+measure_with_multimeter(serial_number: str) -> Self
 ```
-Enables measurement using a multimeter device.
+Enables electrical measurements using a multimeter device.
+
+```python
+with_ambient_temperature_multimeter(serial_number: str, temp_offset: float = 0) -> Self
+```
+Enables temperature measurement using a multimeter device.
+Optionally set an offset for temperature readings.
+
+```python
+with_ambient_temperature_sensor(serial_device: str, temp_offset: float = 0) -> Self
+```
+Enables temperature measurement using a serial temperature sensor.
 Optionally set an offset for temperature readings.
 
 ```python
 control_temperature(temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self
 ```
-Enables temperature monitoring during measurement.
+Enables ambient temperature monitoring during measurement.
 The measurement is aborted if the temperature raises above or below the temp_delta threshold for longer than min_duration.
 
 ```python
