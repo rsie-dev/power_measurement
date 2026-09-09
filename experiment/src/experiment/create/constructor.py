@@ -614,7 +614,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 aborter.add_aborter(self._measurement)
 
             log_providers = []
-            log_providers.append(self._create_ambient_temperature_log_provider())
+            if self._dispatcher.ambient_temp_dispatcher:
+                log_providers.append(self._create_ambient_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
                                             log_providers=log_providers)
             step = MeasurementStep(self._config.host, self._measurement, config, aborter)
