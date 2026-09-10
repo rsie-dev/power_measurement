@@ -449,8 +449,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         self._tags: set[str] = set()
         self._measurement: MultimeterMeasurement | None = None
         self._dispatcher = HostConstructor.Dispatcher()
-        self._context = HostConstructor.ExtraHostContext()
-        self._temp_context = HostConstructor.TemperatureContext()
+        self._host_context = HostConstructor.ExtraHostContext()
+        self._temperature_context = HostConstructor.TemperatureContext()
         self._sbc_context = HostConstructor.SBCContext()
 
     @property
@@ -458,17 +458,17 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return self._parent.collect_metrics
 
     def add_command_configs(self, command_configs: list[MeasurementStep.CommandConfig]) -> None:
-        self._context.command_configs.extend(command_configs)
+        self._host_context.command_configs.extend(command_configs)
 
     @property
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
 
     def add_init_step(self, steps: List[Step]) -> None:
-        self._context.init_steps.extend(steps)
+        self._host_context.init_steps.extend(steps)
 
     def add_shutdown_step(self, steps: List[Step]) -> None:
-        self._context.shutdown_steps.extend(steps)
+        self._host_context.shutdown_steps.extend(steps)
 
     def initialize(self) -> InitializationBuilder:
         return InitializationConstructor(self, self._config.host)
@@ -485,7 +485,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return WarmupExecutionConstructor(self, self._config.host)
 
     def with_clear_cache(self) -> Self:
-        self._context.clear_cache = True
+        self._host_context.clear_cache = True
         return self
 
     def measure_with_multimeter(self, serial_number: str) -> Self:
@@ -518,20 +518,20 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if self._dispatcher.ambient_temp_dispatcher:
             raise RuntimeError("ambient temperature input already specified")
         self._dispatcher.ambient_temp_dispatcher = LogDispatcher[TemperatureEntry]()
-        self._temp_context.serial_device = serial_device
-        self._temp_context.temp_offset = temp_offset
+        self._temperature_context.serial_device = serial_device
+        self._temperature_context.temp_offset = temp_offset
         return self
 
     def control_temperature(self, temp_delta: float, min_duration: timedelta = timedelta(minutes=15)) -> Self:
         if not self._dispatcher.ambient_temp_dispatcher:
             raise RuntimeError("no ambient temperature input available")
 
-        self._context.temp_delta = temp_delta
-        self._context.temp_min_duration = min_duration
+        self._host_context.temp_delta = temp_delta
+        self._host_context.temp_min_duration = min_duration
         return self
 
     def disable_timers(self) -> Self:
-        self._context.disable_timers = True
+        self._host_context.disable_timers = True
         return self
 
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
@@ -543,7 +543,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         config = MeasurementExecutionConstructor.Config(
             runs=runs,
             tag=tag,
-            clear_cache=self._context.clear_cache,
+            clear_cache=self._host_context.clear_cache,
             sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
         )
 
@@ -557,12 +557,12 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
-        if self._temp_context.serial_device:
-            sensor_device = get_sensor_device(self._temp_context.serial_device)
+        if self._temperature_context.serial_device:
+            sensor_device = get_sensor_device(self._temperature_context.serial_device)
             config = TempSensorStep.Config(
                 sensor_device=sensor_device,
                 log_dispatcher=self._dispatcher.ambient_temp_dispatcher,
-                temp_offset=self._temp_context.temp_offset,
+                temp_offset=self._temperature_context.temp_offset,
             )
             temp_sensor_step = TempSensorStep(config)
             steps.append(temp_sensor_step)
@@ -584,27 +584,27 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(TimeDeltaStep(self._config.host))
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
-        if self._context.disable_timers:
+        if self._host_context.disable_timers:
             steps.append(DisableTimersStep(self._config.host))
 
         steps.extend(self._steps)
-        if self._context.temp_delta is not None:
+        if self._host_context.temp_delta is not None:
             config = TempMonitorStep.Config(
                 kind="ambient",
                 log_dispatcher=self._dispatcher.ambient_temp_dispatcher,
-                max_temp_delta=self._context.temp_delta,
-                min_duration=self._context.temp_min_duration,
+                max_temp_delta=self._host_context.temp_delta,
+                min_duration=self._host_context.temp_min_duration,
             )
             monitor_step = TempMonitorStep(config)
             steps.append(monitor_step)
         else:
             monitor_step = None
 
-        if self._context.command_configs:
+        if self._host_context.command_configs:
             if self._config.rng:
-                command_configs = command_config_shuffle(self._context.command_configs, rng=self._config.rng)
+                command_configs = command_config_shuffle(self._host_context.command_configs, rng=self._config.rng)
             else:
-                command_configs = self._context.command_configs[:]
+                command_configs = self._host_context.command_configs[:]
             aborter = MeasurementAbortMonitor()
             if temp_sensor_step:
                 aborter.add_aborter(temp_sensor_step)
@@ -622,9 +622,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
             steps.append(step)
 
-        self._parent.add_steps(self._context.init_steps)
+        self._parent.add_steps(self._host_context.init_steps)
         self._parent.add_steps(steps)
-        self._parent.add_steps(self._context.shutdown_steps)
+        self._parent.add_steps(self._host_context.shutdown_steps)
         return self._parent
 
     def _create_ambient_temperature_log_provider(self) -> LogProvider:
