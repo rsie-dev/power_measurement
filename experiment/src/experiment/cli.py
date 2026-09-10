@@ -109,10 +109,11 @@ class ExperimentMain:
         self._logger.info("Location:      %s", device.location)
 
     def _log_temp(self, args):
-        log_config = self._get_logging_config()
         log_path = self._get_resources_folder()
+        log_filename = log_path / "temperature.csv"
+        log_config = self._get_logging_config()
         formatter_info: tuple[type, dict] = get_formatter_info(log_config)
-        logger = TemperatureLogger(log_path, formatter_info, args.bus)
+        logger = TemperatureLogger(log_filename, formatter_info, args.bus)
         logger.log()
 
     def _run_experiment(self, args):
