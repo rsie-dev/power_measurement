@@ -418,6 +418,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         rng: random.Random | None
 
     @dataclass
+    class Context:
+        tags: set[str] = field(default_factory=set)
+        measurement: MultimeterMeasurement | None = None
+
+    @dataclass
     class ExtraHostContext:
         init_steps: list[Step] = field(default_factory=list)
         shutdown_steps: list[Step] = field(default_factory=list)
@@ -446,8 +451,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         super().__init__()
         self._parent = parent
         self._config = config
-        self._tags: set[str] = set()
-        self._measurement: MultimeterMeasurement | None = None
+        self._context = HostConstructor.Context()
         self._dispatcher = HostConstructor.Dispatcher()
         self._host_context = HostConstructor.ExtraHostContext()
         self._temperature_context = HostConstructor.TemperatureContext()
@@ -489,7 +493,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         return self
 
     def measure_with_multimeter(self, serial_number: str) -> Self:
-        if self._measurement:
+        if self._context.measurement:
             raise RuntimeError("multimeter for measurement already specified")
         device_manager = self._config.multimeter_coordinator.get_device_manager(serial_number)
         self._dispatcher.multimeter_dispatcher = LogDispatcher[ElectricalMeasurement]()
@@ -497,20 +501,20 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             device_manager=device_manager,
             log_dispatcher=self._dispatcher.multimeter_dispatcher,
         )
-        self._measurement = MultimeterMeasurement(config)
+        self._context.measurement = MultimeterMeasurement(config)
         return self
 
     def with_ambient_temperature_multimeter(self, serial_number: str, temp_offset: float = 0) -> Self:
-        if not self._measurement:
+        if not self._context.measurement:
             raise RuntimeError("no multimeter for measurement specified")
-        if serial_number != self._measurement.serial_number:
+        if serial_number != self._context.measurement.serial_number:
             raise ValueError("serial number for multimeter temperature must match multimeter serial number")
         if self._dispatcher.ambient_temp_dispatcher:
             raise RuntimeError("ambient temperature input already specified")
 
         self._dispatcher.ambient_temp_dispatcher = AmbientTempLogDispatcher()
         self._dispatcher.multimeter_dispatcher.register_logger(self._dispatcher.ambient_temp_dispatcher)
-        self._measurement.set_temp_offset(temp_offset)
+        self._context.measurement.set_temp_offset(temp_offset)
 
         return self
 
@@ -537,9 +541,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     def measure_runs(self, runs: int, tag: str = None) -> MeasurementExecutionBuilder:
         if tag is None:
             tag = ""
-        if tag in self._tags:
+        if tag in self._context.tags:
             raise ValueError(f"a measurement with the tag '{tag}' already exists on this host")
-        self._tags.add(tag)
+        self._context.tags.add(tag)
         config = MeasurementExecutionConstructor.Config(
             runs=runs,
             tag=tag,
@@ -547,13 +551,13 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
         )
 
-        if not self._measurement:
+        if not self._context.measurement:
             raise RuntimeError("no multimeter for measurement available")
 
         return MeasurementExecutionConstructor(self, self._config.host, self._dispatcher.multimeter_dispatcher, config)
 
     def done(self) -> ExperimentBuilder:
-        if "" in self._tags and len(self._tags) > 1:
+        if "" in self._context.tags and len(self._context.tags) > 1:
             raise ValueError("each measurement must have an distinctive tag")
 
         steps = []
@@ -610,15 +614,15 @@ class HostConstructor(CompositeConstructor, HostBuilder):
                 aborter.add_aborter(temp_sensor_step)
             if monitor_step:
                 aborter.add_aborter(monitor_step)
-            if self._measurement:
-                aborter.add_aborter(self._measurement)
+            if self._context.measurement:
+                aborter.add_aborter(self._context.measurement)
 
             log_providers = []
             if self._dispatcher.ambient_temp_dispatcher:
                 log_providers.append(self._create_ambient_temperature_log_provider())
             config = MeasurementStep.Config(show_progress=self._config.show_progress, command_configs=command_configs,
                                             log_providers=log_providers)
-            step = MeasurementStep(self._config.host, self._measurement, config, aborter)
+            step = MeasurementStep(self._config.host, self._context.measurement, config, aborter)
 
             steps.append(step)
 
