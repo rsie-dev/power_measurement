@@ -10,6 +10,7 @@ from usb_multimeter.device import Device
 
 from experiment.log_util import get_formatter_info
 from experiment.sensor import all_sensor_devices
+from experiment.log import TemperatureLogger
 
 from ._version import version, commit_id
 
@@ -107,6 +108,13 @@ class ExperimentMain:
         self._logger.info("Serial number: %s", device.serial_number)
         self._logger.info("Location:      %s", device.location)
 
+    def _log_temp(self, args):
+        log_config = self._get_logging_config()
+        log_path = self._get_resources_folder()
+        formatter_info: tuple[type, dict] = get_formatter_info(log_config)
+        logger = TemperatureLogger(log_path, formatter_info, args.bus)
+        logger.log()
+
     def _run_experiment(self, args):
         from experiment.create import Runner  # pylint: disable=import-outside-toplevel
         resources = self._get_resources_folder()
@@ -148,6 +156,13 @@ class ExperimentMain:
         parser_device_list.set_defaults(func=self._device_list)
         parser_device_show = device_subparsers.add_parser('show', parents=[id_parser], help="Show device details")
         parser_device_show.set_defaults(func=self._device_show)
+
+        parser_log = subparsers.add_parser('log', help="log commands")
+        log_subparsers = parser_log.add_subparsers(required=True, dest="subcommand", title='subcommands',
+                                                   description='valid subcommands', help='sub-command help')
+        parser_log_temp = log_subparsers.add_parser('temp', help="temperature logging")
+        parser_log_temp.add_argument('--bus', help="temperature sensor serial bus")
+        parser_log_temp.set_defaults(func=self._log_temp)
 
         parser_run = subparsers.add_parser('run', help="runs an experiment")
         parser_run.add_argument("--host", default=self._get_default_host(), help="Server listening host" + default)
