@@ -18,7 +18,7 @@ class TemperatureLogger:
     def log(self) -> None:
         formatter_class, formatter_config = self._formatter_info
         formatter = formatter_class(**formatter_config)
-        self._logger.info("Log temperature readings to: %s", self._log_filename.relative_to(Path().absolute()))
+        self._logger.info("Log temperature readings to: %s", self._log_filename)
         temperature_logger = CSVTemperatureLogger(self._log_filename, formatter)
         with logger(temperature_logger) as temp_logger:
             with get_sensor_device(self._bus) as sensor_device:

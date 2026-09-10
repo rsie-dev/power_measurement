@@ -109,11 +109,9 @@ class ExperimentMain:
         self._logger.info("Location:      %s", device.location)
 
     def _log_temp(self, args):
-        log_path = self._get_resources_folder()
-        log_filename = log_path / "temperature.csv"
         log_config = self._get_logging_config()
         formatter_info: tuple[type, dict] = get_formatter_info(log_config)
-        logger = TemperatureLogger(log_filename, formatter_info, args.bus)
+        logger = TemperatureLogger(args.logfile, formatter_info, args.bus)
         logger.log()
 
     def _run_experiment(self, args):
@@ -135,6 +133,7 @@ class ExperimentMain:
     def _show_version(self, parser: argparse.ArgumentParser):
         self._logger.error("%s v%s (%s)", parser.prog, version, commit_id)
 
+    # pylint: disable=too-many-locals
     def main(self):
         parser = argparse.ArgumentParser()
         default = ' (default: %(default)s)'
@@ -163,6 +162,9 @@ class ExperimentMain:
                                                    description='valid subcommands', help='sub-command help')
         parser_log_temp = log_subparsers.add_parser('temp', help="temperature logging")
         parser_log_temp.add_argument('--bus', help="temperature sensor serial bus")
+        parser_log_temp.add_argument('--logfile',
+                                     default=(self._get_resources_folder() / "temperature.csv").relative_to(Path.cwd()),
+                                     help="temperature logfile name" + default)
         parser_log_temp.set_defaults(func=self._log_temp)
 
         parser_run = subparsers.add_parser('run', help="runs an experiment")
