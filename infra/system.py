@@ -340,6 +340,7 @@ def add_home_partition():
         device=part_device,
         mount_dir="/home",
         fs_type="xfs",
+        options="noatime,lazytime",
         dump=0,
         fsck=0,
         _sudo=True,
