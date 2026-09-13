@@ -19,8 +19,9 @@ remount_rw(
     _sudo=True,
 )
 
-if host.data.get("use_proxy", False):
-    set_apt_proxy(True)
+use_proxy = host.data.get("use_proxy", False)
+set_apt_proxy(use_proxy)
+
 base()
 base_network()
 stressors()
