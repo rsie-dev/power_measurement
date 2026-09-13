@@ -22,7 +22,12 @@ def add_users():
         add_user(
             name="Create user: %s" % user,
             user=user,
-            groups=["usbmeter"],
+            _sudo=True,
+        )
+        server.user(
+            name="Assign user %s to groups" % user,
+            user=user,
+            groups=["usbmeter", "dialout"],
             _sudo=True,
         )
         key = read_ssh_key(keyfile)
