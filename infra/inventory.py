@@ -3,9 +3,6 @@ import getpass
 user_name = "dietpi"
 PASSWORD = getpass.getpass(prompt="password for %s: " % user_name)
 
-SERVER_IP = "192.168.1.203"
-SERVER_PORT = 10000
-
 _ssh_config = {
     "ssh_user": user_name,
     "ssh_password": PASSWORD,
