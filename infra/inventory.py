@@ -12,10 +12,16 @@ _ssh_config = {
     "_sudo_password": PASSWORD,
 }
 
+# On initial installation set to false with "--data use_proxy=False" and ensure the machine has internet connection.
+# On subsequent / standalone installations leave it True and ensure a socks proxy is available
+# by opening an ssh session prior to pyinfra with:
+# ssh -R  9999 -l <user> <machine>
 _proxy_config = {
     "use_proxy": True,
 }
 
+# On initial install, set the IP address to the received IP address.
+# On subsequent / standalone installation set to the default 192.168.5.<X>
 
 controller = ([
         ('controller', {'ssh_hostname': '192.168.5.1'}),
