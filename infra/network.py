@@ -41,12 +41,13 @@ def set_static_ip(ip: IPv4Address):
 #iface {ethernet_if} inet static
 #        address {ip}
 """
-    files.block(
+    pristine_block(
         name="Prepare static IP address",
         path="/etc/network/interfaces",
         content=static_def,
         before=True,
         line='# WiFi',
+        backup=True,
         _sudo=True,
     )
 
