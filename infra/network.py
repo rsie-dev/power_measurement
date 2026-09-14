@@ -6,6 +6,8 @@ from pyinfra.operations import apt, files
 from pyinfra.api import deploy
 from pyinfra.facts.hardware import NetworkDevices
 
+from file import pristine_block
+
 
 @deploy("NetworkBase")
 def base_network():
@@ -111,7 +113,7 @@ host {host.name} {{
     )
 
     ethernet_if = _get_ethernet_device()
-    files.block(
+    pristine_block(
         name="Prepare DHCP server standalone",
         path="/etc/default/isc-dhcp-server",
         content=f'#INTERFACESv4="{ethernet_if}"',

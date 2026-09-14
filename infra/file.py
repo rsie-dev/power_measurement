@@ -4,8 +4,9 @@ from pyinfra.api import operation
 from pyinfra.facts.files import File
 from pyinfra import host
 from pyinfra.api import OperationError, QuoteString, StringCommand
-from pyinfra.facts.files import Directory
+from pyinfra.facts.files import Directory, FileContents, Sha256File
 from pyinfra.operations.files import _remote_file_equal
+from pyinfra.operations import files
 
 
 @operation()
@@ -60,3 +61,65 @@ def copy_to(src: str, dest: str, overwrite=False):
         cp_cmd.append("-f")
 
     yield StringCommand(*cp_cmd, QuoteString(src), QuoteString(dest))
+
+
+@operation()
+def pristine_block(
+    path,
+    content=None,
+    checksum_path=None,
+    present=True,
+    line=None,
+    before=False,
+    after=False,
+    marker=None,
+    begin=None,
+    end=None,
+    backup=False,
+    try_prevent_shell_expansion=False,
+):
+    checksum_path = checksum_path or f"{path}.pyinfra-sha256"
+
+    checksum_info = host.get_fact(File, path=checksum_path)
+    if checksum_info is False:
+        raise OperationError(
+            f"Checksum path exists but is not a file: {checksum_path}"
+        )
+
+    checksum_exists = checksum_info is not None
+    if checksum_exists:
+        checksum_lines = host.get_fact(
+            FileContents,
+            path=checksum_path,
+        )
+        saved_checksum = checksum_lines[0].strip() if checksum_lines else ""
+    else:
+        saved_checksum = None
+
+    current_checksum = host.get_fact(Sha256File, path=path)
+
+    # When a checksum exists, update only if the whole file still matches.
+    if checksum_exists and saved_checksum != current_checksum:
+        return
+
+    yield from files.block._inner(
+        path=path,
+        content=content,
+        present=present,
+        line=line,
+        before=before,
+        after=after,
+        marker=marker,
+        begin=begin,
+        end=end,
+        backup=backup,
+        try_prevent_shell_expansion=try_prevent_shell_expansion,
+    )
+
+    # Record the whole-file checksum after updating the block.
+    yield StringCommand(
+        "sha256sum",
+        QuoteString(path),
+        "| awk '{print $1}' >",
+        QuoteString(checksum_path),
+    )
