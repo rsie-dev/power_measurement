@@ -34,7 +34,8 @@ if "controller" in host.groups:
     router()
     base_filesystem()
     add_home_partition()
-    setup_data_folder()
+    sync_data = host.data.get("sync_data", False)
+    setup_data_folder(sync_data)
     add_users()
 
 

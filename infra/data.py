@@ -4,7 +4,7 @@ from pyinfra.operations import files
 
 
 @deploy("Data folder")
-def setup_data_folder():
+def setup_data_folder(sync: bool):
     files.directory(
         name="Create data folder",
         path="/data",
@@ -12,9 +12,10 @@ def setup_data_folder():
         _sudo=True,
     )
 
-    files.sync(
-        name="Sync data folder",
-        src="data/",
-        dest="/data",
-        _sudo=True,
-    )
+    if sync:
+        files.sync(
+            name="Sync data folder",
+            src="data/",
+            dest="/data",
+            _sudo=True,
+        )

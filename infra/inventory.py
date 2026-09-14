@@ -21,7 +21,7 @@ _proxy_config = {
 # On subsequent / standalone installation set to the default 192.168.5.<X>
 
 controller = ([
-        ('controller', {'ssh_hostname': '192.168.5.1'}),
+        ('controller', {'ssh_hostname': '192.168.5.1', 'sync_data': False}),
         ],
         _ssh_config | _proxy_config
 )
