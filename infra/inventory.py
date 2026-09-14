@@ -17,7 +17,7 @@ _proxy_config = {
     "use_proxy": True,
 }
 
-# On initial install, set the IP address to the received IP address.
+# On initial install, set the MAC address and IP address to the received IP address.
 # On subsequent / standalone installation set to the default 192.168.5.<X>
 
 controller = ([
