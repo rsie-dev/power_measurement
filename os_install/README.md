@@ -1,6 +1,6 @@
 # Install OS image
 
-Instrcutions are based on Dietpi v9.18 which is based on debian 13 (trixie).
+Instrcutions are based on Dietpi v10.5 which is based on debian 13 (trixie).
 
 ## Controller
 (Raspberry PI 3)
@@ -53,6 +53,8 @@ sudo patch /mnt/tmp/boot/dietpi.txt patches/dietpi_visionfive2.patch
 sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
+1. Wait till initial setup and update are through
+1. Continue with custom setup in ../infra
 
 ## Radxa X4
 1. [Update BIOS if needed](https://docs.radxa.com/en/x/x4/bios/update-bios)
@@ -70,4 +72,4 @@ sudo umount /mnt/tmp/
 1. Power off
 1. Remove both USB sticks
 1. Boot device
-
+1. Continue with custom setup in ../infra
