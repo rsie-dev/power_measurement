@@ -4,7 +4,11 @@ This file contains instructions for installing the operating system on the
 SBC devices used as devices under test, as well as on the controller computer 
 used for energy consumption measurements.
 
+The commands provided in this document are intended to be executed on a Debian-based Linux system.
 The instructions are based on Dietpi v10.5 which is based on debian 13 (trixie).
+
+Upon first start, Dietpi will execute bootstraping configurations.
+For this to work, the devices need to have an ethernet connection and internet access.
 
 ## Controller
 (Raspberry PI 3)
@@ -24,6 +28,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
+1. Reboot
 1. Continue with custom setup in ../infra/README.md
 
 ## Raspberry PI 5
@@ -41,6 +46,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
+1. Reboot
 1. Continue with custom setup in ../infra/README.md
 
 ## VisionFive2
@@ -58,6 +64,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
+1. Reboot
 1. Continue with custom setup in ../infra/README.md
 
 ## Radxa X4
