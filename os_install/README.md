@@ -1,6 +1,10 @@
 # Install OS image
 
-Instrcutions are based on Dietpi v10.5 which is based on debian 13 (trixie).
+This file contains instructions for installing the operating system on the 
+SBC devices used as devices under test, as well as on the controller computer 
+used for energy consumption measurements.
+
+The instructions are based on Dietpi v10.5 which is based on debian 13 (trixie).
 
 ## Controller
 (Raspberry PI 3)
@@ -20,7 +24,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
-1. Continue with custom setup in ../infra
+1. Continue with custom setup in ../infra/README.md
 
 ## Raspberry PI 5
 1. Get image for the device from [Dietpi](https://dietpi.com/) and extract it<br>
@@ -37,7 +41,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
-1. Continue with custom setup in ../infra
+1. Continue with custom setup in ../infra/README.md
 
 ## VisionFive2
 1. Get image for the device from [Dietpi](https://dietpi.com/) and extract it<br>
@@ -54,7 +58,7 @@ sudo umount /mnt/tmp/
 '''
 1. Insert SD card into device and boot.
 1. Wait till initial setup and update are through
-1. Continue with custom setup in ../infra
+1. Continue with custom setup in ../infra/README.md
 
 ## Radxa X4
 1. [Update BIOS if needed](https://docs.radxa.com/en/x/x4/bios/update-bios)
@@ -72,4 +76,4 @@ sudo umount /mnt/tmp/
 1. Power off
 1. Remove both USB sticks
 1. Boot device
-1. Continue with custom setup in ../infra
+1. Continue with custom setup in ../infra/README.md
