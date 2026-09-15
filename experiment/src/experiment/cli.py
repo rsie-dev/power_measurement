@@ -163,6 +163,7 @@ class ExperimentMain:
         parser_log_temp = log_subparsers.add_parser('temp', help="temperature logging")
         parser_log_temp.add_argument('--bus', help="temperature sensor serial bus")
         parser_log_temp.add_argument('--logfile',
+                                     type=Path,
                                      default=(self._get_resources_folder() / "temperature.csv").relative_to(Path.cwd()),
                                      help="temperature logfile name" + default)
         parser_log_temp.set_defaults(func=self._log_temp)
