@@ -3,6 +3,7 @@ import contextlib
 from collections.abc import Generator
 from types import FrameType
 from typing import Callable
+from threading import RLock
 
 from uvicorn.config import Config
 from uvicorn.server import Server
@@ -28,6 +29,16 @@ class NoSignalServer(Server, ShutdownHandler):
             self.should_exit = True
 
 
+class SyncLogger(Logger[SystemMeasurement]):
+    def __init__(self, measurement_logger: Logger[SystemMeasurement]):
+        self._delegate = measurement_logger
+        self._lock = RLock()
+
+    def log(self, data: SystemMeasurement | list[SystemMeasurement]) -> None:
+        with self._lock:
+            self._delegate.log(data)
+
+
 class MetricsServer(ShutdownHandler):
     def __init__(self, metrics_server_address: tuple[str, int]):
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -47,7 +58,8 @@ class MetricsServer(ShutdownHandler):
         self._server.shut_down(force)
 
     def run(self, measurement_logger: Logger[SystemMeasurement], startup_call_back: Callable) -> None:
-        app = create_app(measurement_logger, startup_call_back)
+        sync_logger = SyncLogger(measurement_logger)
+        app = create_app(sync_logger, startup_call_back)
         config = Config(
             app,
             host=self._metrics_server_address[0],
