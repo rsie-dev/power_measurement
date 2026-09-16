@@ -56,7 +56,8 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
         self._prepare()
         event = Event()
         future = executor.submit(self._electric_collector, self._usb_meter, event)
-        event.wait(self._start_timeout)
+        if not event.wait(self._start_timeout):
+            raise RuntimeError("start timeout")
         self._future = future
 
     def _prepare(self):
