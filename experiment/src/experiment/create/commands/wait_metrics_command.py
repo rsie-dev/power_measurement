@@ -18,5 +18,6 @@ class WaitMetricsCommand(Command):
         self._logger.info("Wait %s for metrics data...", humanize.precisedelta(self._metrics_client_timeout))
         event = Event()
         self._metrics_notificator.add_notification(event)
-        event.wait(5)
+        if not event.wait(self._metrics_client_timeout):
+            raise TimeoutError(f"No system metrics received within {self._metrics_client_timeout} seconds")
         self._logger.info("Metrics data arrived")
