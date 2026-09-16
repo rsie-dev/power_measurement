@@ -53,16 +53,21 @@ class Runner:
     @contextmanager
     def _add_logfile(self, logfile: Path):
         handler = logging.FileHandler(logfile, mode="w")
-        handler.setLevel(logging.DEBUG)
-        formatter_class, formatter_config = self._formatter_info
-        formatter = formatter_class(**formatter_config)
-        handler.setFormatter(formatter)
         file_logger = ["", "paramiko.transport"]
-        for logger in file_logger:
-            logging.getLogger(logger).addHandler(handler)
-        yield
-        for logger in file_logger:
-            logging.getLogger(logger).removeHandler(handler)
+        try:
+            handler.setLevel(logging.DEBUG)
+            formatter_class, formatter_config = self._formatter_info
+            formatter = formatter_class(**formatter_config)
+            handler.setFormatter(formatter)
+            for logger in file_logger:
+                logging.getLogger(logger).addHandler(handler)
+            yield
+        finally:
+            try:
+                for logger in file_logger:
+                    logging.getLogger(logger).removeHandler(handler)
+            finally:
+                handler.close()
 
     def _log_version_info(self):
         self._logger.debug("power-measurement-experiment version: v%s (%s)", version, commit_id)
