@@ -76,12 +76,12 @@ class TempSensorStep(Step, MeasurementAbort):
 
     def _temperature_collector(self, start_event: Event) -> None:
         self._logger.debug("temperature sensor thread on %s running", self._config.bus_name)
-        start_event.set()
         try:
             with self._config.sensor_device as device:
                 info = device.device_info
                 self._logger.info("Temperature sensor on %s is an %s model %s ROM %s",
                                   info.bus, info.name, info.model.name, info.rom)
+                start_event.set()
                 self._temperature_loop(device)
         except Exception as e:   # pylint: disable=broad-exception-caught
             self._logger.fatal("%s on %s -> abort", e, self._config.bus_name)

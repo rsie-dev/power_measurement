@@ -98,8 +98,8 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
     def _run(self, connection: Connection, event: Event, kernel_temperature_file: Path) -> None:
         self._logger.debug("SBC temperature collector start")
         try:
-            event.set()
             with self._config.log_provider.start_log(self._context.resources_path):
+                event.set()
                 self._collect_loop(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.fatal("%s -> abort", e)
