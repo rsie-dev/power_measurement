@@ -87,8 +87,9 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
             self._stop = True
             self._condition.notify()
 
-        wait([self._future], return_when=FIRST_EXCEPTION)
-        self._future.result()
+        if self._future:
+            wait([self._future], return_when=FIRST_EXCEPTION)
+            self._future.result()
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         pass

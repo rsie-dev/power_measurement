@@ -111,5 +111,6 @@ class TempSensorStep(Step, MeasurementAbort):
 
     def stop(self, runtime: ExperimentRuntime) -> None:
         self._context.stop_event.set()
-        wait([self._future], return_when=FIRST_EXCEPTION)
-        self._future.result()
+        if self._future:
+            wait([self._future], return_when=FIRST_EXCEPTION)
+            self._future.result()
