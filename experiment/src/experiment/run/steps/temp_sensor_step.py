@@ -62,7 +62,7 @@ class TempSensorStep(Step, MeasurementAbort):
         start_event = Event()
         future = executor.submit(self._temperature_collector, start_event)
         if not start_event.wait(self._start_timeout):
-            raise TimeoutError(f"Temperature sensor thread did not start within " f"{self._start_timeout} seconds")
+            raise TimeoutError(f"Temperature sensor thread did not start within {self._start_timeout} seconds")
         self._future = future
 
     def execute(self, runtime: ExperimentRuntime) -> None:

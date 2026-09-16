@@ -53,7 +53,7 @@ class ExperimentExecutor(Experiment):
         event = Event()
         future = executor.submit(self._system_collector, metrics_server, self._metrics_dispatcher, event)
         if not event.wait(self._server_start_timeout):
-            raise TimeoutError(f"System collector thread did not start within " f"{self._server_start_timeout} seconds")
+            raise TimeoutError(f"System collector thread did not start within {self._server_start_timeout} seconds")
         return future
 
     def _initialize(self, runtime: Runtime, init_steps: List[InitStep]) -> None:
