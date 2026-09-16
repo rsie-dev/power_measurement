@@ -8,6 +8,13 @@ Prepare the devices by installing the OS (see ../os_install/README.md).
 After the OS installation, all devices should be running on the local network and reachable 
 via ssh and the dietpi user.
 
+## Installation
+After cloning this repository, pyinfra and its dependencies need to be installed:
+'''
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+'''
+
 ## Preparation
 Adapt for all devices in the **inventory.py** file the current IP address and 
 for all devices under test the MAC address, too.
