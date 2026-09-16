@@ -27,9 +27,9 @@ class ExperimentRunner:
         try:
             self._logger.info("Starting all steps")
             for step in self._steps:
+                started_steps.append(step)
                 self._logger.debug("start step: %s", step.description)
                 step.start(runtime, self._executor)
-                started_steps.append(step)
 
             for step in self._steps:
                 self._logger.debug("execute step: %s", step.description)
