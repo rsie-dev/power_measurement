@@ -65,7 +65,7 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
         self._logger.debug("found kernel temperature file: %s", kernel_temperature_file)
         future =executor.submit(self._run, connection, event, kernel_temperature_file)
         if not event.wait(self._config.start_timeout):
-            raise RuntimeError("start timeout")
+            raise TimeoutError(f"SBC monitor thread did not start within " f"{self._config.start_timeout} seconds")
         self._future = future
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:
