@@ -568,6 +568,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if temp_sensor_step:
             steps.append(temp_sensor_step)
 
+        sbc_monitor_step = self._create_sbc_temperature_monitor_step()
+        if sbc_monitor_step:
+            steps.append(sbc_monitor_step)
+
         steps.extend(self._create_system_monitoring_steps())
 
         if self._host_context.disable_timers:
@@ -578,7 +582,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         if temp_monitor_step:
             steps.append(temp_monitor_step)
 
-        measurement_step = self._create_measurement_step(temp_sensor_step, temp_monitor_step)
+        measurement_step = self._create_measurement_step(temp_sensor_step, sbc_monitor_step, temp_monitor_step)
         if measurement_step:
             steps.append(measurement_step)
 
@@ -599,17 +603,20 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         )
         return TempSensorStep(config)
 
+    def _create_sbc_temperature_monitor_step(self):
+        if not self._dispatcher.sbc_temp_dispatcher:
+            return None
+
+        config = SBCTemperatureMonitorStep.Config(
+            host=self._config.host,
+            sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
+            log_provider=self._create_sbc_temperature_log_provider(),
+            update_interval=self._sbc_context.update_interval,
+        )
+        return SBCTemperatureMonitorStep(config)
+
     def _create_system_monitoring_steps(self) -> list[Step]:
         steps = []
-
-        if self._dispatcher.sbc_temp_dispatcher:
-            config = SBCTemperatureMonitorStep.Config(
-                host=self._config.host,
-                sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
-                log_provider=self._create_sbc_temperature_log_provider(),
-                update_interval=self._sbc_context.update_interval,
-            )
-            steps.append(SBCTemperatureMonitorStep(config))
 
         metrics_dispatcher = self._parent.collect_metrics
         if metrics_dispatcher:
@@ -630,7 +637,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         )
         return TempMonitorStep(config)
 
-    def _create_measurement_step(self, temp_sensor_step, temp_monitor_step):
+    def _create_measurement_step(self, temp_sensor_step, sbc_monitor_step, temp_monitor_step):
         configs = self._host_context.command_configs
         if not configs:
             return None
@@ -643,6 +650,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         aborter = MeasurementAbortMonitor()
         if temp_sensor_step:
             aborter.add_aborter(temp_sensor_step)
+        if sbc_monitor_step:
+            aborter.add_aborter(sbc_monitor_step)
         if temp_monitor_step:
             aborter.add_aborter(temp_monitor_step)
         if self._context.measurement:

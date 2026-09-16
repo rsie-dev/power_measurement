@@ -9,6 +9,7 @@ import time
 from fabric import Connection
 
 from experiment.common import SSHHost
+from experiment.common import MeasurementAbort
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
@@ -18,7 +19,7 @@ from experiment.run.log import LogDispatcher, TemperatureEntry
 from .step import Step
 
 
-class SBCTemperatureMonitorStep(Step):
+class SBCTemperatureMonitorStep(Step, MeasurementAbort):
     SENSOR_NAMES = [
         "cpu_thermal",  # raspberry pi 5
         "coretemp",     # radxa x4
@@ -36,6 +37,7 @@ class SBCTemperatureMonitorStep(Step):
     @dataclass
     class RunContext:
         resources_path: Path | None = None
+        abort_reason: Exception | None = None
 
     def __init__(self, config: Config):
         super().__init__("SBC temperature monitor")
@@ -44,6 +46,9 @@ class SBCTemperatureMonitorStep(Step):
         self._context = SBCTemperatureMonitorStep.RunContext()
         self._condition = Condition()
         self._stop = False
+
+    def get_abort_reason(self) -> Exception | None:
+        return self._context.abort_reason
 
     def prepare(self, environment: ExperimentEnvironment, resources: ExperimentResources) -> None:
         environment.register_ssh_connection(self._config.host.ssh_user, self._config.host.host)
@@ -90,7 +95,8 @@ class SBCTemperatureMonitorStep(Step):
             with self._config.log_provider.start_log(self._context.resources_path):
                 self._collect_loop(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            self._logger.exception("Error: %s", e)
+            self._logger.fatal("%s -> abort", e)
+            self._context.abort_reason = e
         finally:
             self._logger.debug("SBC temperature collector shut down")
 
