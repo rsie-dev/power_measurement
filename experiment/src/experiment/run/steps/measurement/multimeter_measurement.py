@@ -90,5 +90,6 @@ class MultimeterMeasurement(Measurement, MeasurementAbort):
         if self._stop_provider:
             self._stop_provider.shut_down(False)
 
-        wait([self._future], return_when=FIRST_EXCEPTION)
-        self._future.result()
+        if self._future:
+            wait([self._future], return_when=FIRST_EXCEPTION)
+            self._future.result()
