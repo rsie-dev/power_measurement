@@ -34,9 +34,9 @@ class TempSensorStep(Step, MeasurementAbort):
 
     @dataclass
     class Context:
-        stop_event = Event()
+        stop_event: Event = field(default_factory=Event)
         failure: Exception | None = None
-        failure_lock = RLock()
+        failure_lock: RLock = field(default_factory=RLock)
 
     def __init__(self, config: Config):
         super().__init__("temperature sensor")
