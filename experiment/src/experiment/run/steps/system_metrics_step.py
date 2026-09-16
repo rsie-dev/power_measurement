@@ -52,7 +52,8 @@ class SystemMetricsClientStep(BaseHostCommandStep):
             startup_event = startup_monitor.startup_event
             self._execute_start_command(connection)
             self._logger.info("Wait %s for telegraf client...", humanize.precisedelta(self._metrics_client_timeout))
-            startup_event.wait(self._metrics_client_timeout)
+            if not startup_event.wait(self._metrics_client_timeout):
+                raise RuntimeError("start timeout")
             self._logger.info("Telegraf client connected")
 
     def stop(self, runtime: ExperimentRuntime):

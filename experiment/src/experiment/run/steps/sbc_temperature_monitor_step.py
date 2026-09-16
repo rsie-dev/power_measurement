@@ -64,7 +64,8 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
             raise RuntimeError("unable to find kernel SBC temperature file")
         self._logger.debug("found kernel temperature file: %s", kernel_temperature_file)
         future =executor.submit(self._run, connection, event, kernel_temperature_file)
-        event.wait(self._config.start_timeout)
+        if not event.wait(self._config.start_timeout):
+            raise RuntimeError("start timeout")
         self._future = future
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:

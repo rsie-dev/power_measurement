@@ -52,7 +52,8 @@ class ExperimentExecutor(Experiment):
         metrics_server = stack.enter_context(MetricsServer(server_address))
         event = Event()
         future = executor.submit(self._system_collector, metrics_server, self._metrics_dispatcher, event)
-        event.wait(self._server_start_timeout)
+        if not event.wait(self._server_start_timeout):
+            raise RuntimeError("start timeout")
         return future
 
     def _initialize(self, runtime: Runtime, init_steps: List[InitStep]) -> None:
