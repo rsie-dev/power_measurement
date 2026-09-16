@@ -3,6 +3,9 @@ ToDo:
 - extend timings collection to include total number of CPU-seconds, percentage of the CPU
 - add collecting of thermal throtteling
 
+v2.0.1
+- fixed several small bugs
+
 v2.0.0
 - added support external serial temperature sensors
 
