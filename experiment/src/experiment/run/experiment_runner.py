@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from concurrent.futures import Executor
-from typing import List
 
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
@@ -10,7 +9,7 @@ from .resources import Resources
 
 
 class ExperimentRunner:
-    def __init__(self, executor: Executor, resource_path: Path, steps: List[Step]):
+    def __init__(self, executor: Executor, resource_path: Path, steps: list[Step]):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._executor = executor
         self._resource_path = resource_path
@@ -24,19 +23,21 @@ class ExperimentRunner:
             self._logger.debug("prepare step: %s", step.description)
             step.prepare(environment, resources)
 
+        started_steps: list[Step] = []
         try:
             self._logger.info("Starting all steps")
             for step in self._steps:
                 self._logger.debug("start step: %s", step.description)
                 step.start(runtime, self._executor)
+                started_steps.append(step)
 
             for step in self._steps:
                 self._logger.debug("execute step: %s", step.description)
                 step.execute(runtime)
 
         finally:
-            self._logger.info("Stopping all steps")
-            for step in list(reversed(self._steps)):
+            self._logger.info("Stopping all started steps")
+            for step in list(reversed(started_steps)):
                 self._logger.debug("stop step: %s", step.description)
                 step.stop(runtime)
             self._logger.info("Stopped all steps")
