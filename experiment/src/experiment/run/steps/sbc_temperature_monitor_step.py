@@ -1,6 +1,6 @@
 import logging
 from threading import Event, Condition
-from concurrent.futures import Executor
+from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +46,7 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
         self._context = SBCTemperatureMonitorStep.RunContext()
         self._condition = Condition()
         self._stop = False
+        self._future = None
 
     def get_abort_reason(self) -> Exception | None:
         return self._context.abort_reason
@@ -62,8 +63,9 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
         if not kernel_temperature_file:
             raise RuntimeError("unable to find kernel SBC temperature file")
         self._logger.debug("found kernel temperature file: %s", kernel_temperature_file)
-        executor.submit(self._run, connection, event, kernel_temperature_file)
+        future =executor.submit(self._run, connection, event, kernel_temperature_file)
         event.wait(self._config.start_timeout)
+        self._future = future
 
     def _find_kernel_temperature_file(self, connection: Connection) -> Path | None:
         hwmon_folder = Path("/sys/class/hwmon")
@@ -84,6 +86,9 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
         with self._condition:
             self._stop = True
             self._condition.notify()
+
+        wait([self._future], return_when=FIRST_EXCEPTION)
+        self._future.result()
 
     def execute(self, runtime: ExperimentRuntime) -> None:
         pass
