@@ -17,7 +17,7 @@ class HostLoggingStep(Step):
     @dataclass(frozen=True)
     class Config:
         host: Host
-        log_provider: LogProvider
+        log_providers: list[LogProvider]
 
     @dataclass
     class RunContext:
@@ -38,8 +38,9 @@ class HostLoggingStep(Step):
 
         stack = ExitStack()
         self._context.logging_stack = stack.__enter__() # pylint: disable=unnecessary-dunder-call
-        cm = self._config.log_provider.start_log(self._context.resources_path)
-        self._context.logging_stack.enter_context(cm)
+        for log_provider in self._config.log_providers:
+            cm = log_provider.start_log(self._context.resources_path)
+            self._context.logging_stack.enter_context(cm)
 
     def stop(self, runtime: ExperimentRuntime) -> None:
         self._logger.info("Stop host logging for: %s", self._config.host.host_name)

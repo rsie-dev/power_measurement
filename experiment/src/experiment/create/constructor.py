@@ -581,9 +581,11 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps.extend(self._steps)
 
         if self._dispatcher.ambient_temp_dispatcher:
+            log_providers: list[LogProvider] = []
+            log_providers.append(self._create_ambient_temperature_log_provider())
             config = HostLoggingStep.Config(
                 host=self._config.host,
-                log_provider = self._create_ambient_temperature_log_provider(),
+                log_providers=log_providers,
             )
             host_logging_step = HostLoggingStep(config)
             steps.append(host_logging_step)
