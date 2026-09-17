@@ -13,7 +13,6 @@ from experiment.common import MeasurementAbort
 from experiment.run.base import ExperimentEnvironment
 from experiment.run.base import ExperimentRuntime
 from experiment.run.base import ExperimentResources
-from experiment.run.log import LogProvider
 from experiment.run.log import LogDispatcher, TemperatureEntry
 
 from .step import Step
@@ -30,7 +29,6 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
     class Config:
         host: SSHHost
         sbc_temp_dispatcher: LogDispatcher[TemperatureEntry]
-        log_provider: LogProvider
         update_interval: float
         start_timeout: float = 3
 
@@ -97,10 +95,9 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
 
     def _run(self, connection: Connection, event: Event, kernel_temperature_file: Path) -> None:
         self._logger.debug("SBC temperature collector start")
+        event.set()
         try:
-            with self._config.log_provider.start_log(self._context.resources_path):
-                event.set()
-                self._collect_loop(connection, kernel_temperature_file)
+            self._collect_loop(connection, kernel_temperature_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.fatal("%s -> abort", e)
             self._context.abort_reason = e

@@ -616,7 +616,6 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         config = SBCTemperatureMonitorStep.Config(
             host=self._config.host,
             sbc_temp_dispatcher=self._dispatcher.sbc_temp_dispatcher,
-            log_provider=self._create_sbc_temperature_log_provider(),
             update_interval=self._sbc_context.update_interval,
         )
         return SBCTemperatureMonitorStep(config)
@@ -635,6 +634,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         log_providers: list[LogProvider] = []
         if self._dispatcher.ambient_temp_dispatcher:
             log_providers.append(self._create_ambient_temperature_log_provider())
+        if self._dispatcher.sbc_temp_dispatcher:
+            log_providers.append(self._create_sbc_temperature_log_provider())
 
         if not log_providers:
             return None
