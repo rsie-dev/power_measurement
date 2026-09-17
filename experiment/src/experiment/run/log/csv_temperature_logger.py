@@ -21,7 +21,7 @@ class CSVTemperatureLogger(CSVBaseLogger, Logger[TemperatureEntry]):
         self._latest_only = latest_only
 
     def init(self) -> None:
-        self._writer.writeheader()
+        super().init()
         entry = {
             "timestamp": "No Unit",
             "temperature": "celsius",
