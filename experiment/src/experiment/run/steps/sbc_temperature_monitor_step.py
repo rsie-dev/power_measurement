@@ -1,8 +1,8 @@
 import logging
-from threading import Event, Condition
+from threading import Event
 from concurrent.futures import Executor, wait, FIRST_EXCEPTION
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import time
 
@@ -36,14 +36,15 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
     class RunContext:
         resources_path: Path | None = None
         abort_reason: Exception | None = None
+        stop_event: Event = field(default_factory=Event)
 
     def __init__(self, config: Config):
         super().__init__("SBC temperature monitor")
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
         self._context = SBCTemperatureMonitorStep.RunContext()
-        self._condition = Condition()
-        self._stop = False
+        #self._condition = Condition()
+        #self._stop = False
         self._future = None
 
     def get_abort_reason(self) -> Exception | None:
@@ -82,10 +83,7 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
 
     def stop(self, runtime: ExperimentRuntime) -> None:
         self._logger.debug("Signal SBC temperature collector to shutdown")
-        with self._condition:
-            self._stop = True
-            self._condition.notify()
-
+        self._context.stop_event.set()
         if self._future:
             wait([self._future], return_when=FIRST_EXCEPTION)
             self._future.result()
@@ -105,18 +103,18 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_loop(self, connection: Connection, kernel_temperature_file: Path) -> None:
+        max_update_interval = 1 # once per second is sufficient
+        interval = 1 / max_update_interval
         next_run = time.monotonic()
-        while True:
-            next_run += self._config.update_interval
-            with self._condition:
-                while True:
-                    timeout = next_run - time.monotonic()
-                    if timeout <= 0:
-                        break
-                    self._condition.wait(timeout=timeout)
-                    if self._stop:
-                        return
+
+        while not self._context.stop_event.is_set():
             self._collect_temperature(connection, kernel_temperature_file)
+
+            next_run += interval
+            remaining = max(0, next_run - time.monotonic())
+
+            if self._context.stop_event.wait(remaining):
+                break
 
     def _collect_temperature(self, connection: Connection, kernel_temperature_file: Path):
         str_value = self._read_remote_file(connection, kernel_temperature_file).strip()
