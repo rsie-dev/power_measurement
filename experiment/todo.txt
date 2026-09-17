@@ -4,6 +4,7 @@ ToDo:
 - add collecting of thermal throtteling
 
 v2.0.1
+- fixed ambient temperature logging started only at measurement
 - fixed several small bugs
 
 v2.0.0
