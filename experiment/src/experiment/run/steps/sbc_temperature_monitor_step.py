@@ -43,8 +43,6 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._config = config
         self._context = SBCTemperatureMonitorStep.RunContext()
-        #self._condition = Condition()
-        #self._stop = False
         self._future = None
 
     def get_abort_reason(self) -> Exception | None:
@@ -103,8 +101,7 @@ class SBCTemperatureMonitorStep(Step, MeasurementAbort):
             self._logger.debug("SBC temperature collector shut down")
 
     def _collect_loop(self, connection: Connection, kernel_temperature_file: Path) -> None:
-        max_update_interval = 1 # once per second is sufficient
-        interval = 1 / max_update_interval
+        interval = 1 / self._config.update_interval
         next_run = time.monotonic()
 
         while not self._context.stop_event.is_set():
