@@ -580,14 +580,8 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
         steps.extend(self._steps)
 
-        if self._dispatcher.ambient_temp_dispatcher:
-            log_providers: list[LogProvider] = []
-            log_providers.append(self._create_ambient_temperature_log_provider())
-            config = HostLoggingStep.Config(
-                host=self._config.host,
-                log_providers=log_providers,
-            )
-            host_logging_step = HostLoggingStep(config)
+        host_logging_step = self._create_host_logging_step()
+        if host_logging_step:
             steps.append(host_logging_step)
 
         temp_monitor_step = self._create_temperature_monitor_step()
@@ -636,6 +630,20 @@ class HostConstructor(CompositeConstructor, HostBuilder):
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         return steps
+
+    def _create_host_logging_step(self):
+        log_providers: list[LogProvider] = []
+        if self._dispatcher.ambient_temp_dispatcher:
+            log_providers.append(self._create_ambient_temperature_log_provider())
+
+        if not log_providers:
+            return None
+
+        config = HostLoggingStep.Config(
+            host=self._config.host,
+            log_providers=log_providers,
+        )
+        return HostLoggingStep(config)
 
     def _create_temperature_monitor_step(self):
         if self._host_context.temp_delta is None:
