@@ -4,6 +4,7 @@ ToDo:
 - add collecting of thermal throtteling
 
 v2.0.1
+- ambient temperature is now logged once per second
 - fixed ambient temperature logging started only at measurement
 - fixed several small bugs
 

@@ -90,7 +90,7 @@ class TempSensorStep(Step, MeasurementAbort):
             self._logger.debug("temperature sensor thread on %s stopped", self._config.bus_name)
 
     def _temperature_loop(self, sensor_device: SensorDevice) -> None:
-        max_update_interval = sensor_device.get_max_update_interval()
+        max_update_interval = 1 # once per second is sufficient
         interval = 1 / max_update_interval
         next_run = time.monotonic()
 
