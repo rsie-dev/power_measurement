@@ -1,6 +1,5 @@
 from __future__ import annotations
 import logging
-from typing import Optional
 from abc import ABC, abstractmethod
 import datetime
 
@@ -37,7 +36,7 @@ class PostCommand(CommandExtender):
 
 
 class ExecutorCommand(Command):
-    def __init__(self, command: str, shell: str, work_dir: Optional[str] = None):
+    def __init__(self, command: str, shell: str, work_dir: str | None = None):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._command: str = command
         self._shell = shell
@@ -94,7 +93,7 @@ class ExecutorCommand(Command):
 
 
 class MeasuringCommand(ExecutorCommand):
-    def __init__(self, markers_logger: Logger[MarkersEntry], command: str, shell: str, work_dir: Optional[str] = None):
+    def __init__(self, markers_logger: Logger[MarkersEntry], command: str, shell: str, work_dir: str | None = None):
         super().__init__(command, shell, work_dir)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._markers_logger = markers_logger
