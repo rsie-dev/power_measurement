@@ -143,6 +143,8 @@ def _ntp_server_mode():
 # set to allow working without upstream time sources
 local stratum 10
 
+hwtimestamp *
+
 allow all   
 """
     config_file = files.put(
