@@ -11,12 +11,13 @@ def ntp_server():
 
     config_file = _ntp_server_mode()
     update_config = _disable_default_sources()
+    override_config = _create_chrony_service_override()
     systemd.service(
         name="Restart chrony service",
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=lambda: config_file.did_change() or update_config.did_change()
+        _if=lambda: config_file.did_change() or update_config.did_change() or override_config.did_change()
     )
 
 
@@ -97,6 +98,19 @@ rtcsync
         _sudo=True,
     )
 
+    override_config = _create_chrony_service_override()
+
+    systemd.service(
+        name="Restart chrony service",
+        service="chrony.service",
+        restarted=True,
+        _sudo=True,
+        _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
+                    update_dhcp_config.did_change() or override_config.did_change()
+    )
+
+
+def _create_chrony_service_override():
     override_content = """
 [Unit]
 Wants=network-online.target
@@ -108,15 +122,7 @@ After=network-online.target
         dest="/etc/systemd/system/chrony.service.d/override.conf",
         _sudo=True,
     )
-
-    systemd.service(
-        name="Restart chrony service",
-        service="chrony.service",
-        restarted=True,
-        _sudo=True,
-        _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
-                    update_dhcp_config.did_change() or override_config.did_change()
-    )
+    return override_config
 
 
 def _disable_default_sources():
