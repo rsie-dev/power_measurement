@@ -3,6 +3,9 @@ ToDo:
 - extend timings collection to include total number of CPU-seconds, percentage of the CPU
 - add collecting of thermal throtteling
 
+v2.1.0
+- add support to measure the start and end times on the DuT itself
+
 v2.0.1
 - ambient temperature is now logged once per second
 - fixed ambient temperature logging started only at measurement

@@ -67,6 +67,12 @@ Enables timing measurements.
 Measurements will be written to _timings.csv_ in the run folder.
 
 ```python
+with_dut_timings() -> Self
+```
+Enables to measure the start and end times on the device itself.
+Measurements will be written to _timings_dut.csv_ in the run folder.
+
+```python
 count_stdout(target: str | Path = None) -> Self
 ```
 Counts occurrences in stdout.
