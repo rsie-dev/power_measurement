@@ -64,7 +64,12 @@ i2c-bcm2708
 @deploy("NTP client")
 def ntp_client():
     _ntp_service()
-    config_file = _ntp_server_mode()
+    config_file = files.file(
+        name="Remove NTP server configuration",
+        path="/etc/chrony/conf.d/server.conf",
+        present=False,
+        _sudo=True,
+    )
     update_config = _disable_default_sources()
 
     content = """
