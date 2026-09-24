@@ -43,6 +43,7 @@ from experiment.create.commands import DelayCommand, StableTemperatureDelayComma
 from experiment.create.commands import WaitMetricsCommand
 from experiment.create.commands import CountStreamPostCommand, PipefailPreCommand
 from experiment.create.commands import TimedCommandPreCommand, DutTimesCommand
+from experiment.create.commands import DevNullPostCommand
 from experiment.system_meter import SystemMeasurement
 from experiment.sensor import get_sensor_device
 
@@ -124,6 +125,8 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
             count_dispatcher = self._parent.allocate_count_stream_dispatcher()
             link = CountStreamPostCommand(self._count_stdout, count_dispatcher)
             command.append(link)
+        else:
+            command.append(DevNullPostCommand())
         if self._with_timings:
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
             link = TimedCommandPreCommand(timing_dispatcher)

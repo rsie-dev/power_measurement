@@ -10,6 +10,8 @@ from .wait_metrics_command import WaitMetricsCommand
 from .metrics_notificator import MetricsNotificator
 from .count_stream_post_command import CountStreamPostCommand
 from .pipefail_pre_command import PipefailPreCommand
+from .dev_null_post_command import DevNullPostCommand
+
 
 __all__ = [
     "ExecutorCommand", "MeasuringCommand",
@@ -22,4 +24,5 @@ __all__ = [
     "DutTimesCommand",
     "PipefailPreCommand",
     "CountStreamPostCommand",
+    "DevNullPostCommand",
 ]
