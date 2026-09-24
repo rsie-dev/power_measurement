@@ -3,6 +3,7 @@ from .clear_cache_command import ClearCacheCommand
 from .delay_command import DelayCommand
 from .stable_temp_delay_command import StableTemperatureDelayCommand
 from .timed_pre_command import TimedCommandPreCommand
+from .dut_times_command import DutTimesCommand
 from .composite_command import CompositeCommand
 from .file_stat_command import FileStatCommand
 from .wait_metrics_command import WaitMetricsCommand
@@ -17,6 +18,8 @@ __all__ = [
     "CompositeCommand",
     "FileStatCommand",
     "WaitMetricsCommand", "MetricsNotificator",
-    "TimedCommandPreCommand", "PipefailPreCommand",
+    "TimedCommandPreCommand",
+    "DutTimesCommand",
+    "PipefailPreCommand",
     "CountStreamPostCommand",
 ]

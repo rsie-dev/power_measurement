@@ -31,6 +31,10 @@ class MeasuredCommandBuilder(CommandBuilder):
         pass
 
     @abstractmethod
+    def with_dut_timings(self) -> Self:
+        pass
+
+    @abstractmethod
     def count_stdout(self, target: str | Path = None) -> Self:
         pass
 

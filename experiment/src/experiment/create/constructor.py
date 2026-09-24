@@ -34,13 +34,15 @@ from experiment.run.log import CSVMultimeterLogger
 from experiment.run.log import CSVTemperatureLogger, TemperatureEntry
 from experiment.run.log import FileStatsEntry, CSVFileStatLogger
 from experiment.run.log import TimingEntry, CSVTimingLogger
+from experiment.run.log import DutTimingEntry, CSVDutTimingLogger
 from experiment.run.log import CountStreamEntry, CSVCountStreamLogger
 from experiment.run.log import MarkersEntry, CSVMarkersLogger
 from experiment.create.commands import ExecutorCommand, MeasuringCommand, ClearCacheCommand
 from experiment.create.commands import CompositeCommand, FileStatCommand
 from experiment.create.commands import DelayCommand, StableTemperatureDelayCommand
 from experiment.create.commands import WaitMetricsCommand
-from experiment.create.commands import CountStreamPostCommand, TimedCommandPreCommand, PipefailPreCommand
+from experiment.create.commands import CountStreamPostCommand, PipefailPreCommand
+from experiment.create.commands import TimedCommandPreCommand, DutTimesCommand
 from experiment.system_meter import SystemMeasurement
 from experiment.sensor import get_sensor_device
 
@@ -91,11 +93,16 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
         super().__init__(parent, command)
         self._parent = parent
         self._with_timings = False
+        self._with_dut_timings = False
         self._file_stats: set[str] = set()
         self._count_stdout: Path | bool = False
 
     def with_timings(self) -> Self:
         self._with_timings = True
+        return self
+
+    def with_dut_timings(self) -> Self:
+        self._with_dut_timings = True
         return self
 
     def count_stdout(self, target: str | Path = None) -> Self:
@@ -121,6 +128,12 @@ class MeasuredCommandConstructor(CommandConstructor, MeasuredCommandBuilder):
             timing_dispatcher = self._parent.allocate_timing_dispatcher()
             link = TimedCommandPreCommand(timing_dispatcher)
             command.prepend(link)
+
+        if self._with_dut_timings:
+            dispatcher = self._parent.allocate_dut_timing_dispatcher()
+            dut_cmd = DutTimesCommand(dispatcher)
+            command.prepend(dut_cmd)
+            command.append(dut_cmd)
 
         if self._count_stdout or self._with_timings:
             command.prepend(PipefailPreCommand())
@@ -206,6 +219,11 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             self._log_dispatcher[TimingEntry] = LogDispatcher[TimingEntry]()
         return self._log_dispatcher[TimingEntry]
 
+    def allocate_dut_timing_dispatcher(self) -> LogDispatcher[DutTimingEntry]:
+        if DutTimingEntry not in self._log_dispatcher:
+            self._log_dispatcher[DutTimingEntry] = LogDispatcher[DutTimingEntry]()
+        return self._log_dispatcher[DutTimingEntry]
+
     def allocate_markers_dispatcher(self) -> LogDispatcher[MarkersEntry]:
         if MarkersEntry not in self._log_dispatcher:
             self._log_dispatcher[MarkersEntry] = LogDispatcher[MarkersEntry]()
@@ -276,6 +294,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
             log_providers.append(self._create_multimeter_log_provider())
         if TimingEntry in self._log_dispatcher:
             log_providers.append(self._create_timing_log_provider())
+        if DutTimingEntry in self._log_dispatcher:
+            log_providers.append(self._create_dut_timing_log_provider())
         if FileStatsEntry in self._log_dispatcher:
             log_providers.append(self._create_file_stats_log_provider())
         if MarkersEntry in self._log_dispatcher:
@@ -351,6 +371,14 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         timing_dispatcher = self._log_dispatcher[TimingEntry]
         timing_log_provider = GenericLogProvider(timing_dispatcher, log_factory)
         return timing_log_provider
+
+    def _create_dut_timing_log_provider(self) -> LogProvider:
+        formatter_class, formatter_config = self._parent.formatter_info
+        formatter = formatter_class(**formatter_config)
+        log_factory: LoggerFactory = lambda resource_path: CSVDutTimingLogger(resource_path / "timings_dut.csv", formatter)
+        dispatcher = self._log_dispatcher[DutTimingEntry]
+        log_provider = GenericLogProvider(dispatcher, log_factory)
+        return log_provider
 
     def _create_file_stats_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
