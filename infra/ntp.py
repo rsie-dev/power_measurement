@@ -92,8 +92,8 @@ rtcsync
     update_dhcp_config = files.line(
         name="Update DHCP chrony script",
         path="/etc/dhcp/dhclient-exit-hooks.d/chrony",
-        line='echo "server $server iburst" >> "$SERVERFILE"',
-        replace='echo "server $server iburst minpoll 2 maxpoll 4" >> "$SERVERFILE"',
+        line='^echo "server $server iburst',
+        replace='echo "server $server iburst xleave minpoll 2 maxpoll 4" >> "$SERVERFILE"',
         _sudo=True,
     )
 
