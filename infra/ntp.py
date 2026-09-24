@@ -97,13 +97,25 @@ rtcsync
         _sudo=True,
     )
 
+    override_content = """
+[Unit]
+Wants=network-online.target
+After=network-online.target    
+"""
+    override_config = files.put(
+        name="Create chrony override service configuration",
+        src=StringIO(override_content),
+        dest="/etc/systemd/system/chrony.service.d/override.conf",
+        _sudo=True,
+    )
+
     systemd.service(
         name="Restart chrony service",
         service="chrony.service",
         restarted=True,
         _sudo=True,
         _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
-                    update_dhcp_config.did_change()
+                    update_dhcp_config.did_change() or override_config.did_change()
     )
 
 
