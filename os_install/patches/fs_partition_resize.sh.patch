@@ -5,7 +5,7 @@
  
  		echo '[ INFO ] Maximising root partition size'
 -		sfdisk --no-reread --no-tell-kernel -fN"$ROOT_PART" "$ROOT_DRIVE" <<< ',+'
-+		sfdisk --no-reread --no-tell-kernel -fN"$ROOT_PART" "$ROOT_DRIVE" <<< ',10485760'
++		sfdisk --no-reread --no-tell-kernel -fN"$ROOT_PART" "$ROOT_DRIVE" <<< ',20971520'
  
  		echo '[ INFO ] Informing kernel about changed partition table, rebooting in case of failure (expected in case of GPT partition table)'
  		partx -uv "$ROOT_DEV" || Reboot_to_load_Partition_table
