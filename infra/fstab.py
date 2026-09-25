@@ -86,6 +86,30 @@ def fstab_option(mount_dir: str,
 
 
 @operation()
+def fstab_rm_option(mount_dir: str, option: str, fstab = None):
+    if fstab is None:
+        fstab = _FSTAB
+
+    fstab_content = host.get_fact(Fstab, fstab)
+    if mount_dir not in fstab_content.entry_by_dir:
+        raise OperationError("no fstab entry for {0}".format(mount_dir))
+    entry = fstab_content.entry_by_dir[mount_dir]
+
+    options = entry.options.split(",")
+    options = [o.strip() for o in options]
+    new_options = []
+    for o in options:
+        if not o.startswith(option):
+            new_options.append(o)
+
+    entry_options = ",".join(new_options)
+    if entry_options != entry.options:
+        logger.info("Update fstab entry for mount: {0}".format(mount_dir))
+        entry.options = entry_options
+        yield _write_fstab(fstab_content, fstab)
+
+
+@operation()
 def fstab_add_entry(device: str,
                     mount_dir: str,
                     fs_type: str,

@@ -14,7 +14,7 @@ from fstab import fstab_option
 from partition import add_partition
 from filesystem import format_partition, remount_rw
 from file import rename
-from fstab import fstab_add_entry
+from fstab import fstab_add_entry, fstab_rm_option
 
 
 @deploy("Switch to read only")
@@ -263,6 +263,15 @@ def unify_memory_size():
         pass
     else:
         raise RuntimeError("unsupported architecture: %s" % arch)
+
+
+def unify_tmp_filesystem():
+    fstab_rm_option(
+        name=f"Unify /tmp to 1/2 memory",
+        mount_dir="/tmp",
+        option="size",
+        _sudo=True,
+    )
 
 
 def _limit_kernel_memory(memory_limit_gb: int):
