@@ -378,7 +378,8 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
     def _create_dut_timing_log_provider(self) -> LogProvider:
         formatter_class, formatter_config = self._parent.formatter_info
         formatter = formatter_class(**formatter_config)
-        log_factory: LoggerFactory = lambda resource_path: CSVDutTimingLogger(resource_path / "timings_dut.csv", formatter)
+        log_factory: LoggerFactory = lambda resource_path: CSVDutTimingLogger(resource_path / "timings_dut.csv",
+                                                                              formatter)
         dispatcher = self._log_dispatcher[DutTimingEntry]
         log_provider = GenericLogProvider(dispatcher, log_factory)
         return log_provider
