@@ -100,11 +100,13 @@ def prepare_for_ro():
         _sudo=True,
     )
 
-    arch = host.get_fact(Arch, )
     if "controller" not in host.groups:
         adapt_fake_hwclock()
+    else:
+        disable_fake_hwclock()
     disable_timers()
 
+    arch = host.get_fact(Arch, )
     if arch == "x86_64":
         prepare_for_ro_x86()
 
@@ -142,6 +144,17 @@ def adapt_fake_hwclock():
         line="#FORCE=false",
         _sudo=True,
     )
+
+
+def disable_fake_hwclock():
+    for unit in ["fake-hwclock-load.service", "fake-hwclock-save.service", "fake-hwclock-save.timer"]:
+        systemd.service(
+            name="Disable unit: %s" % unit,
+            service=unit,
+            enabled=False,
+            running=False,
+            _sudo=True,
+        )
 
 
 def disable_timers():
