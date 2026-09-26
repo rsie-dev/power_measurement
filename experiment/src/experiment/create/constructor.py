@@ -223,6 +223,7 @@ class MeasurementExecutionConstructor(ExecutionConstructor, MeasurementExecution
         return self._log_dispatcher[TimingEntry]
 
     def allocate_dut_timing_dispatcher(self) -> LogDispatcher[DutTimingEntry]:
+        self._parent.add_collect_time_delta()
         if DutTimingEntry not in self._log_dispatcher:
             self._log_dispatcher[DutTimingEntry] = LogDispatcher[DutTimingEntry]()
         return self._log_dispatcher[DutTimingEntry]
@@ -455,6 +456,7 @@ class HostConstructor(CompositeConstructor, HostBuilder):
 
     @dataclass
     class Context:
+        collect_time_delta: bool = False
         tags: set[str] = field(default_factory=set)
         measurement: MultimeterMeasurement | None = None
 
@@ -503,6 +505,9 @@ class HostConstructor(CompositeConstructor, HostBuilder):
     @property
     def formatter_info(self) -> tuple[type, dict]:
         return self._parent.formatter_info
+
+    def add_collect_time_delta(self):
+        self._context.collect_time_delta = True
 
     def add_init_step(self, steps: List[Step]) -> None:
         self._host_context.init_steps.extend(steps)
@@ -656,8 +661,10 @@ class HostConstructor(CompositeConstructor, HostBuilder):
         steps = []
 
         metrics_dispatcher = self._parent.collect_metrics
-        if metrics_dispatcher:
+        if metrics_dispatcher or self._context.collect_time_delta:
             steps.append(TimeDeltaStep(self._config.host))
+
+        if metrics_dispatcher:
             steps.append(SystemMetricsClientStep(self._config.host, metrics_dispatcher))
 
         return steps

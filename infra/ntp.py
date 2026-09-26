@@ -83,12 +83,14 @@ hwtimestamp *
 makestep 0.1 3
 rtcsync
 """
-    add_config = files.put(
+    client_config = files.put(
         name="Create extra chrony client configuration",
         src=StringIO(content),
         dest="/etc/chrony/conf.d/client.conf",
         _sudo=True,
     )
+    # needed to get time deltas
+    server_config_file = _ntp_server_mode()
 
     update_dhcp_config = files.line(
         name="Update DHCP chrony script",
@@ -105,7 +107,8 @@ rtcsync
         service="chrony.service",
         restarted=True,
         _sudo=True,
-        _if=lambda: config_file.did_change() or update_config.did_change() or add_config.did_change() or
+        _if=lambda: config_file.did_change() or update_config.did_change() or
+                    client_config.did_change() or server_config_file.did_change() or
                     update_dhcp_config.did_change() or override_config.did_change()
     )
 
