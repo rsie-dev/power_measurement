@@ -32,7 +32,7 @@ class TimeDeltaStep(Step):
         microseconds = offset_delta / datetime.timedelta(microseconds=1)
         status = "behind" if microseconds < 0 else "ahead"
         delta_str = humanize.precisedelta(offset_delta, minimum_unit="microseconds")
-        self._logger.info("Host is %s %s", status, delta_str)
+        self._logger.info("%s is %s %s", self._host.host_name, status, delta_str)
 
         with self._time_delta_path.open(mode="w", encoding="utf-8") as f:
             iso_str = isodate.duration_isoformat(offset_delta)
