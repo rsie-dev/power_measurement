@@ -9,11 +9,12 @@ from experiment.run.log import logger
 
 
 class TemperatureLogger:
-    def __init__(self, log_filename: Path, formatter_info: tuple[type, dict], bus:str):
+    def __init__(self, log_filename: Path, formatter_info: tuple[type, dict], bus:str, interval: int=1):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_filename = log_filename
         self._formatter_info = formatter_info
         self._bus = bus
+        self._interval = interval
 
     def log(self) -> None:
         formatter_class, formatter_config = self._formatter_info
@@ -25,8 +26,7 @@ class TemperatureLogger:
                 self._log_loop(temp_logger, sensor_device)
 
     def _log_loop(self, temp_logger: CSVTemperatureLogger, sensor_device: SensorDevice) -> None:
-        max_update_interval = sensor_device.get_max_update_interval()
-        interval = 1 / max_update_interval
+        interval = self._interval
         next_run = time.monotonic()
 
         while True:
