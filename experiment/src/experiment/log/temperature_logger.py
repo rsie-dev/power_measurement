@@ -21,6 +21,7 @@ class TemperatureLogger:
         formatter = formatter_class(**formatter_config)
         self._logger.info("Log temperature readings to: %s", self._log_filename)
         temperature_logger = CSVTemperatureLogger(self._log_filename, formatter)
+        self._log_filename.parent.mkdir(parents=True, exist_ok=True)
         with logger(temperature_logger) as temp_logger:
             with get_sensor_device(self._bus) as sensor_device:
                 self._log_loop(temp_logger, sensor_device)
