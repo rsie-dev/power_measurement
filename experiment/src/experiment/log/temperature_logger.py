@@ -20,6 +20,8 @@ class TemperatureLogger:
         formatter_class, formatter_config = self._formatter_info
         formatter = formatter_class(**formatter_config)
         self._logger.info("Log temperature readings to: %s", self._log_filename)
+        log_folder = self._log_filename.parent
+        log_folder.mkdir(parents=True, exist_ok=True)
         temperature_logger = CSVTemperatureLogger(self._log_filename, formatter)
         self._log_filename.parent.mkdir(parents=True, exist_ok=True)
         with logger(temperature_logger) as temp_logger:
