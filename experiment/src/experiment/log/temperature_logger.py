@@ -9,7 +9,7 @@ from experiment.run.log import logger
 
 
 class TemperatureLogger:
-    def __init__(self, log_filename: Path, formatter_info: tuple[type, dict], bus:str, interval: int=1):
+    def __init__(self, log_filename: Path, formatter_info: tuple[type, dict], bus:str, interval: int = 1):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_filename = log_filename
         self._formatter_info = formatter_info
