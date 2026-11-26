@@ -23,7 +23,7 @@ class TimeDeltaStep(Step):
         self._time_delta_path = resources.resources_path() / "dut_time_delta.txt"
 
     def execute(self, runtime: ExperimentRuntime):
-        offset_delta, destination, local, remote = self._get_ntp_delta()
+        offset_delta, _, local, remote = self._get_ntp_delta()
 
         precision = "microseconds"
         local_time = local.astimezone()
