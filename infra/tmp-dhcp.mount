@@ -1,9 +1,0 @@
-[Unit]
-
-[Mount]
-What=tmpfs
-Where=/tmp/dhcp
-Type=tmpfs
-
-[Install]
-WantedBy=multi-user.target

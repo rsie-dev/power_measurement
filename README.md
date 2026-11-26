@@ -8,8 +8,5 @@
 git clone [-b branch] git@github.com:rsie-dev/power_measurement.git
 ```
 
-# OS installs
-check folder os_install an infra
-
 # Power measurement
 check folder experiment

@@ -1,3 +1,0 @@
-pyinfra==3.6
-pyfstab==0.2.0
-pytest==9.0.2
